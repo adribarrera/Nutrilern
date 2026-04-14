@@ -1,4 +1,4 @@
-''' mermaid
+``` mermaid
 classDiagram
     class CategoriaAlimento {
         - int idCategoria
@@ -64,4 +64,4 @@ classDiagram
     RegistroDiario --> Usuario : registrado por
     RegistroDiario --> Alimento : contiene
     EvolucionFisica --> Usuario : pertenece a
-'''
+```
