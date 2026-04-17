@@ -51,7 +51,7 @@ public class PanelLogin extends JPanel {
 
         panelImagen.setLayout(new GridBagLayout()); // Para centrar el slogan
 
-        JLabel lblSlogan = new JLabel("NUTRILERN: Nutrición basada en datos. No en mitos");
+        JLabel lblSlogan = new JLabel("NUTRIX: Nutrición basada en datos. No en mitos");
         lblSlogan.setFont(new Font("Arial", Font.BOLD, 28));
         lblSlogan.setForeground(new Color(34, 139, 34));
         panelImagen.add(lblSlogan);
@@ -123,6 +123,15 @@ public class PanelLogin extends JPanel {
         txtPass.setMaximumSize(new Dimension(300, 30));
         btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnLogin.setMaximumSize(new Dimension(300, 35));
+
+        // Añadimos acción al botón
+        btnLogin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Por ahora entra directamente sin validar
+                ventanaPadre.cambiarPantalla("MENU");
+            }
+        });
 
         // Añadimos con espaciado
         formPanel.add(lblEmail);
