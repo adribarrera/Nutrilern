@@ -10,7 +10,7 @@ public class VentanaPrincipal extends JFrame {
 
     public VentanaPrincipal() {
         // Config básica
-        setTitle("Nutrilern");
+        setTitle("NUTRIX");
         setSize(1080, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false); // No redimensionable
