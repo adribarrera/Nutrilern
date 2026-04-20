@@ -38,10 +38,8 @@ public class PanelMenuPrincipal extends JPanel {
         lblLogo.setForeground(colorPrincipal);
         header.add(lblLogo, BorderLayout.WEST);
 
-        // Panel para el usuario y botón salir
         JPanel userActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
         userActions.setOpaque(false);
-
         JLabel lblUser = new JLabel("Bienvenido, Usuario");
         lblUser.setFont(new Font("Arial", Font.ITALIC, 14));
         lblUser.setForeground(colorTexto);
@@ -55,27 +53,96 @@ public class PanelMenuPrincipal extends JPanel {
         header.add(userActions, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
 
-        // --- CUERPO PRINCIPAL ---
-        JPanel contentPanel = new JPanel(new GridBagLayout());
-        contentPanel.setOpaque(false);
-        contentPanel.setBorder(new EmptyBorder(40, 40, 40, 40));
+        // --- CONTENIDO SCROLLABLE ---
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
+        wrapper.setOpaque(false);
+        wrapper.setBorder(new EmptyBorder(30, 60, 30, 60));
+
+        //Section: Resumen de hoy
+        wrapper.add(crearSeccionResumenHoy());
+        wrapper.add(Box.createRigidArea(new Dimension(0, 40)));
+
+        //Section: Acceso directo (Grid)
+        JLabel lblOps = new JLabel("Acciones Principales");
+        lblOps.setFont(new Font("Arial", Font.BOLD, 22));
+        lblOps.setForeground(colorTexto);
+        lblOps.setAlignmentX(Component.LEFT_ALIGNMENT);
+        wrapper.add(lblOps);
+        wrapper.add(Box.createRigidArea(new Dimension(0, 20)));
 
         JPanel gridPanel = new JPanel(new GridLayout(2, 2, 30, 30));
         gridPanel.setOpaque(false);
+        gridPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         gridPanel.add(crearTarjetaMenu("Mis Comidas", "/images/misComidas.png", "Registra tu ingesta diaria y macros"));
         gridPanel.add(crearTarjetaMenu("Mi Evolución", "/images/miEvo.png", "Gráficas de peso y composición"));
-        gridPanel.add(
-                crearTarjetaMenu("Base de Alimentos", "/images/miGestor.png", "Base de datos nutricional completa"));
+        gridPanel.add(crearTarjetaMenu("Base de Alimentos", "/images/miGestor.png", "Base de datos nutricional completa"));
         gridPanel.add(crearTarjetaMenu("Ajustes", "/images/ajustes.png", "Configura tu perfil y objetivos"));
+        
+        wrapper.add(gridPanel);
 
-        contentPanel.add(gridPanel);
-
-        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        JScrollPane scrollPane = new JScrollPane(wrapper);
         scrollPane.setOpaque(false);
         scrollPane.getViewport().setOpaque(false);
         scrollPane.setBorder(null);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
+    }
+
+    private JPanel crearSeccionResumenHoy() {
+        JPanel seccion = new JPanel(new BorderLayout());
+        seccion.setOpaque(false);
+        seccion.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel titulo = new JLabel("Resumen de Hoy");
+        titulo.setFont(new Font("Arial", Font.BOLD, 22));
+        titulo.setForeground(colorTexto);
+        seccion.add(titulo, BorderLayout.NORTH);
+
+        JPanel cardsContainer = new JPanel(new GridLayout(1, 3, 20, 0));
+        cardsContainer.setOpaque(false);
+        cardsContainer.setBorder(new EmptyBorder(15, 0, 0, 0));
+
+        cardsContainer.add(crearStatMiniCard("Calorías", "1.450 / 2.100 kcal", Color.ORANGE, 65));
+        cardsContainer.add(crearStatMiniCard("Proteínas", "82 / 120 g", new Color(74, 144, 226), 68));
+        cardsContainer.add(crearStatMiniCard("Consumo Agua", "1.5 / 2.5 L", new Color(0, 191, 255), 60));
+
+        seccion.add(cardsContainer, BorderLayout.CENTER);
+        return seccion;
+    }
+
+    private JPanel crearStatMiniCard(String label, String value, Color colorBarra, int progreso) {
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(new Color(230, 230, 230), 1, true),
+            new EmptyBorder(15, 15, 15, 15)
+        ));
+
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("Arial", Font.BOLD, 14));
+        lbl.setForeground(new Color(100, 100, 100));
+        
+        JLabel val = new JLabel(value);
+        val.setFont(new Font("Arial", Font.BOLD, 18));
+        val.setForeground(colorTexto);
+
+        JProgressBar bar = new JProgressBar(0, 100);
+        bar.setValue(progreso);
+        bar.setForeground(colorBarra);
+        bar.setBackground(new Color(240, 240, 240));
+        bar.setBorderPainted(false);
+        bar.setPreferredSize(new Dimension(0, 10));
+
+        card.add(lbl);
+        card.add(Box.createRigidArea(new Dimension(0, 5)));
+        card.add(val);
+        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(bar);
+
+        return card;
     }
 
     @Override
@@ -90,10 +157,7 @@ public class PanelMenuPrincipal extends JPanel {
         JPanel tarjeta = new JPanel();
         tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
         tarjeta.setBackground(Color.WHITE);
-        tarjeta.setPreferredSize(new Dimension(280, 220));
         tarjeta.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        // Borde inicial
         tarjeta.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(new Color(230, 230, 230), 1, true),
                 new EmptyBorder(25, 20, 25, 20)));
@@ -126,7 +190,6 @@ public class PanelMenuPrincipal extends JPanel {
         tarjeta.add(Box.createRigidArea(new Dimension(0, 10)));
         tarjeta.add(lblDesc);
 
-        // Efectos Hover
         tarjeta.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -135,7 +198,6 @@ public class PanelMenuPrincipal extends JPanel {
                         new LineBorder(colorPrincipal, 2, true),
                         new EmptyBorder(24, 19, 24, 19)));
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
                 tarjeta.setBackground(Color.WHITE);
@@ -163,7 +225,6 @@ public class PanelMenuPrincipal extends JPanel {
                 btn.setBackground(colorPrincipal);
                 btn.setForeground(Color.WHITE);
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
                 btn.setBackground(Color.WHITE);
