@@ -1,5 +1,0 @@
-db.host=TU_SERVIDOR
-db.port=TU_PUERTO
-db.database=TU_BASE_DE_DATOS
-db.user=TU_USUARIO
-db.password=TU_PASSWORD

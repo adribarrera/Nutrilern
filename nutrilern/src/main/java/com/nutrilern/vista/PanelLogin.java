@@ -1,6 +1,9 @@
 package com.nutrilern.vista;
 
 import javax.swing.*;
+
+import com.nutrilern.controlador.ServicioCorreo;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.TextAttribute;
@@ -10,6 +13,9 @@ import java.util.HashMap;
 
 public class PanelLogin extends JPanel {
     private VentanaPrincipal ventanaPadre;
+    private String codigoSecretoGenerado; // Guarda el código temporalmente
+    private String emailTemporal; // Guarda el correo a registrar
+    private String passTemporal; // Guarda la contraseña a registrar
 
     public PanelLogin(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
@@ -44,7 +50,7 @@ public class PanelLogin extends JPanel {
                 if (imagen != null) {
                     // Dibuja la imagen ocupando todo el ancho y alto del panel
                     g.drawImage(imagen, 0, 0, getWidth(), getHeight(), this);
-                } 
+                }
                 // No llamamos a setBackground aquí porque provoca un bucle infinito
             }
         };
@@ -155,57 +161,164 @@ public class PanelLogin extends JPanel {
     }
 
     // Método para el JDialog
+    // Método para el JDialog con CardLayout (Dos pantallas en una)
     private void abrirDialogoRegistro() {
         JDialog dialogo = new JDialog(ventanaPadre, "Registro de usuario", true);
         dialogo.setSize(400, 450);
         dialogo.setLocationRelativeTo(ventanaPadre);
 
-        // Contenedor principal del diálogo con fondo blanco
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        container.setBackground(Color.WHITE);
-        container.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
+        // --- EL MOTOR DEL DIÁLOGO (CardLayout) ---
+        CardLayout cardLayout = new CardLayout();
+        JPanel panelContenedorCartas = new JPanel(cardLayout);
 
-        // Título principal
+        // CARTA 1 FORMULARIO DE REGISTRO
+        JPanel panelFormulario = new JPanel();
+        panelFormulario.setLayout(new BoxLayout(panelFormulario, BoxLayout.Y_AXIS));
+        panelFormulario.setBackground(Color.WHITE);
+        panelFormulario.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
+
         JLabel lblTitulo = new JLabel("Crear Nueva Cuenta");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Campo Email
         JLabel lblNewEmail = new JLabel("Nuevo Correo electrónico");
         lblNewEmail.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtNewEmail = new JTextField(20);
         txtNewEmail.setMaximumSize(new Dimension(300, 35));
 
-        // Campo Password
         JLabel lblNewPass = new JLabel("Nueva Contraseña");
         lblNewPass.setAlignmentX(Component.CENTER_ALIGNMENT);
         JPasswordField txtNewPass = new JPasswordField(20);
         txtNewPass.setMaximumSize(new Dimension(300, 35));
 
-        // Botón de Registro
-        JButton btnCrear = new JButton("Crear Cuenta");
-        btnCrear.setBackground(new Color(34, 139, 34)); // Verde sólido
+        JButton btnCrear = new JButton("Enviar Código");
+        btnCrear.setBackground(new Color(34, 139, 34));
         btnCrear.setForeground(Color.WHITE);
         btnCrear.setFocusPainted(false);
         btnCrear.setFont(new Font("Arial", Font.BOLD, 14));
         btnCrear.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnCrear.setMaximumSize(new Dimension(200, 40));
 
-        // Añadimos todo con separaciones RigidArea
-        container.add(lblTitulo);
-        container.add(Box.createRigidArea(new Dimension(0, 30)));
-        container.add(lblNewEmail);
-        container.add(Box.createRigidArea(new Dimension(0, 5)));
-        container.add(txtNewEmail);
-        container.add(Box.createRigidArea(new Dimension(0, 20)));
-        container.add(lblNewPass);
-        container.add(Box.createRigidArea(new Dimension(0, 5)));
-        container.add(txtNewPass);
-        container.add(Box.createRigidArea(new Dimension(0, 30)));
-        container.add(btnCrear);
+        panelFormulario.add(lblTitulo);
+        panelFormulario.add(Box.createRigidArea(new Dimension(0, 30)));
+        panelFormulario.add(lblNewEmail);
+        panelFormulario.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelFormulario.add(txtNewEmail);
+        panelFormulario.add(Box.createRigidArea(new Dimension(0, 20)));
+        panelFormulario.add(lblNewPass);
+        panelFormulario.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelFormulario.add(txtNewPass);
+        panelFormulario.add(Box.createRigidArea(new Dimension(0, 30)));
+        panelFormulario.add(btnCrear);
 
-        dialogo.add(container);
+        // CARTA 2: VERIFICACIÓN DEL CÓDIGO
+        JPanel panelVerificacion = new JPanel();
+        panelVerificacion.setLayout(new BoxLayout(panelVerificacion, BoxLayout.Y_AXIS));
+        panelVerificacion.setBackground(Color.WHITE);
+        panelVerificacion.setBorder(BorderFactory.createEmptyBorder(40, 40, 20, 40));
+
+        JLabel lblTituloVerif = new JLabel("Verifica tu correo");
+        lblTituloVerif.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTituloVerif.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel lblSubtituloVerif = new JLabel("Hemos enviado un código de 8 dígitos.");
+        lblSubtituloVerif.setFont(new Font("Arial", Font.PLAIN, 12));
+        lblSubtituloVerif.setForeground(Color.GRAY);
+        lblSubtituloVerif.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JTextField txtCodigo = new JTextField(8);
+        txtCodigo.setMaximumSize(new Dimension(200, 40));
+        txtCodigo.setFont(new Font("Arial", Font.BOLD, 24));
+        txtCodigo.setHorizontalAlignment(JTextField.CENTER); // Texto centrado
+        txtCodigo.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton btnVerificar = new JButton("Completar Registro");
+        btnVerificar.setBackground(new Color(34, 139, 34));
+        btnVerificar.setForeground(Color.WHITE);
+        btnVerificar.setFocusPainted(false);
+        btnVerificar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnVerificar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnVerificar.setMaximumSize(new Dimension(200, 40));
+
+        panelVerificacion.add(lblTituloVerif);
+        panelVerificacion.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelVerificacion.add(lblSubtituloVerif);
+        panelVerificacion.add(Box.createRigidArea(new Dimension(0, 30)));
+        panelVerificacion.add(txtCodigo);
+        panelVerificacion.add(Box.createRigidArea(new Dimension(0, 30)));
+        panelVerificacion.add(btnVerificar);
+
+        // Añadimos las dos "cartas"
+        panelContenedorCartas.add(panelFormulario, "PANTALLA_FORMULARIO");
+        panelContenedorCartas.add(panelVerificacion, "PANTALLA_VERIFICACION");
+
+        // ACCIÓN 1 - Al pulsar "Enviar Código"
+        btnCrear.addActionListener(e -> {
+            emailTemporal = txtNewEmail.getText().trim();
+            passTemporal = new String(txtNewPass.getPassword());
+
+            if (emailTemporal.isEmpty() || passTemporal.isEmpty()) {
+                JOptionPane.showMessageDialog(dialogo, "Rellena todos los campos.", "Aviso",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            btnCrear.setText("Enviando...");
+            btnCrear.setEnabled(false);
+            codigoSecretoGenerado = generarCodigoSeguridad(); // Generamos el código
+
+            // Hilo en segundo plano para no congelar la pantalla
+            new Thread(() -> {
+                // USAMOS SERVICIO DE CORREO REAL
+                boolean enviado = com.nutrilern.controlador.ServicioCorreo.enviarCodigoVerificacion(emailTemporal,
+                        codigoSecretoGenerado);
+
+                SwingUtilities.invokeLater(() -> {
+                    if (enviado) {
+                        // ¡MAGIA! Volteamos la carta a la pantalla de verificación
+                        cardLayout.show(panelContenedorCartas, "PANTALLA_VERIFICACION");
+                        // Chivato en consola por si te da pereza abrir el correo probando:
+                        System.out.println("CHIVATO: El código secreto es " + codigoSecretoGenerado);
+                    } else {
+                        JOptionPane.showMessageDialog(dialogo, "Error al enviar el correo.", "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        btnCrear.setText("Enviar Código");
+                        btnCrear.setEnabled(true);
+                    }
+                });
+            }).start();
+        });
+
+        // ACCIÓN 2 - Al pulsar "Completar Registro"
+        btnVerificar.addActionListener(e -> {
+            String codigoIntroducido = txtCodigo.getText().trim();
+
+            if (codigoIntroducido.equals(codigoSecretoGenerado)) {
+                // ¡ÉXITO TOTAL!
+                JOptionPane.showMessageDialog(dialogo, "¡Verificación correcta! Cuenta creada con éxito.", "Bienvenido",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                // TODO: AQUÍ METERÁS EL CÓDIGO PARA GUARDAR EL USUARIO EN LA BASE DE DATOS
+                // (TiDB)
+                System.out.println("Guardando en BD -> Email: " + emailTemporal + " | Pass: " + passTemporal);
+
+                // Cerramos el diálogo porque ya hemos terminado
+                dialogo.dispose();
+            } else {
+                // FALLO
+                JOptionPane.showMessageDialog(dialogo, "El código no es correcto. Inténtalo de nuevo.",
+                        "Código erróneo", JOptionPane.ERROR_MESSAGE);
+                txtCodigo.setText(""); // Limpiamos el campo
+            }
+        });
+
+        dialogo.add(panelContenedorCartas);
         dialogo.setVisible(true);
+    }
+
+    // Método para generar el código aleatorio de 8 dígitos
+    private String generarCodigoSeguridad() {
+        int numero = (int) (Math.random() * 90000000) + 10000000;
+        return String.valueOf(numero);
     }
 }

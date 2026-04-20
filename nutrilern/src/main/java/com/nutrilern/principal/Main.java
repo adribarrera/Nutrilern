@@ -12,7 +12,7 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                // 1. Creamos la ventana principal (el marco de vuestra app)
+                // 1. Creamos la ventana principal (el marco de nuestra app)
                 VentanaPrincipal ventana = new VentanaPrincipal();
 
                 // 2. La hacemos visible en la pantalla
