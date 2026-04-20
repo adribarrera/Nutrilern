@@ -33,6 +33,8 @@ public class PanelLogin extends JPanel {
                     imagen = new ImageIcon(url).getImage();
                 } else {
                     System.err.println("No se encontró la imagen");
+                    // Establecer el color de fondo por defecto
+                    setBackground(new Color(34, 139, 34));
                 }
             }
 
@@ -42,10 +44,8 @@ public class PanelLogin extends JPanel {
                 if (imagen != null) {
                     // Dibuja la imagen ocupando todo el ancho y alto del panel
                     g.drawImage(imagen, 0, 0, getWidth(), getHeight(), this);
-                } else {
-                    // Si falla la imagen pinta el fondo verde
-                    setBackground(new Color(34, 139, 34));
-                }
+                } 
+                // No llamamos a setBackground aquí porque provoca un bucle infinito
             }
         };
 
