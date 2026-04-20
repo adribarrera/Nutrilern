@@ -92,7 +92,6 @@ public class PanelMenuPrincipal extends JPanel {
         tarjeta.setBackground(Color.WHITE);
         tarjeta.setPreferredSize(new Dimension(280, 220));
         tarjeta.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        tarjeta.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Borde inicial
         tarjeta.setBorder(BorderFactory.createCompoundBorder(
@@ -108,15 +107,14 @@ public class PanelMenuPrincipal extends JPanel {
         } else {
             lblIcono.setText("ICON");
         }
-        lblIcono.setHorizontalAlignment(SwingConstants.CENTER);
         lblIcono.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblTit = new JLabel(titulo, SwingConstants.CENTER);
+        JLabel lblTit = new JLabel(titulo);
         lblTit.setFont(new Font("Arial", Font.BOLD, 20));
         lblTit.setForeground(colorTexto);
         lblTit.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblDesc = new JLabel("<html><center>" + descripcion + "</center></html>", SwingConstants.CENTER);
+        JLabel lblDesc = new JLabel("<html><center>" + descripcion + "</center></html>");
         lblDesc.setFont(new Font("Arial", Font.PLAIN, 13));
         lblDesc.setForeground(new Color(120, 120, 120));
         lblDesc.setAlignmentX(Component.CENTER_ALIGNMENT);
