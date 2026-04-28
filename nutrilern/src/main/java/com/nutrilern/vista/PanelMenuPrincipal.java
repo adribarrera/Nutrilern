@@ -3,6 +3,9 @@ package com.nutrilern.vista;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+
+import com.nutrilern.modelo.Usuario;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -40,7 +43,7 @@ public class PanelMenuPrincipal extends JPanel {
 
         JPanel userActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
         userActions.setOpaque(false);
-        JLabel lblUser = new JLabel("Bienvenido, Usuario");
+        JLabel lblUser = new JLabel("Bienvenido " /*  + usuario get nombre */);
         lblUser.setFont(new Font("Arial", Font.ITALIC, 14));
         lblUser.setForeground(colorTexto);
         userActions.add(lblUser);

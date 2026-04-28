@@ -8,6 +8,9 @@ import java.net.URL;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.nutrilern.modelo.Usuario;
+import com.nutrilern.modelo.UsuarioDAO;
+
 public class PanelLogin extends JPanel {
     private VentanaPrincipal ventanaPadre;
     private String codigoSecretoGenerado;
@@ -218,7 +221,7 @@ public class PanelLogin extends JPanel {
         panelVerificacion.add(btnVerificar);
         panelVerificacion.add(Box.createVerticalGlue());
 
-        // --- CARTA 3: PERFIL ---
+       // --- CARTA 3: PERFIL ---
         JPanel panelPerfil = new JPanel();
         panelPerfil.setLayout(new BoxLayout(panelPerfil, BoxLayout.Y_AXIS));
         panelPerfil.setBackground(Color.WHITE);
@@ -228,26 +231,38 @@ public class PanelLogin extends JPanel {
         lblTituloPerfil.setFont(new Font("Arial", Font.BOLD, 22));
         lblTituloPerfil.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // --- NUEVOS CAMPOS: NOMBRE Y APELLIDOS ---
+        JLabel lblNombre = new JLabel("Nombre");
+        lblNombre.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JTextField txtNombre = new JTextField();
+        txtNombre.setMaximumSize(new Dimension(300, 30));
+
+        JLabel lblApellidos = new JLabel("Apellidos");
+        lblApellidos.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JTextField txtApellidos = new JTextField();
+        txtApellidos.setMaximumSize(new Dimension(300, 30));
+        // -----------------------------------------
+
         JLabel lblObjetivo = new JLabel("¿Cuál es tu objetivo?");
         lblObjetivo.setAlignmentX(Component.CENTER_ALIGNMENT);
         String[] opciones = { "Perder Peso", "Mantener Peso", "Ganar Músculo" };
         JComboBox<String> comboObjetivo = new JComboBox<>(opciones);
-        comboObjetivo.setMaximumSize(new Dimension(300, 35));
+        comboObjetivo.setMaximumSize(new Dimension(300, 30));
 
         JLabel lblEdad = new JLabel("Edad");
         lblEdad.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtEdad = new JTextField();
-        txtEdad.setMaximumSize(new Dimension(300, 35));
+        txtEdad.setMaximumSize(new Dimension(300, 30));
 
         JLabel lblPeso = new JLabel("Peso actual (kg)");
         lblPeso.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtPeso = new JTextField();
-        txtPeso.setMaximumSize(new Dimension(300, 35));
+        txtPeso.setMaximumSize(new Dimension(300, 30));
 
         JLabel lblAltura = new JLabel("Altura (cm)");
         lblAltura.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtAltura = new JTextField();
-        txtAltura.setMaximumSize(new Dimension(300, 35));
+        txtAltura.setMaximumSize(new Dimension(300, 30));
 
         JButton btnFinalizar = new JButton("Comenzar mi cambio");
         btnFinalizar.setBackground(new Color(34, 139, 34));
@@ -257,24 +272,27 @@ public class PanelLogin extends JPanel {
         btnFinalizar.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnFinalizar.setMaximumSize(new Dimension(200, 40));
 
+        // Añadimos todo al panel en orden
         panelPerfil.add(lblTituloPerfil);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 20)));
+        panelPerfil.add(Box.createRigidArea(new Dimension(0, 10)));
+        panelPerfil.add(lblNombre);
+        panelPerfil.add(txtNombre);
+        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelPerfil.add(lblApellidos);
+        panelPerfil.add(txtApellidos);
+        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
         panelPerfil.add(lblObjetivo);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
         panelPerfil.add(comboObjetivo);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 15)));
+        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
         panelPerfil.add(lblEdad);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
         panelPerfil.add(txtEdad);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 15)));
+        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
         panelPerfil.add(lblPeso);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
         panelPerfil.add(txtPeso);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 15)));
-        panelPerfil.add(lblAltura);
         panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelPerfil.add(lblAltura);
         panelPerfil.add(txtAltura);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 30)));
+        panelPerfil.add(Box.createRigidArea(new Dimension(0, 20)));
         panelPerfil.add(btnFinalizar);
 
         // --- CARTA 4: CARGANDO ---
@@ -340,34 +358,60 @@ public class PanelLogin extends JPanel {
 
         btnFinalizar.addActionListener(e -> {
             try {
-                // Comprobamos que metan números
+                // 1. Recogemos los nuevos campos de texto
+                String nombre = txtNombre.getText().trim();
+                String apellidos = txtApellidos.getText().trim();
+                String rol = "USUARIO"; // Todos nacen como usuario base
+                
+
+                // 2. Comprobamos que no dejen el nombre en blanco
+                if (nombre.isEmpty() || apellidos.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialogo, "Por favor, introduce tu nombre y apellidos.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    return; // Cortamos la ejecución aquí si faltan datos
+                }
+
+                // 3. Comprobamos que metan números en estos tres
                 int edad = Integer.parseInt(txtEdad.getText().trim());
                 double peso = Double.parseDouble(txtPeso.getText().trim().replace(",", "."));
                 double altura = Double.parseDouble(txtAltura.getText().trim().replace(",", "."));
-                String objetivo = (String) comboObjetivo.getSelectedItem();
 
                 // Cambiamos a la animación
                 cardLayout.show(panelContenedorCartas, "PANTALLA_CARGA");
                 spinner.iniciar();
 
-                // Simulamos el guardado en BBDD
+                // Guardado en BBDD
                 new Thread(() -> {
-                    try {
-                        Thread.sleep(3000); // 3 segundos de carga falsa
-
-                        SwingUtilities.invokeLater(() -> {
-                            spinner.detener();
-                            dialogo.dispose(); // Ahora sí cerramos el diálogo
-                            ventanaPadre.cambiarPantalla("MENU"); // Entramos
-                        });
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                    // 1. Traducimos el texto del desplegable al número de la Base de Datos
+                    String objetivoTexto = (String) comboObjetivo.getSelectedItem();
+                    int idObjetivo = 1; // Por defecto: Perder Peso
+                    if (objetivoTexto.equals("Mantener Peso")) {
+                        idObjetivo = 2;
+                    } else if (objetivoTexto.equals("Ganar Músculo")) {
+                        idObjetivo = 3;
                     }
+
+                    // 2. Creamos el usuario PASÁNDOLE EL idObjetivo AL FINAL
+                    Usuario nuevoUsuario = new Usuario(emailTemporal, passTemporal, nombre, apellidos, edad, altura, peso, rol, idObjetivo);
+
+                    // 3. Mandamos el usuario a TiDB
+                    boolean exito = UsuarioDAO.registrarUsuario(nuevoUsuario);
+
+                    // Volvemos a la interfaz gráfica
+                    SwingUtilities.invokeLater(() -> {
+                        spinner.detener(); // Para la animación
+                        
+                        if (exito) {
+                            dialogo.dispose(); // Cerramos el registro
+                            ventanaPadre.cambiarPantalla("MENU"); // Entro a la app
+                        } else {
+                            cardLayout.show(panelContenedorCartas, "PANTALLA_PERFIL"); 
+                            JOptionPane.showMessageDialog(dialogo, "Error al registrar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);  
+                        }                        
+                    });
                 }).start();
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialogo, "Usa números válidos en Edad, Peso y Altura.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialogo, "Usa números válidos en Edad, Peso y Altura.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
