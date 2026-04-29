@@ -112,4 +112,23 @@ public class UsuarioDAO {
             return false;
         }
     }
+
+    public static boolean eliminarUsuario(int idUsuario) {
+        String sql = "DELETE FROM usuario WHERE id_usuario = ?";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idUsuario);
+
+            int filasAfectadas = pstmt.executeUpdate();
+            
+            // Si ha borrado 1 fila, es que todo ha ido bien
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar cuenta de usuario: " + e.getMessage());
+            return false;
+        }
+    }
 }

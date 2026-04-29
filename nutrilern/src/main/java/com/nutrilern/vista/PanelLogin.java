@@ -29,12 +29,17 @@ public class PanelLogin extends JPanel {
         JPanel panelImagen = new JPanel() {
             private Image imagen;
             {
-                URL url = getClass().getResource("/images/fondoLogin.jpg");
-                if (url != null) {
-                    imagen = new ImageIcon(url).getImage();
-                } else {
-                    setBackground(new Color(34, 139, 34));
-                    // Establecer el color de fondo por defecto
+                try {
+                    URL url = getClass().getResource("/images/fondoLogin.jpg");
+                    if (url != null) {
+                        imagen = javax.imageio.ImageIO.read(url);
+                    } else {
+                        setBackground(new Color(34, 139, 34));
+                        // Establecer el color de fondo por defecto
+                        setBackground(new Color(34, 139, 34));
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                     setBackground(new Color(34, 139, 34));
                 }
             }

@@ -4,8 +4,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import com.nutrilern.modelo.UsuarioDAO;
 import com.nutrilern.modelo.Usuario;
 
@@ -13,38 +11,65 @@ public class PanelAjustes extends JPanel {
 
     private VentanaPrincipal ventanaPadre;
 
-    // Etiquetas dinámicas
-    private JLabel lblNombreValor;
-    private JLabel lblEmailValor;
-    private JLabel lblEdadValor;
-    private JLabel lblAlturaValor;
-    private JLabel lblObjetivoValor;
+    // Etiquetas dinámicas de datos
+    private JLabel lblNombreValor, lblEmailValor, lblEdadValor, lblAlturaValor, lblObjetivoValor;
 
-    // Colores (Añadido el rojo de peligro y ajustados grises)
-    private final Color COLOR_PRINCIPAL = new Color(34, 139, 34); 
+    // Colores
+    private final Color COLOR_VERDE_NUTRIX = new Color(34, 139, 34);
     private final Color COLOR_FONDO = new Color(245, 247, 250);
     private final Color COLOR_TEXTO = new Color(50, 50, 50);
-    private final Color COLOR_PELIGRO = new Color(220, 53, 69);
+
+    // Navegación Superior (Tabs)
+    private JButton btnNavDatos, btnNavNutricion, btnNavSeguridad, btnNavPeligro;
+    
+    // Contenedor de las pestañas
+    private JPanel panelContenedorCartas;
+    private CardLayout cardLayout;
 
     public PanelAjustes(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
         setLayout(new BorderLayout());
         setBackground(COLOR_FONDO);
 
-        add(crearEncabezado(), BorderLayout.NORTH);
-        add(crearCuerpoPrincipal(), BorderLayout.CENTER);
+        // 1. Cabecera (Título, Botón Volver y Barra de Navegación)
+        add(crearCabeceraYNav(), BorderLayout.NORTH);
+
+        // 2. Contenedor Central con CardLayout (Pestañas)
+        cardLayout = new CardLayout();
+        panelContenedorCartas = new JPanel(cardLayout);
+        panelContenedorCartas.setBackground(COLOR_FONDO);
+
+        // Añadimos las 4 pantallas centradas
+        panelContenedorCartas.add(crearPantallaCentrada(crearTarjetaDatos()), "DATOS");
+        panelContenedorCartas.add(crearPantallaCentrada(crearTarjetaNutricion()), "NUTRICION");
+        panelContenedorCartas.add(crearPantallaCentrada(crearTarjetaSeguridad()), "SEGURIDAD");
+        panelContenedorCartas.add(crearPantallaCentrada(crearTarjetaPeligro()), "PELIGRO");
+
+        add(panelContenedorCartas, BorderLayout.CENTER);
+        
+        // Iniciamos en la primera pestaña
+        cambiarPestana(btnNavDatos, "DATOS");
     }
 
-    private JPanel crearEncabezado() {
+    // =================================================================================
+    // 1. CABECERA Y BARRA DE NAVEGACIÓN SUPERIOR
+    // =================================================================================
+    private JPanel crearCabeceraYNav() {
+        JPanel panelTop = new JPanel();
+        panelTop.setLayout(new BoxLayout(panelTop, BoxLayout.Y_AXIS));
+        panelTop.setBackground(Color.WHITE);
+
+        // --- Parte 1: Título y Volver ---
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
-        header.setPreferredSize(new Dimension(0, 80));
-        header.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
-                BorderFactory.createEmptyBorder(0, 30, 0, 30)));
+        header.setBorder(new EmptyBorder(15, 30, 15, 30));
 
         JButton btnVolver = new JButton("← Volver al Menú");
-        estilizarBotonSecundario(btnVolver);
+        btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
+        btnVolver.setForeground(COLOR_VERDE_NUTRIX);
+        btnVolver.setContentAreaFilled(false);
+        btnVolver.setBorderPainted(false);
+        btnVolver.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
         header.add(btnVolver, BorderLayout.WEST);
 
@@ -53,165 +78,275 @@ public class PanelAjustes extends JPanel {
         lblTituloHeader.setForeground(COLOR_TEXTO);
         header.add(lblTituloHeader, BorderLayout.CENTER);
 
-        header.add(Box.createRigidArea(new Dimension(150, 0)), BorderLayout.EAST);
-        return header;
+        header.add(Box.createRigidArea(new Dimension(150, 0)), BorderLayout.EAST); // Balance
+
+        // --- Parte 2: Botones de Pestañas ---
+        JPanel navBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0));
+        navBar.setBackground(Color.WHITE);
+        navBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220))); // Línea gris inferior
+
+        btnNavDatos = crearBotonNav("Datos Físicos");
+        btnNavNutricion = crearBotonNav("Mi Nutrición");
+        btnNavSeguridad = crearBotonNav("Seguridad");
+        btnNavPeligro = crearBotonNav("Zona de Peligro");
+
+        btnNavDatos.addActionListener(e -> cambiarPestana(btnNavDatos, "DATOS"));
+        btnNavNutricion.addActionListener(e -> cambiarPestana(btnNavNutricion, "NUTRICION"));
+        btnNavSeguridad.addActionListener(e -> cambiarPestana(btnNavSeguridad, "SEGURIDAD"));
+        btnNavPeligro.addActionListener(e -> cambiarPestana(btnNavPeligro, "PELIGRO"));
+
+        navBar.add(btnNavDatos);
+        navBar.add(btnNavNutricion);
+        navBar.add(btnNavSeguridad);
+        navBar.add(btnNavPeligro);
+
+        panelTop.add(header);
+        panelTop.add(navBar);
+
+        return panelTop;
     }
 
-    private JComponent crearCuerpoPrincipal() {
-        JPanel contentGrid = new JPanel(new GridBagLayout());
-        contentGrid.setOpaque(false);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-
-        gbc.gridy = 0;
-        contentGrid.add(crearSeccionInformacion(), gbc);
-
-        gbc.gridy = 1;
-        contentGrid.add(crearSeccionNutricion(), gbc);
-
-        gbc.gridy = 2;
-        contentGrid.add(crearSeccionSeguridad(), gbc);
-
-        gbc.gridy = 3;
-        contentGrid.add(crearSeccionPeligro(), gbc);
-
-        // Añadimos un scroll por si la pantalla es pequeña
-        JScrollPane scroll = new JScrollPane(contentGrid);
-        scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        return scroll;
+    private JButton crearBotonNav(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Arial", Font.PLAIN, 15));
+        btn.setForeground(new Color(120, 120, 120));
+        btn.setContentAreaFilled(false);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setBorder(new EmptyBorder(10, 5, 10, 5)); // Padding interno
+        return btn;
     }
 
-    // --- SECCIÓN 1: DATOS PERSONALES ---
-    private JPanel crearSeccionInformacion() {
-        JPanel infoPanel = crearContenedorSeccion("Información Personal");
-        
+    // Lógica visual para subrayar en verde la pestaña activa
+    private void cambiarPestana(JButton botonActivo, String nombreCarta) {
+        JButton[] todos = {btnNavDatos, btnNavNutricion, btnNavSeguridad, btnNavPeligro};
+        for (JButton btn : todos) {
+            if (btn == botonActivo) {
+                btn.setFont(new Font("Arial", Font.BOLD, 15));
+                btn.setForeground(COLOR_VERDE_NUTRIX);
+                btn.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 3, 0, COLOR_VERDE_NUTRIX), // Subrayado grueso verde
+                    new EmptyBorder(10, 5, 7, 5)
+                ));
+            } else {
+                btn.setFont(new Font("Arial", Font.PLAIN, 15));
+                btn.setForeground(new Color(120, 120, 120));
+                btn.setBorder(new EmptyBorder(10, 5, 10, 5));
+            }
+        }
+        cardLayout.show(panelContenedorCartas, nombreCarta);
+    }
+
+    // =================================================================================
+    // 2. ENVOLTORIO PARA CENTRAR LAS PANTALLAS
+    // =================================================================================
+    // Este método usa GridBagLayout para dejar la tarjeta blanca perfectamente en el medio
+    private JPanel crearPantallaCentrada(JPanel tarjetaBlanca) {
+        JPanel fondo = new JPanel(new GridBagLayout());
+        fondo.setBackground(COLOR_FONDO);
+        fondo.add(tarjetaBlanca);
+        return fondo;
+    }
+
+    // =================================================================================
+    // 3. DISEÑO DE LAS TARJETAS (PANELES INTERIORES)
+    // =================================================================================
+    private JPanel crearTarjetaDatos() {
+        JPanel tarjeta = crearTarjetaBase("Mis Datos Físicos");
+
         lblNombreValor = new JLabel("-");
         lblEmailValor = new JLabel("-");
         lblEdadValor = new JLabel("-");
         lblAlturaValor = new JLabel("-");
 
-        agregarFilaDatoDinamica(infoPanel, "Nombre completo:", lblNombreValor);
-        agregarFilaDatoDinamica(infoPanel, "Email registrado:", lblEmailValor);
-        agregarFilaDatoDinamica(infoPanel, "Edad:", lblEdadValor);
-        agregarFilaDatoDinamica(infoPanel, "Altura:", lblAlturaValor);
+        tarjeta.add(crearFilaDato("Nombre:", lblNombreValor));
+        tarjeta.add(crearFilaDato("Email:", lblEmailValor));
+        tarjeta.add(crearFilaDato("Edad:", lblEdadValor));
+        tarjeta.add(crearFilaDato("Altura:", lblAlturaValor));
         
-        infoPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        tarjeta.add(Box.createRigidArea(new Dimension(0, 25)));
         
-        JButton btnEditarPerfil = new JButton("Editar mis datos físicos");
-        estilizarBotonAccion(btnEditarPerfil);
-        btnEditarPerfil.addActionListener(e -> {
-            // AQUÍ IRÁ LA LÓGICA PARA ACTUALIZAR EDAD, ALTURA, ETC.
-            JOptionPane.showMessageDialog(this, "Próximamente: Ventana para cambiar edad y altura");
-        });
-        infoPanel.add(btnEditarPerfil);
+        JButton btnEditar = crearBotonCentrado("Actualizar Datos Físicos");
+        btnEditar.addActionListener(e -> JOptionPane.showMessageDialog(this, "Próximamente: Editar datos físicos"));
+        tarjeta.add(btnEditar);
         
-        return infoPanel;
+        return tarjeta;
     }
 
-    // --- SECCIÓN 2: NUTRICIÓN ---
-    private JPanel crearSeccionNutricion() {
-        JPanel nutriPanel = crearContenedorSeccion("Mi Plan Nutricional");
-        
+    private JPanel crearTarjetaNutricion() {
+        JPanel tarjeta = crearTarjetaBase("Plan Nutricional");
+
         lblObjetivoValor = new JLabel("-");
-        agregarFilaDatoDinamica(nutriPanel, "Objetivo Actual:", lblObjetivoValor);
+        tarjeta.add(crearFilaDato("Objetivo Actual:", lblObjetivoValor));
         
-        nutriPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        tarjeta.add(Box.createRigidArea(new Dimension(0, 25)));
         
-        JButton btnCambiarObjetivo = new JButton("Cambiar mi objetivo");
-        estilizarBotonAccion(btnCambiarObjetivo);
-        btnCambiarObjetivo.addActionListener(e -> {
-            // AQUÍ IRÁ LA LÓGICA PARA CAMBIAR ENTRE PERDER PESO, GANAR VOLUMEN...
-            JOptionPane.showMessageDialog(this, "Próximamente: Desplegable para actualizar el id_objetivo_fk");
-        });
-        nutriPanel.add(btnCambiarObjetivo);
-
-        return nutriPanel;
+        JButton btnObjetivo = crearBotonCentrado("Cambiar mi Objetivo");
+        btnObjetivo.addActionListener(e -> JOptionPane.showMessageDialog(this, "Próximamente: Cambiar objetivo"));
+        tarjeta.add(btnObjetivo);
+        
+        return tarjeta;
     }
 
-    // --- SECCIÓN 3: SEGURIDAD ---
-    private JPanel crearSeccionSeguridad() {
-        JPanel seguridadPanel = crearContenedorSeccion("Seguridad");
+    private JPanel crearTarjetaSeguridad() {
+        JPanel tarjeta = crearTarjetaBase("Seguridad de la Cuenta");
 
-        JButton btnCambiarEmail = new JButton("Cambiar Correo Electrónico");
-        estilizarBotonAccion(btnCambiarEmail);
-        btnCambiarEmail.addActionListener(e -> {
+        JButton btnEmail = crearBotonCentrado("Cambiar Correo Electrónico");
+        btnEmail.addActionListener(e -> {
             Usuario user = ventanaPadre.getUsuarioLogueado();
             if (user != null) {
                 String nuevoEmail = JOptionPane.showInputDialog(this, "Nuevo correo:", user.getEmail());
                 if (nuevoEmail != null && !nuevoEmail.trim().isEmpty()) {
-                    // Cuidado: Asumo que tu compi creó actualizarEmail en el DAO
                     if (UsuarioDAO.actualizarEmail(user.getId(), nuevoEmail.trim())) {
                         user.setEmail(nuevoEmail.trim());
                         refrescarDatos();
                         JOptionPane.showMessageDialog(this, "Email actualizado correctamente.");
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Error al actualizar en Base de Datos.");
                     }
                 }
             }
         });
 
-        JButton btnCambiarPass = new JButton("Cambiar Contraseña");
-        estilizarBotonAccion(btnCambiarPass);
-        btnCambiarPass.addActionListener(e -> {
-            // AQUÍ IRÁ LA LÓGICA PARA PEDIR PASS ANTIGUA, NUEVA Y HASHEARLA
-            JOptionPane.showMessageDialog(this, "Próximamente: Diálogo para cambiar contraseña");
-        });
+        JButton btnPass = crearBotonCentrado("Cambiar Contraseña");
+        btnPass.addActionListener(e -> JOptionPane.showMessageDialog(this, "Próximamente: Cambiar contraseña"));
 
-        seguridadPanel.add(btnCambiarEmail);
-        seguridadPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        seguridadPanel.add(btnCambiarPass);
-
-        return seguridadPanel;
+        tarjeta.add(btnEmail);
+        tarjeta.add(Box.createRigidArea(new Dimension(0, 15)));
+        tarjeta.add(btnPass);
+        
+        return tarjeta;
     }
 
-    // --- SECCIÓN 4: ZONA DE PELIGRO ---
-    private JPanel crearSeccionPeligro() {
-        JPanel peligroPanel = crearContenedorSeccion("Zona de Peligro");
+    private JPanel crearTarjetaPeligro() {
+        JPanel tarjeta = crearTarjetaBase("Zona de Peligro");
 
-        JButton btnLogout = new JButton("Cerrar Sesión");
-        estilizarBotonAccion(btnLogout); // Botón normal gris
+        JButton btnLogout = crearBotonCentrado("Cerrar Sesión");
+        btnLogout.setBackground(new Color(100, 100, 100)); // Gris oscuro
         btnLogout.addActionListener(e -> {
-            ventanaPadre.setUsuarioLogueado(null);
+            ventanaPadre.setUsuarioLogueado(null); 
             ventanaPadre.cambiarPantalla("LOGIN");
         });
 
-        JButton btnBorrarCuenta = new JButton("Eliminar Cuenta Permanentemente");
-        // Estilo especial rojo para este botón
-        btnBorrarCuenta.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnBorrarCuenta.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        btnBorrarCuenta.setFont(new Font("Arial", Font.BOLD, 13));
-        btnBorrarCuenta.setForeground(COLOR_PELIGRO);
-        btnBorrarCuenta.setBackground(new Color(255, 235, 238));
-        btnBorrarCuenta.setFocusPainted(false);
-        btnBorrarCuenta.setBorder(new LineBorder(COLOR_PELIGRO, 1, true));
-        
-        btnBorrarCuenta.addActionListener(e -> {
-            int confirmacion = JOptionPane.showConfirmDialog(this, 
-                "¿Estás seguro de que quieres borrar tu cuenta? Esta acción es irreversible y perderás todos tus registros.", 
-                "¡ATENCIÓN!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+       JButton btnBorrar = crearBotonCentrado("Eliminar mi Cuenta");
+        btnBorrar.setBackground(new Color(220, 53, 69)); // Rojo fuerte
+        btnBorrar.addActionListener(e -> {
+            
+            // 1. Pedimos confirmación seria al usuario
+            int res = JOptionPane.showConfirmDialog(this, 
+                "¿Estás totalmente seguro de que quieres borrar tu cuenta?\nEsta acción es irreversible y perderás todos tus registros de comidas y evolución.", 
+                "¡CUIDADO!", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.WARNING_MESSAGE);
                 
-            if (confirmacion == JOptionPane.YES_OPTION) {
-                // AQUÍ IRÁ LA LÓGICA PARA HACER EL DELETE EN LA BBDD
-                JOptionPane.showMessageDialog(this, "Próximamente: Borrado de cuenta (ON DELETE CASCADE)");
+            if (res == JOptionPane.YES_OPTION) {
+                // 2. Recuperamos el ID del usuario actual
+                Usuario user = ventanaPadre.getUsuarioLogueado();
+                
+                if (user != null) {
+                    // 3. Llamamos a la base de datos para borrarlo
+                    boolean exito = UsuarioDAO.eliminarUsuario(user.getId());
+                    
+                    if (exito) {
+                        JOptionPane.showMessageDialog(this, 
+                            "Tu cuenta y todos tus datos han sido eliminados correctamente.\n¡Esperamos volver a verte pronto!", 
+                            "Cuenta Eliminada", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                            
+                        // 4. Limpiamos la sesión y volvemos al Login
+                        ventanaPadre.setUsuarioLogueado(null); 
+                        ventanaPadre.cambiarPantalla("LOGIN");
+                    } else {
+                        JOptionPane.showMessageDialog(this, 
+                            "Hubo un error de conexión al intentar eliminar la cuenta.", 
+                            "Error", 
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                }
             }
         });
 
-        peligroPanel.add(btnLogout);
-        peligroPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        peligroPanel.add(btnBorrarCuenta);
-
-        return peligroPanel;
+        tarjeta.add(btnLogout);
+        tarjeta.add(Box.createRigidArea(new Dimension(0, 15)));
+        tarjeta.add(btnBorrar);
+        
+        return tarjeta;
     }
 
-    /**
-     * Rellena las etiquetas con los datos del usuario real cada vez que entramos al panel
-     */
+    // =================================================================================
+    // 4. MÉTODOS DE DIBUJO Y ALINEACIÓN CENTRADA
+    // =================================================================================
+    private JPanel crearTarjetaBase(String titulo) {
+        JPanel tarjeta = new JPanel();
+        tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
+        tarjeta.setBackground(Color.WHITE);
+        // Le damos un tamaño fijo a la caja blanca para que no se estire
+        tarjeta.setPreferredSize(new Dimension(450, 350)); 
+        tarjeta.setMaximumSize(new Dimension(450, 350));
+        
+        tarjeta.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(new Color(220, 220, 220), 1, true),
+                new EmptyBorder(30, 40, 30, 40)));
+        
+        JLabel lblTit = new JLabel(titulo);
+        lblTit.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTit.setForeground(COLOR_VERDE_NUTRIX);
+        lblTit.setAlignmentX(Component.CENTER_ALIGNMENT); // Centramos el título
+        
+        tarjeta.add(lblTit);
+        tarjeta.add(Box.createRigidArea(new Dimension(0, 15)));
+        
+        JSeparator sep = new JSeparator();
+        sep.setMaximumSize(new Dimension(350, 2));
+        tarjeta.add(sep);
+        
+        tarjeta.add(Box.createRigidArea(new Dimension(0, 20)));
+        return tarjeta;
+    }
+
+    private JPanel crearFilaDato(String etiqueta, JLabel lblValor) {
+        JPanel fila = new JPanel(new BorderLayout());
+        fila.setOpaque(false);
+        fila.setMaximumSize(new Dimension(350, 30)); // Limitamos el ancho para que quede centrado
+        
+        JLabel lblEt = new JLabel(etiqueta);
+        lblEt.setFont(new Font("Arial", Font.BOLD, 14));
+        lblEt.setForeground(new Color(140, 140, 140));
+        
+        lblValor.setFont(new Font("Arial", Font.PLAIN, 15));
+        lblValor.setForeground(COLOR_TEXTO);
+        lblValor.setHorizontalAlignment(SwingConstants.RIGHT); // Alineamos el dato a la derecha
+        
+        fila.add(lblEt, BorderLayout.WEST);
+        fila.add(lblValor, BorderLayout.CENTER);
+        
+        // Empaquetamos la fila en un contenedor centrado
+        JPanel contenedorCentrado = new JPanel();
+        contenedorCentrado.setLayout(new BoxLayout(contenedorCentrado, BoxLayout.Y_AXIS));
+        contenedorCentrado.setOpaque(false);
+        contenedorCentrado.setAlignmentX(Component.CENTER_ALIGNMENT);
+        contenedorCentrado.add(fila);
+        contenedorCentrado.add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        return contenedorCentrado;
+    }
+
+    private JButton crearBotonCentrado(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setBackground(COLOR_VERDE_NUTRIX);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("Arial", Font.BOLD, 14));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT); // Botón 100% centrado
+        btn.setMinimumSize(new Dimension(250, 45));
+        btn.setMaximumSize(new Dimension(250, 45)); // Tamaño fijo para todos los botones
+        btn.setPreferredSize(new Dimension(250, 45));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    // =================================================================================
+    // 5. CARGA DE DATOS
+    // =================================================================================
     public void refrescarDatos() {
-        // NOTA: Asegúrate de que en VentanaPrincipal el método se llame getUsuarioLogueado() o getUsuarioActual()
         Usuario user = ventanaPadre.getUsuarioLogueado(); 
         if (user != null) {
             lblNombreValor.setText(user.getNombre() + " " + user.getApellidos());
@@ -219,7 +354,6 @@ public class PanelAjustes extends JPanel {
             lblEdadValor.setText(user.getEdad() + " años");
             lblAlturaValor.setText(user.getAltura() + " cm");
             
-            // Asumiendo que 1=Perder Grasa, 2=Mantener, 3=Ganar Volumen según tu BBDD
             String objStr = "Desconocido";
             if (user.getIdObjetivo() == 1) objStr = "Perder Grasa";
             else if (user.getIdObjetivo() == 2) objStr = "Mantener";
@@ -227,72 +361,5 @@ public class PanelAjustes extends JPanel {
             
             lblObjetivoValor.setText(objStr);
         }
-    }
-
-    // --- MÉTODOS DE DISEÑO (UI) ---
-    private JPanel crearContenedorSeccion(String titulo) {
-        JPanel seccion = new JPanel();
-        seccion.setLayout(new BoxLayout(seccion, BoxLayout.Y_AXIS));
-        seccion.setBackground(Color.WHITE);
-        seccion.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(230, 230, 230), 1, true),
-                new EmptyBorder(20, 25, 20, 25)));
-                
-        JLabel lblTit = new JLabel(titulo);
-        lblTit.setFont(new Font("Arial", Font.BOLD, 18));
-        lblTit.setForeground(COLOR_PRINCIPAL);
-        lblTit.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        seccion.add(lblTit);
-        seccion.add(Box.createRigidArea(new Dimension(0, 10)));
-        seccion.add(new JSeparator());
-        seccion.add(Box.createRigidArea(new Dimension(0, 15)));
-        
-        return seccion;
-    }
-
-    private void agregarFilaDatoDinamica(JPanel panel, String etiqueta, JLabel lblValor) {
-        JPanel fila = new JPanel(new BorderLayout());
-        fila.setOpaque(false);
-        fila.setMaximumSize(new Dimension(1000, 25));
-        
-        JLabel lblEt = new JLabel(etiqueta);
-        lblEt.setFont(new Font("Arial", Font.BOLD, 14));
-        lblEt.setForeground(new Color(120, 120, 120));
-        
-        lblValor.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblValor.setForeground(COLOR_TEXTO);
-        
-        fila.add(lblEt, BorderLayout.WEST);
-        fila.add(lblValor, BorderLayout.EAST);
-        
-        panel.add(fila);
-        panel.add(Box.createRigidArea(new Dimension(0, 8)));
-    }
-
-    private void estilizarBotonAccion(JButton btn) {
-        btn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        btn.setFont(new Font("Arial", Font.BOLD, 13));
-        btn.setForeground(COLOR_TEXTO);
-        btn.setBackground(new Color(248, 249, 250));
-        btn.setFocusPainted(false);
-        btn.setBorder(new LineBorder(new Color(220, 220, 220), 1, true));
-        
-        // Efecto Hover (cambia de color al pasar el ratón)
-        btn.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) { btn.setBackground(new Color(233, 236, 239)); }
-            @Override public void mouseExited(MouseEvent e) { btn.setBackground(new Color(248, 249, 250)); }
-        });
-    }
-
-    private void estilizarBotonSecundario(JButton btn) {
-        btn.setFont(new Font("Arial", Font.BOLD, 12));
-        btn.setForeground(COLOR_PRINCIPAL);
-        btn.setBackground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(COLOR_PRINCIPAL, 1, true), 
-                new EmptyBorder(8, 15, 8, 15)));
     }
 }

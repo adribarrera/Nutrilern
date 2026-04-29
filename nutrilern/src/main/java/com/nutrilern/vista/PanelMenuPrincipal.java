@@ -18,10 +18,15 @@ public class PanelMenuPrincipal extends JPanel {
         this.ventanaPadre = ventana;
         setLayout(new BorderLayout());
 
-        java.net.URL url = getClass().getResource("/images/fondoMenuPrincipal.jpg");
-        if (url != null) {
-            imagenFondo = new ImageIcon(url).getImage();
-        } else {
+        try {
+            java.net.URL url = getClass().getResource("/images/fondoMenuPrincipal.jpg");
+            if (url != null) {
+                imagenFondo = javax.imageio.ImageIO.read(url);
+            } else {
+                setBackground(colorFondo);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
             setBackground(colorFondo);
         }
 
@@ -158,12 +163,17 @@ public class PanelMenuPrincipal extends JPanel {
                 new EmptyBorder(25, 20, 25, 20)));
 
         JLabel lblIcono = new JLabel();
-        java.net.URL url = getClass().getResource(imagePath);
-        if (url != null) {
-            ImageIcon iconoOriginal = new ImageIcon(url);
-            Image imgEscalada = iconoOriginal.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
-            lblIcono.setIcon(new ImageIcon(imgEscalada));
-        } else {
+        try {
+            java.net.URL url = getClass().getResource(imagePath);
+            if (url != null) {
+                Image imgOriginal = javax.imageio.ImageIO.read(url);
+                Image imgEscalada = imgOriginal.getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                lblIcono.setIcon(new ImageIcon(imgEscalada));
+            } else {
+                lblIcono.setText("ICON");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
             lblIcono.setText("ICON");
         }
         lblIcono.setAlignmentX(Component.CENTER_ALIGNMENT);
