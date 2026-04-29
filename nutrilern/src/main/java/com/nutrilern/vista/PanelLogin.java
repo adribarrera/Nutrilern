@@ -423,6 +423,9 @@ public class PanelLogin extends JPanel {
                         spinner.detener(); // Para la animación
                         
                         if (exito) {
+                            // !!! IMPORTANTE: Establecer el usuario en la sesión al registrarse
+                            ventanaPadre.setUsuarioLogueado(nuevoUsuario); 
+                            
                             dialogo.dispose(); // Cerramos el registro
                             ventanaPadre.cambiarPantalla("MENU"); // Entro a la app
                         } else {

@@ -26,11 +26,13 @@ public class VentanaPrincipal extends JFrame {
         PanelLogin panelLogin = new PanelLogin(this);
         PanelMenuPrincipal panelMenu = new PanelMenuPrincipal(this);
         panelAjustes = new PanelAjustes(this);
+        PanelMisComidas panelComidas = new PanelMisComidas(this);
 
         // Añadimos los paneles al CardLayout
         panelContenedor.add(panelLogin, "LOGIN");
         panelContenedor.add(panelMenu, "MENU");
         panelContenedor.add(panelAjustes, "AJUSTES");
+        panelContenedor.add(panelComidas, "COMIDAS");
 
         // Añado el panel al JFrame
         add(panelContenedor);

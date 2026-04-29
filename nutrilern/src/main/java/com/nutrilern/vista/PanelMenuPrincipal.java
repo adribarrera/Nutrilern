@@ -70,7 +70,7 @@ public class PanelMenuPrincipal extends JPanel {
         gridPanel.setOpaque(false);
         gridPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        gridPanel.add(crearTarjetaMenu("Mis Comidas", "/images/misComidas.png", "Registra tu ingesta diaria y macros", null));
+        gridPanel.add(crearTarjetaMenu("Mis Comidas", "/images/misComidas.png", "Registra tu ingesta diaria y macros", () -> ventanaPadre.cambiarPantalla("COMIDAS")));
         gridPanel.add(crearTarjetaMenu("Mi Evolución", "/images/miEvo.png", "Gráficas de peso y composición", null));
         gridPanel.add(crearTarjetaMenu("Base de Alimentos", "/images/miGestor.png", "Base de datos nutricional completa", null));
         gridPanel.add(crearTarjetaMenu("Ajustes", "/images/ajustes.png", "Configura tu perfil y objetivos", () -> ventanaPadre.cambiarPantalla("AJUSTES")));

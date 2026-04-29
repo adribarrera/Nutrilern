@@ -20,7 +20,7 @@ public class UsuarioDAO {
         String sql = "INSERT INTO usuario (email, passwd, nombre, apellidos, edad, altura, peso_inicial, rol, id_objetivo_fk) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, nuevoUsuario.getEmail());
             pstmt.setString(2, hashSeguro);
@@ -32,7 +32,18 @@ public class UsuarioDAO {
             pstmt.setString(8, nuevoUsuario.getRol() != null ? nuevoUsuario.getRol() : "USUARIO");
             pstmt.setInt(9, nuevoUsuario.getIdObjetivo());
 
-            return pstmt.executeUpdate() > 0;
+            int filas = pstmt.executeUpdate();
+            
+            if (filas > 0) {
+                // Recuperamos el ID generado por la BBDD
+                try (java.sql.ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        nuevoUsuario.setId(generatedKeys.getInt(1));
+                    }
+                }
+                return true;
+            }
+            return false;
 
         } catch (SQLException e) {
             System.err.println("NUTRILERN > Error al registrar: " + e.getMessage());
