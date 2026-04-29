@@ -119,7 +119,27 @@ public class PanelLogin extends JPanel {
         btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnLogin.setMaximumSize(new Dimension(300, 35));
 
-        btnLogin.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
+        btnLogin.addActionListener(e -> {
+            String email = txtEmail.getText().trim();
+            String password = new String(txtPass.getPassword());
+
+            if (email.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, introduce tu email y contraseña.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Realizamos el login contra la base de datos
+            Usuario usuarioEncontrado = UsuarioDAO.iniciarSesion(email, password);
+
+            if (usuarioEncontrado != null) {
+                // Login con éxito: guardamos el usuario en la sesión de la ventana padre
+                ventanaPadre.setUsuarioLogueado(usuarioEncontrado);
+                ventanaPadre.cambiarPantalla("MENU");
+            } else {
+                // Login fallido
+                JOptionPane.showMessageDialog(this, "Email o contraseña incorrectos.", "Error de acceso", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         formPanel.add(lblEmail);
         formPanel.add(Box.createRigidArea(new Dimension(0, 5)));

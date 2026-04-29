@@ -7,6 +7,8 @@ public class VentanaPrincipal extends JFrame {
 
     private CardLayout cardLayout;
     private JPanel panelContenedor; // Panel que agrupa a los demás
+    private com.nutrilern.modelo.Usuario usuarioLogueado; // Sesión del usuario actual
+    private PanelAjustes panelAjustes;
 
     public VentanaPrincipal() {
         // Config básica
@@ -21,10 +23,9 @@ public class VentanaPrincipal extends JFrame {
         panelContenedor = new JPanel(cardLayout);
 
         // Creamos los paneles
-        // Le pasamos la ventana para que los paneles cambiar de vista
         PanelLogin panelLogin = new PanelLogin(this);
         PanelMenuPrincipal panelMenu = new PanelMenuPrincipal(this);
-        PanelAjustes panelAjustes = new PanelAjustes(this);
+        panelAjustes = new PanelAjustes(this);
 
         // Añadimos los paneles al CardLayout
         panelContenedor.add(panelLogin, "LOGIN");
@@ -37,7 +38,19 @@ public class VentanaPrincipal extends JFrame {
         cardLayout.show(panelContenedor, "LOGIN");
     }
 
+    public void setUsuarioLogueado(com.nutrilern.modelo.Usuario usuario) {
+        this.usuarioLogueado = usuario;
+    }
+
+    public com.nutrilern.modelo.Usuario getUsuarioLogueado() {
+        return usuarioLogueado;
+    }
+
     public void cambiarPantalla(String nombrePantalla) {
+        // Si entramos en ajustes, obligamos a refrescar las etiquetas con los datos reales
+        if (nombrePantalla.equals("AJUSTES")) {
+            panelAjustes.refrescarDatos();
+        }
         cardLayout.show(panelContenedor, nombrePantalla);
     }
 }

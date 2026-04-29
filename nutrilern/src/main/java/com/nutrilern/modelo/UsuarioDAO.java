@@ -49,13 +49,13 @@ public class UsuarioDAO {
             try (java.sql.ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     // El usuario existe, sacamos el hash guardado
-                    String hashGuardado = rs.getString("password");
+                    String hashGuardado = rs.getString("passwd");
                     
                     // Comprobamos si la contraseña coincide con el hash
                     if (GestorSeguridad.verificarPassword(passwordPlana, hashGuardado)) {
                         // ¡Login correcto! Construimos el objeto Usuario con todos sus datos
                         Usuario usu = new Usuario();
-                        usu.setId(rs.getInt("id"));
+                        usu.setId(rs.getInt("id_usuario"));
                         usu.setEmail(rs.getString("email"));
                         usu.setPassword(hashGuardado);
                         usu.setNombre(rs.getString("nombre"));
@@ -75,5 +75,29 @@ public class UsuarioDAO {
         
         // Si el email no existe, o la clave está mal, o hay un error, devolvemos null
         return null; 
+    }
+
+    /**
+     * Actualiza el correo electrónico de un usuario en la base de datos.
+     * @param idUsuario El ID del usuario a actualizar.
+     * @param nuevoEmail El nuevo correo electrónico.
+     * @return true si se actualizó correctamente, false en caso contrario.
+     */
+    public static boolean actualizarEmail(int idUsuario, String nuevoEmail) {
+        String sql = "UPDATE usuario SET email = ? WHERE id_usuario = ?";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, nuevoEmail);
+            pstmt.setInt(2, idUsuario);
+
+            int filasAfectadas = pstmt.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar email: " + e.getMessage());
+            return false;
+        }
     }
 }
