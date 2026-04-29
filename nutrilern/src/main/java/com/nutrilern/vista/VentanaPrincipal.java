@@ -24,10 +24,12 @@ public class VentanaPrincipal extends JFrame {
         // Le pasamos la ventana para que los paneles cambiar de vista
         PanelLogin panelLogin = new PanelLogin(this);
         PanelMenuPrincipal panelMenu = new PanelMenuPrincipal(this);
+        PanelAjustes panelAjustes = new PanelAjustes(this);
 
         // Añadimos los paneles al CardLayout
         panelContenedor.add(panelLogin, "LOGIN");
         panelContenedor.add(panelMenu, "MENU");
+        panelContenedor.add(panelAjustes, "AJUSTES");
 
         // Añado el panel al JFrame
         add(panelContenedor);

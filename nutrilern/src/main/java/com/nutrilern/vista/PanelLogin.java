@@ -34,6 +34,8 @@ public class PanelLogin extends JPanel {
                     imagen = new ImageIcon(url).getImage();
                 } else {
                     setBackground(new Color(34, 139, 34));
+                    // Establecer el color de fondo por defecto
+                    setBackground(new Color(34, 139, 34));
                 }
             }
 
@@ -338,7 +340,7 @@ public class PanelLogin extends JPanel {
                         System.out.println("CHIVATO: " + codigoSecretoGenerado);
                     } else {
                         JOptionPane.showMessageDialog(dialogo, "Error al enviar el correo.", "Error",
-                                JOptionPane.ERROR_MESSAGE);
+                                 JOptionPane.ERROR_MESSAGE);
                         btnCrear.setText("Enviar Código");
                         btnCrear.setEnabled(true);
                     }

@@ -3,9 +3,6 @@ package com.nutrilern.vista;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-
-import com.nutrilern.modelo.Usuario;
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -43,15 +40,10 @@ public class PanelMenuPrincipal extends JPanel {
 
         JPanel userActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
         userActions.setOpaque(false);
-        JLabel lblUser = new JLabel("Bienvenido " /*  + usuario get nombre */);
+        JLabel lblUser = new JLabel("Bienvenido, Dario Rumí");
         lblUser.setFont(new Font("Arial", Font.ITALIC, 14));
         lblUser.setForeground(colorTexto);
         userActions.add(lblUser);
-
-        JButton btnSalir = new JButton("Cerrar Sesión");
-        estilizarBotonSecundario(btnSalir);
-        btnSalir.addActionListener(e -> ventanaPadre.cambiarPantalla("LOGIN"));
-        userActions.add(btnSalir);
 
         header.add(userActions, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
@@ -78,10 +70,10 @@ public class PanelMenuPrincipal extends JPanel {
         gridPanel.setOpaque(false);
         gridPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        gridPanel.add(crearTarjetaMenu("Mis Comidas", "/images/misComidas.png", "Registra tu ingesta diaria y macros"));
-        gridPanel.add(crearTarjetaMenu("Mi Evolución", "/images/miEvo.png", "Gráficas de peso y composición"));
-        gridPanel.add(crearTarjetaMenu("Base de Alimentos", "/images/miGestor.png", "Base de datos nutricional completa"));
-        gridPanel.add(crearTarjetaMenu("Ajustes", "/images/ajustes.png", "Configura tu perfil y objetivos"));
+        gridPanel.add(crearTarjetaMenu("Mis Comidas", "/images/misComidas.png", "Registra tu ingesta diaria y macros", null));
+        gridPanel.add(crearTarjetaMenu("Mi Evolución", "/images/miEvo.png", "Gráficas de peso y composición", null));
+        gridPanel.add(crearTarjetaMenu("Base de Alimentos", "/images/miGestor.png", "Base de datos nutricional completa", null));
+        gridPanel.add(crearTarjetaMenu("Ajustes", "/images/ajustes.png", "Configura tu perfil y objetivos", () -> ventanaPadre.cambiarPantalla("AJUSTES")));
         
         wrapper.add(gridPanel);
 
@@ -156,7 +148,7 @@ public class PanelMenuPrincipal extends JPanel {
         }
     }
 
-    private JPanel crearTarjetaMenu(String titulo, String imagePath, String descripcion) {
+    private JPanel crearTarjetaMenu(String titulo, String imagePath, String descripcion, Runnable accion) {
         JPanel tarjeta = new JPanel();
         tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
         tarjeta.setBackground(Color.WHITE);
@@ -208,31 +200,14 @@ public class PanelMenuPrincipal extends JPanel {
                         new LineBorder(new Color(230, 230, 230), 1, true),
                         new EmptyBorder(25, 20, 25, 20)));
             }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (accion != null) {
+                    accion.run();
+                }
+            }
         });
 
         return tarjeta;
-    }
-
-    private void estilizarBotonSecundario(JButton btn) {
-        btn.setFont(new Font("Arial", Font.BOLD, 12));
-        btn.setForeground(colorPrincipal);
-        btn.setBackground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(colorPrincipal, 1, true),
-                new EmptyBorder(8, 15, 8, 15)));
-
-        btn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                btn.setBackground(colorPrincipal);
-                btn.setForeground(Color.WHITE);
-            }
-            @Override
-            public void mouseExited(MouseEvent e) {
-                btn.setBackground(Color.WHITE);
-                btn.setForeground(colorPrincipal);
-            }
-        });
     }
 }
