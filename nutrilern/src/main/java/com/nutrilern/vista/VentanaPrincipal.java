@@ -26,15 +26,17 @@ public class VentanaPrincipal extends JFrame {
 
         // Creamos los paneles (EXCEPTO EL MENÚ que se crea al entrar)
         PanelLogin panelLogin = new PanelLogin(this);
-        panelAjustes = new PanelAjustes(this);
+        PanelAjustes panelAjustes = new PanelAjustes(this);
         PanelMisComidas panelComidas = new PanelMisComidas(this);
-        panelEvo = new PanelEvolucion(this);
+        PanelEvolucion panelEvo = new PanelEvolucion(this);
+        PanelBaseAlimentos panelBase = new PanelBaseAlimentos(this);
 
         // Añadimos los paneles al CardLayout
         panelContenedor.add(panelLogin, "LOGIN");
         panelContenedor.add(panelAjustes, "AJUSTES");
         panelContenedor.add(panelComidas, "COMIDAS");
         panelContenedor.add(panelEvo, "EVOLUCION");
+        panelContenedor.add(panelBase, "BASE_ALIMENTOS");
 
         // Añado el panel al JFrame
         add(panelContenedor);

@@ -153,4 +153,85 @@ public class AlimentoDAO {
         }
         return macros;
     }
+
+    // --- MÉTODOS ANALÍTICOS PARA EL PANEL BASE DE ALIMENTOS ---
+
+    // 6. BUSCA ALIMENTOS POR NOMBRE O MARCA
+    public static List<Alimento> buscarAlimentos(String textoBusqueda) {
+        List<Alimento> lista = new ArrayList<>();
+        // El LIKE nos permite buscar coincidencias parciales (ej: si busca "pollo", sale "Pechuga de pollo")
+        String sql = "SELECT * FROM alimento WHERE nombre LIKE ? OR marca LIKE ? ORDER BY nombre ASC";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            String parametro = "%" + textoBusqueda + "%";
+            pstmt.setString(1, parametro);
+            pstmt.setString(2, parametro);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(extraerAlimentoDelResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al buscar alimentos: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    // 7. FILTRO: TOP PROTEÍNAS (Para ganar músculo)
+    public static List<Alimento> obtenerTopProteinas() {
+        List<Alimento> lista = new ArrayList<>();
+        // Ordenamos de mayor a menor proteína y limitamos a 50 resultados
+        String sql = "SELECT * FROM alimento ORDER BY proteinas DESC LIMIT 50";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                lista.add(extraerAlimentoDelResultSet(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al obtener top proteínas: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    // 8. FILTRO: BAJOS EN CALORÍAS (Para perder peso)
+    public static List<Alimento> obtenerBajosEnCalorias() {
+        List<Alimento> lista = new ArrayList<>();
+        // Ordenamos de menor a mayor Kcal. Excluimos los que tienen 0 (como el agua) para que sea útil.
+        String sql = "SELECT * FROM alimento WHERE kcal > 0 ORDER BY kcal ASC LIMIT 50";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                lista.add(extraerAlimentoDelResultSet(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al obtener bajos en calorías: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    // Método de ayuda privado para estar copiando y pegando la creación del objeto
+    private static Alimento extraerAlimentoDelResultSet(ResultSet rs) throws SQLException {
+        return new Alimento(
+            rs.getInt("id_alimento"),
+            rs.getString("nombre"),
+            rs.getString("marca"),
+            rs.getDouble("kcal"),
+            rs.getDouble("grasas"),
+            rs.getDouble("grasas_saturadas"),
+            rs.getDouble("hidratos_carbono"),
+            rs.getDouble("azucares"),
+            rs.getDouble("proteinas"),
+            rs.getDouble("sal"),
+            rs.getInt("id_categoria_fk")
+        );
+    }
 }

@@ -94,7 +94,7 @@ public class PanelMenuPrincipal extends JPanel {
         gridPanel.add(crearTarjetaMenu("Mi Evolución", "/images/miEvo.png", "Gráficas de peso y composición", 
                 () -> ventanaPadre.cambiarPantalla("EVOLUCION")));
         gridPanel.add(crearTarjetaMenu("Base de Alimentos", "/images/miGestor.png",
-                "Base de datos nutricional completa", null));
+                "Base de datos nutricional completa", () -> ventanaPadre.cambiarPantalla("BASE_ALIMENTOS")));
         gridPanel.add(crearTarjetaMenu("Ajustes", "/images/ajustes.png", "Configura tu perfil y objetivos",
                 () -> ventanaPadre.cambiarPantalla("AJUSTES")));
 
