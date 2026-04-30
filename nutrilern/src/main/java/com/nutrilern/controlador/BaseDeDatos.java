@@ -13,7 +13,6 @@ import java.util.Properties;
  */
 public class BaseDeDatos {
 
-    private static Connection conexion = null;
     private static Properties props = new Properties();
 
     static {
@@ -29,32 +28,20 @@ public class BaseDeDatos {
     }
 
     public static Connection obtenerConexion() {
+        Connection conn = null;
         try {
-            if (conexion == null || conexion.isClosed()) {
-                Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
 
-                String url = "jdbc:mysql://" + props.getProperty("db.host") + ":" +
-                        props.getProperty("db.port") + "/" +
-                        props.getProperty("db.database") + "?useSSL=true&serverTimezone=UTC";
+            String url = "jdbc:mysql://" + props.getProperty("db.host") + ":" +
+                    props.getProperty("db.port") + "/" +
+                    props.getProperty("db.database") + "?useSSL=true&serverTimezone=UTC";
 
-                conexion = DriverManager.getConnection(url, props.getProperty("db.user"),
-                        props.getProperty("db.password"));
-                System.out.println("NUTRILERN > Conexión exitosa a la base de datos.");
-            }
+            conn = DriverManager.getConnection(url, props.getProperty("db.user"),
+                    props.getProperty("db.password"));
+            // Eliminamos el sysout de éxito porque spammearía la consola cada vez que se hace una query
         } catch (Exception e) {
             System.err.println("NUTRILERN > Error al conectar: " + e.getMessage());
         }
-        return conexion;
-    }
-
-    public static void cerrarConexion() {
-        if (conexion != null) {
-            try {
-                conexion.close();
-                System.out.println("NUTRILERN > Conexión cerrada.");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        return conn;
     }
 }

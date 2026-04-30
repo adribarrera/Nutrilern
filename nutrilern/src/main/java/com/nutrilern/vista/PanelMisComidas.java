@@ -237,58 +237,74 @@ public class PanelMisComidas extends JPanel {
             int idUsuario = ventanaPadre.getUsuarioLogueado().getId();
             java.sql.Date fechaHoy = new java.sql.Date(System.currentTimeMillis());
             
-            int guardadasCorrectamente = 0;
-            int ignoradas = 0; // Para contar las que ya estaban guardadas
-            int errores = 0;
+            btnGuardar.setText("Guardando...");
+            btnGuardar.setEnabled(false);
 
-            for (int i = 0; i < numFilas; i++) {
-                try {
-                    // VERIFICAMOS LA COLUMNA OCULTA (Índice 10)
-                    boolean yaGuardado = (boolean) modeloTabla.getValueAt(i, 10);
-                    if (yaGuardado) {
-                        ignoradas++;
-                        continue; 
-                    }
+            new Thread(() -> {
+                int guardadasCorrectamente = 0;
+                int ignoradas = 0; 
+                int errores = 0;
 
-                    Object objAl = modeloTabla.getValueAt(i, 0);
-                    if (!(objAl instanceof Alimento) || ((Alimento) objAl).getIdAlimento() == 0) continue;
-                    Alimento al = (Alimento) objAl;
+                for (int i = 0; i < numFilas; i++) {
+                    try {
+                        // VERIFICAMOS LA COLUMNA OCULTA (Índice 10)
+                        boolean yaGuardado = (boolean) modeloTabla.getValueAt(i, 10);
+                        if (yaGuardado) {
+                            ignoradas++;
+                            continue; 
+                        }
 
-                    double gramos = doubleVal(modeloTabla.getValueAt(i, 2));
-                    double kcal = doubleVal(modeloTabla.getValueAt(i, 3));
-                    double prot = doubleVal(modeloTabla.getValueAt(i, 4));
-                    double hc = doubleVal(modeloTabla.getValueAt(i, 5));
-                    double gra = doubleVal(modeloTabla.getValueAt(i, 6));
-                    double sat = doubleVal(modeloTabla.getValueAt(i, 7));
-                    double azu = doubleVal(modeloTabla.getValueAt(i, 8));
-                    double sal = doubleVal(modeloTabla.getValueAt(i, 9));
+                        Object objAl = modeloTabla.getValueAt(i, 0);
+                        if (!(objAl instanceof Alimento) || ((Alimento) objAl).getIdAlimento() == 0) continue;
+                        Alimento al = (Alimento) objAl;
 
-                    boolean exito = AlimentoDAO.registrarFilaDiario(
-                        idUsuario, al.getIdAlimento(), gramos, "General", fechaHoy,
-                        kcal, prot, hc, gra, sat, azu, sal
-                    );
+                        double gramos = doubleVal(modeloTabla.getValueAt(i, 2));
+                        double kcal = doubleVal(modeloTabla.getValueAt(i, 3));
+                        double prot = doubleVal(modeloTabla.getValueAt(i, 4));
+                        double hc = doubleVal(modeloTabla.getValueAt(i, 5));
+                        double gra = doubleVal(modeloTabla.getValueAt(i, 6));
+                        double sat = doubleVal(modeloTabla.getValueAt(i, 7));
+                        double azu = doubleVal(modeloTabla.getValueAt(i, 8));
+                        double sal = doubleVal(modeloTabla.getValueAt(i, 9));
 
-                    if (exito) {
-                        guardadasCorrectamente++;
-                        // Marcamos como guardada para que no se duplique luego
-                        modeloTabla.setValueAt(true, i, 10);
-                    } else {
+                        boolean exito = AlimentoDAO.registrarFilaDiario(
+                            idUsuario, al.getIdAlimento(), gramos, "General", fechaHoy,
+                            kcal, prot, hc, gra, sat, azu, sal
+                        );
+
+                        if (exito) {
+                            guardadasCorrectamente++;
+                            // Actualizamos el modelo visualmente en el hilo principal
+                            final int filaActual = i;
+                            SwingUtilities.invokeLater(() -> modeloTabla.setValueAt(true, filaActual, 10));
+                        } else {
+                            errores++;
+                        }
+                    } catch (Exception ex) {
                         errores++;
                     }
-                } catch (Exception ex) {
-                    errores++;
                 }
-            }
 
-            if (guardadasCorrectamente > 0) {
-                JOptionPane.showMessageDialog(this, "¡Éxito! Se han añadido " + guardadasCorrectamente + " nuevos registros a tu diario de hoy.", "Guardado", JOptionPane.INFORMATION_MESSAGE);
-            } else if (ignoradas > 0 && errores == 0) {
-                JOptionPane.showMessageDialog(this, "No hay alimentos nuevos que guardar. Todo está actualizado.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
-            }
-            
-            if (errores > 0) {
-                JOptionPane.showMessageDialog(this, "Hubo errores al guardar " + errores + " filas. Por favor, revisa tu conexión.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+                // Pasamos a variables finales para usarlas en el invokeLater
+                final int finalGuardadas = guardadasCorrectamente;
+                final int finalIgnoradas = ignoradas;
+                final int finalErrores = errores;
+
+                SwingUtilities.invokeLater(() -> {
+                    btnGuardar.setText("💾 Guardar Registro Diario");
+                    btnGuardar.setEnabled(true);
+                    
+                    if (finalGuardadas > 0) {
+                        JOptionPane.showMessageDialog(this, "¡Éxito! Se han añadido " + finalGuardadas + " nuevos registros a tu diario de hoy.", "Guardado", JOptionPane.INFORMATION_MESSAGE);
+                    } else if (finalIgnoradas > 0 && finalErrores == 0) {
+                        JOptionPane.showMessageDialog(this, "No hay alimentos nuevos que guardar. Todo está actualizado.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                    
+                    if (finalErrores > 0) {
+                        JOptionPane.showMessageDialog(this, "Hubo errores al guardar " + finalErrores + " filas. Por favor, revisa tu conexión.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            }).start();
         });
 
         panelInferior.add(panelGestorFilas, BorderLayout.WEST);

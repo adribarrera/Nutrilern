@@ -171,6 +171,8 @@ public class PanelLogin extends JPanel {
 
     // DIÁLOGO DE REGISTRO
     private void abrirDialogoRegistro() {
+        int[] intentosVerificacion = {0}; // Estado local para contar intentos de verificación
+
         JDialog dialogo = new JDialog(ventanaPadre, "Registro de usuario", true);
         dialogo.setSize(450, 550);
         dialogo.setLocationRelativeTo(ventanaPadre);
@@ -356,14 +358,27 @@ public class PanelLogin extends JPanel {
                 return;
             }
 
+            if (!emailTemporal.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                JOptionPane.showMessageDialog(dialogo, "El formato del correo no es válido.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (passTemporal.length() < 6) {
+                JOptionPane.showMessageDialog(dialogo, "La contraseña debe tener al menos 6 caracteres.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             btnCrear.setText("Enviando...");
             btnCrear.setEnabled(false);
             codigoSecretoGenerado = generarCodigoSeguridad();
+            intentosVerificacion[0] = 0; // Reiniciamos contador de intentos
 
             new Thread(() -> {
                 boolean enviado = com.nutrilern.controlador.ServicioCorreo.enviarCodigoVerificacion(emailTemporal,
                         codigoSecretoGenerado);
                 SwingUtilities.invokeLater(() -> {
+                    if (!dialogo.isDisplayable()) return; // Abortamos si el usuario cerró la ventana
+
                     if (enviado) {
                         cardLayout.show(panelContenedorCartas, "PANTALLA_VERIFICACION");
                         System.out.println("CHIVATO: " + codigoSecretoGenerado);
@@ -383,7 +398,16 @@ public class PanelLogin extends JPanel {
                 // ACERTÓ -> Pasamos a la carta del perfil (NO HACEMOS DISPOSE AÚN)
                 cardLayout.show(panelContenedorCartas, "PANTALLA_PERFIL");
             } else {
-                JOptionPane.showMessageDialog(dialogo, "El código no es correcto.", "Error", JOptionPane.ERROR_MESSAGE);
+                intentosVerificacion[0]++;
+                if (intentosVerificacion[0] >= 3) {
+                    JOptionPane.showMessageDialog(dialogo, "Has fallado 3 veces. Vuelve a solicitar un código.", "Error", JOptionPane.ERROR_MESSAGE);
+                    cardLayout.show(panelContenedorCartas, "PANTALLA_FORMULARIO");
+                    btnCrear.setText("Enviar Código");
+                    btnCrear.setEnabled(true);
+                    txtCodigo.setText("");
+                } else {
+                    JOptionPane.showMessageDialog(dialogo, "El código no es correcto. Te quedan " + (3 - intentosVerificacion[0]) + " intentos.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
@@ -405,6 +429,12 @@ public class PanelLogin extends JPanel {
                 int edad = Integer.parseInt(txtEdad.getText().trim());
                 double peso = Double.parseDouble(txtPeso.getText().trim().replace(",", "."));
                 double altura = Double.parseDouble(txtAltura.getText().trim().replace(",", "."));
+
+                // Validación lógica de datos físicos
+                if (edad <= 0 || edad > 120 || peso < 20 || peso > 500 || altura < 50 || altura > 300) {
+                    JOptionPane.showMessageDialog(dialogo, "Por favor, introduce valores físicos reales.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
 
                 // Cambiamos a la animación
                 cardLayout.show(panelContenedorCartas, "PANTALLA_CARGA");
@@ -429,6 +459,8 @@ public class PanelLogin extends JPanel {
 
                     // Volvemos a la interfaz gráfica
                     SwingUtilities.invokeLater(() -> {
+                        if (!dialogo.isDisplayable()) return; // Abortamos si cerró la ventana
+
                         spinner.detener(); // Para la animación
                         
                         if (exito) {
@@ -454,7 +486,8 @@ public class PanelLogin extends JPanel {
     }
 
     private String generarCodigoSeguridad() {
-        int numero = (int) (Math.random() * 90000000) + 10000000;
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        int numero = random.nextInt(90000000) + 10000000;
         return String.valueOf(numero);
     }
 

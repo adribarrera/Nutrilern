@@ -197,10 +197,17 @@ public class PanelAjustes extends JPanel {
             if (user != null) {
                 String nuevoEmail = JOptionPane.showInputDialog(this, "Nuevo correo:", user.getEmail());
                 if (nuevoEmail != null && !nuevoEmail.trim().isEmpty()) {
+                    if (!nuevoEmail.trim().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                        JOptionPane.showMessageDialog(this, "El formato del correo no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
                     if (UsuarioDAO.actualizarEmail(user.getId(), nuevoEmail.trim())) {
                         user.setEmail(nuevoEmail.trim());
                         refrescarDatos();
                         JOptionPane.showMessageDialog(this, "Email actualizado correctamente.");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "No se pudo actualizar. Puede que el correo ya esté en uso o haya un error de conexión.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -256,8 +263,8 @@ public class PanelAjustes extends JPanel {
                         ventanaPadre.cambiarPantalla("LOGIN");
                     } else {
                         JOptionPane.showMessageDialog(this, 
-                            "Hubo un error de conexión al intentar eliminar la cuenta.", 
-                            "Error", 
+                            "Hubo un error al intentar eliminar la cuenta. Si tienes comidas registradas, puede que la BD impida el borrado.", 
+                            "Error de Borrado", 
                             JOptionPane.ERROR_MESSAGE);
                     }
                 }
