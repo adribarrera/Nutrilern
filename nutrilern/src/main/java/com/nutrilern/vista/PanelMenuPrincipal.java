@@ -3,19 +3,26 @@ package com.nutrilern.vista;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+
+import com.nutrilern.modelo.Usuario;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class PanelMenuPrincipal extends JPanel {
     private VentanaPrincipal ventanaPadre;
+    private Usuario usuario;
+
     private final Color colorPrincipal = new Color(34, 139, 34); // Verde NUTRIX
     private final Color colorFondo = new Color(245, 247, 250);
     private final Color colorTexto = new Color(50, 50, 50);
     private Image imagenFondo;
 
-    public PanelMenuPrincipal(VentanaPrincipal ventana) {
+    public PanelMenuPrincipal(VentanaPrincipal ventana, Usuario usuarioLogueado) {
         this.ventanaPadre = ventana;
+        this.usuario = usuarioLogueado;
+
         setLayout(new BorderLayout());
 
         try {
@@ -45,7 +52,31 @@ public class PanelMenuPrincipal extends JPanel {
 
         JPanel userActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
         userActions.setOpaque(false);
-        JLabel lblUser = new JLabel("Bienvenido, Dario Rumí");
+
+        // 1. Inicializamos las variables vacías por defecto
+        String nombre = "";
+        String apellidos = "";
+
+        // 2. Comprobamos si el usuario existe (no es null)
+        if (usuario != null) {
+
+            // Si el usuario tiene un nombre guardado, lo asignamos
+            if (usuario.getNombre() != null) {
+                nombre = usuario.getNombre();
+            }
+
+            // Si el usuario tiene apellidos guardados, los asignamos
+            if (usuario.getApellidos() != null) {
+                apellidos = usuario.getApellidos();
+            }
+
+        } else {
+            // Si el usuario es nulo, ponemos un texto por defecto para que no de NullPointerException
+            nombre = "Invitado";
+        }
+
+        // 3. Montamos el mensaje final en la etiqueta
+        JLabel lblUser = new JLabel("Bienvenido, " + nombre + " " + apellidos);
         lblUser.setFont(new Font("Arial", Font.ITALIC, 14));
         lblUser.setForeground(colorTexto);
         userActions.add(lblUser);
@@ -59,11 +90,11 @@ public class PanelMenuPrincipal extends JPanel {
         wrapper.setOpaque(false);
         wrapper.setBorder(new EmptyBorder(30, 60, 30, 60));
 
-        //Section: Resumen de hoy
+        // Section: Resumen de hoy
         wrapper.add(crearSeccionResumenHoy());
         wrapper.add(Box.createRigidArea(new Dimension(0, 40)));
 
-        //Section: Acceso directo (Grid)
+        // Section: Acceso directo (Grid)
         JLabel lblOps = new JLabel("Acciones Principales");
         lblOps.setFont(new Font("Arial", Font.BOLD, 22));
         lblOps.setForeground(colorTexto);
@@ -75,11 +106,14 @@ public class PanelMenuPrincipal extends JPanel {
         gridPanel.setOpaque(false);
         gridPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        gridPanel.add(crearTarjetaMenu("Mis Comidas", "/images/misComidas.png", "Registra tu ingesta diaria y macros", () -> ventanaPadre.cambiarPantalla("COMIDAS")));
+        gridPanel.add(crearTarjetaMenu("Mis Comidas", "/images/misComidas.png", "Registra tu ingesta diaria y macros",
+                () -> ventanaPadre.cambiarPantalla("COMIDAS")));
         gridPanel.add(crearTarjetaMenu("Mi Evolución", "/images/miEvo.png", "Gráficas de peso y composición", null));
-        gridPanel.add(crearTarjetaMenu("Base de Alimentos", "/images/miGestor.png", "Base de datos nutricional completa", null));
-        gridPanel.add(crearTarjetaMenu("Ajustes", "/images/ajustes.png", "Configura tu perfil y objetivos", () -> ventanaPadre.cambiarPantalla("AJUSTES")));
-        
+        gridPanel.add(crearTarjetaMenu("Base de Alimentos", "/images/miGestor.png",
+                "Base de datos nutricional completa", null));
+        gridPanel.add(crearTarjetaMenu("Ajustes", "/images/ajustes.png", "Configura tu perfil y objetivos",
+                () -> ventanaPadre.cambiarPantalla("AJUSTES")));
+
         wrapper.add(gridPanel);
 
         JScrollPane scrollPane = new JScrollPane(wrapper);
@@ -117,14 +151,13 @@ public class PanelMenuPrincipal extends JPanel {
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(230, 230, 230), 1, true),
-            new EmptyBorder(15, 15, 15, 15)
-        ));
+                new LineBorder(new Color(230, 230, 230), 1, true),
+                new EmptyBorder(15, 15, 15, 15)));
 
         JLabel lbl = new JLabel(label);
         lbl.setFont(new Font("Arial", Font.BOLD, 14));
         lbl.setForeground(new Color(100, 100, 100));
-        
+
         JLabel val = new JLabel(value);
         val.setFont(new Font("Arial", Font.BOLD, 18));
         val.setForeground(colorTexto);
@@ -203,6 +236,7 @@ public class PanelMenuPrincipal extends JPanel {
                         new LineBorder(colorPrincipal, 2, true),
                         new EmptyBorder(24, 19, 24, 19)));
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 tarjeta.setBackground(Color.WHITE);
@@ -210,6 +244,7 @@ public class PanelMenuPrincipal extends JPanel {
                         new LineBorder(new Color(230, 230, 230), 1, true),
                         new EmptyBorder(25, 20, 25, 20)));
             }
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (accion != null) {

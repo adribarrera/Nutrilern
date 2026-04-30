@@ -1,6 +1,7 @@
 package com.nutrilern.vista;
 
 import javax.swing.*;
+import com.nutrilern.modelo.Usuario;
 import java.awt.*;
 
 public class VentanaPrincipal extends JFrame {
@@ -22,17 +23,16 @@ public class VentanaPrincipal extends JFrame {
         cardLayout = new CardLayout();
         panelContenedor = new JPanel(cardLayout);
 
-        // Creamos los paneles
+        // Creamos los paneles (EXCEPTO EL MENÚ)
         PanelLogin panelLogin = new PanelLogin(this);
-        PanelMenuPrincipal panelMenu = new PanelMenuPrincipal(this);
         panelAjustes = new PanelAjustes(this);
         PanelMisComidas panelComidas = new PanelMisComidas(this);
 
         // Añadimos los paneles al CardLayout
         panelContenedor.add(panelLogin, "LOGIN");
-        panelContenedor.add(panelMenu, "MENU");
         panelContenedor.add(panelAjustes, "AJUSTES");
         panelContenedor.add(panelComidas, "COMIDAS");
+        // ATENCIÓN: He borrado de aquí la línea del menú.
 
         // Añado el panel al JFrame
         add(panelContenedor);
@@ -49,10 +49,23 @@ public class VentanaPrincipal extends JFrame {
     }
 
     public void cambiarPantalla(String nombrePantalla) {
-        // Si entramos en ajustes, obligamos a refrescar las etiquetas con los datos reales
-        if (nombrePantalla.equals("AJUSTES")) {
+        
+        if (nombrePantalla.equals("MENU")) {
+            // Rescatamos el usuario loggeado
+            Usuario usuarioActual = this.getUsuarioLogueado(); 
+            
+            // Creamos el panel del menú AHORA, pasándole los datos reales
+            PanelMenuPrincipal panelMenu = new PanelMenuPrincipal(this, usuarioActual);
+            
+            // Lo añadimos a la baraja del CardLayout en este preciso momento
+            panelContenedor.add(panelMenu, "MENU");
+            
+        } else if (nombrePantalla.equals("AJUSTES")) {
+            // Si entramos en ajustes, obligamos a refrescar las etiquetas con los datos reales
             panelAjustes.refrescarDatos();
         }
+        
+        // El CardLayout se encarga de mostrar la pantalla (sea el menú, o cualquier otra)
         cardLayout.show(panelContenedor, nombrePantalla);
     }
 }
