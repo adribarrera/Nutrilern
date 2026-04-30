@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -38,7 +37,8 @@ public class BaseDeDatos {
 
             conn = DriverManager.getConnection(url, props.getProperty("db.user"),
                     props.getProperty("db.password"));
-            // Eliminamos el sysout de éxito porque spammearía la consola cada vez que se hace una query
+            // Eliminamos el sysout de éxito porque spammearía la consola cada vez que se
+            // hace una query
         } catch (Exception e) {
             System.err.println("NUTRILERN > Error al conectar: " + e.getMessage());
         }

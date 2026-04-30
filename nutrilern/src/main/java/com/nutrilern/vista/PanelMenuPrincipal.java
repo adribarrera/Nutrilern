@@ -13,9 +13,7 @@ public class PanelMenuPrincipal extends JPanel {
     private VentanaPrincipal ventanaPadre;
     private Usuario usuario;
 
-    private final Color colorPrincipal = new Color(34, 139, 34); // Verde NUTRIX
-    private final Color colorFondo = new Color(245, 247, 250);
-    private final Color colorTexto = new Color(50, 50, 50);
+
     private Image imagenFondo;
 
     // Componentes para actualizar datos reales
@@ -33,11 +31,11 @@ public class PanelMenuPrincipal extends JPanel {
             if (url != null) {
                 imagenFondo = javax.imageio.ImageIO.read(url);
             } else {
-                setBackground(colorFondo);
+                setBackground(TemaNutrix.FONDO);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            setBackground(colorFondo);
+            setBackground(TemaNutrix.FONDO);
         }
 
         // --- HEADER ---
@@ -45,12 +43,12 @@ public class PanelMenuPrincipal extends JPanel {
         header.setBackground(Color.WHITE);
         header.setPreferredSize(new Dimension(0, 80));
         header.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
+                BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO),
                 BorderFactory.createEmptyBorder(0, 30, 0, 30)));
 
         JLabel lblLogo = new JLabel("NUTRIX");
         lblLogo.setFont(new Font("Arial", Font.BOLD, 26));
-        lblLogo.setForeground(colorPrincipal);
+        lblLogo.setForeground(TemaNutrix.VERDE_NUTRIX);
         header.add(lblLogo, BorderLayout.WEST);
 
         JPanel userActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
@@ -61,7 +59,7 @@ public class PanelMenuPrincipal extends JPanel {
 
         JLabel lblUser = new JLabel("Bienvenido, " + nombre + " " + apellidos);
         lblUser.setFont(new Font("Arial", Font.ITALIC, 14));
-        lblUser.setForeground(colorTexto);
+        lblUser.setForeground(TemaNutrix.TEXTO);
         userActions.add(lblUser);
 
         header.add(userActions, BorderLayout.EAST);
@@ -80,7 +78,7 @@ public class PanelMenuPrincipal extends JPanel {
         // Section: Acceso directo (Grid)
         JLabel lblOps = new JLabel("Acciones Principales");
         lblOps.setFont(new Font("Arial", Font.BOLD, 22));
-        lblOps.setForeground(colorTexto);
+        lblOps.setForeground(TemaNutrix.TEXTO);
         lblOps.setAlignmentX(Component.LEFT_ALIGNMENT);
         wrapper.add(lblOps);
         wrapper.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -117,19 +115,26 @@ public class PanelMenuPrincipal extends JPanel {
         new Thread(() -> {
             double[] macrosHoy = AlimentoDAO.obtenerMacrosHoy(usuario.getId());
             // [0]=kcal, [1]=hc, [2]=prot, [3]=fat
+
+            // Calculamos los macros reales del usuario
+            double[] macrosObjetivo = com.nutrilern.controlador.CalculadoraNutricional.calcularMacros(usuario);
+            int maxKcal = (int) macrosObjetivo[0];
+            int maxHC = (int) macrosObjetivo[1];
+            int maxProt = (int) macrosObjetivo[2];
+            int maxFat = (int) macrosObjetivo[3];
             
             SwingUtilities.invokeLater(() -> {
-                lblCalVal.setText((int)macrosHoy[0] + " kcal / 2100");
-                barCal.setValue((int)((macrosHoy[0]/2100)*100));
+                lblCalVal.setText((int)macrosHoy[0] + " kcal / " + maxKcal);
+                barCal.setValue((int)((macrosHoy[0]/maxKcal)*100));
                 
-                lblHCVal.setText((int)macrosHoy[1] + " g / 250");
-                barHC.setValue((int)((macrosHoy[1]/250)*100));
+                lblHCVal.setText((int)macrosHoy[1] + " g / " + maxHC);
+                barHC.setValue((int)((macrosHoy[1]/maxHC)*100));
 
-                lblProtVal.setText((int)macrosHoy[2] + " g / 120");
-                barProt.setValue((int)((macrosHoy[2]/120)*100));
+                lblProtVal.setText((int)macrosHoy[2] + " g / " + maxProt);
+                barProt.setValue((int)((macrosHoy[2]/maxProt)*100));
 
-                lblFatVal.setText((int)macrosHoy[3] + " g / 70");
-                barFat.setValue((int)((macrosHoy[3]/70)*100));
+                lblFatVal.setText((int)macrosHoy[3] + " g / " + maxFat);
+                barFat.setValue((int)((macrosHoy[3]/maxFat)*100));
             });
         }).start();
     }
@@ -141,7 +146,7 @@ public class PanelMenuPrincipal extends JPanel {
 
         JLabel titulo = new JLabel("Resumen de Hoy");
         titulo.setFont(new Font("Arial", Font.BOLD, 22));
-        titulo.setForeground(colorTexto);
+        titulo.setForeground(TemaNutrix.TEXTO);
         seccion.add(titulo, BorderLayout.NORTH);
 
         JPanel cardsContainer = new JPanel(new GridLayout(1, 4, 15, 0)); // 4 tarjetas ahora
@@ -149,19 +154,19 @@ public class PanelMenuPrincipal extends JPanel {
         cardsContainer.setBorder(new EmptyBorder(15, 0, 0, 0));
 
         // Creamos las tarjetas y guardamos referencias a los labels/bars
-        JPanel pCal = crearStatMiniCard("Calorías", Color.ORANGE);
+        JPanel pCal = crearStatMiniCard("Calorías", TemaNutrix.CALORIAS);
         lblCalVal = (JLabel) pCal.getClientProperty("valLabel");
         barCal = (JProgressBar) pCal.getClientProperty("progressBar");
 
-        JPanel pHC = crearStatMiniCard("Carbohidratos", new Color(74, 144, 226));
+        JPanel pHC = crearStatMiniCard("Carbohidratos", TemaNutrix.CARBOHIDRATOS);
         lblHCVal = (JLabel) pHC.getClientProperty("valLabel");
         barHC = (JProgressBar) pHC.getClientProperty("progressBar");
 
-        JPanel pProt = crearStatMiniCard("Proteínas", new Color(255, 127, 80));
+        JPanel pProt = crearStatMiniCard("Proteínas", TemaNutrix.PROTEINAS);
         lblProtVal = (JLabel) pProt.getClientProperty("valLabel");
         barProt = (JProgressBar) pProt.getClientProperty("progressBar");
 
-        JPanel pFat = crearStatMiniCard("Grasas", new Color(50, 205, 50));
+        JPanel pFat = crearStatMiniCard("Grasas", TemaNutrix.GRASAS);
         lblFatVal = (JLabel) pFat.getClientProperty("valLabel");
         barFat = (JProgressBar) pFat.getClientProperty("progressBar");
 
@@ -179,7 +184,7 @@ public class PanelMenuPrincipal extends JPanel {
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(230, 230, 230), 1, true),
+                new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
                 new EmptyBorder(15, 15, 15, 15)));
 
         JLabel lbl = new JLabel(label);
@@ -188,7 +193,7 @@ public class PanelMenuPrincipal extends JPanel {
 
         JLabel val = new JLabel("0 / --"); // Texto inicial
         val.setFont(new Font("Arial", Font.BOLD, 16));
-        val.setForeground(colorTexto);
+        val.setForeground(TemaNutrix.TEXTO);
 
         JProgressBar bar = new JProgressBar(0, 100);
         bar.setValue(0);
@@ -224,7 +229,7 @@ public class PanelMenuPrincipal extends JPanel {
         tarjeta.setBackground(Color.WHITE);
         tarjeta.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         tarjeta.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(230, 230, 230), 1, true),
+                new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
                 new EmptyBorder(25, 20, 25, 20)));
 
         JLabel lblIcono = new JLabel();
@@ -240,12 +245,12 @@ public class PanelMenuPrincipal extends JPanel {
 
         JLabel lblTit = new JLabel(titulo);
         lblTit.setFont(new Font("Arial", Font.BOLD, 20));
-        lblTit.setForeground(colorTexto);
+        lblTit.setForeground(TemaNutrix.TEXTO);
         lblTit.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblDesc = new JLabel("<html><center>" + descripcion + "</center></html>");
         lblDesc.setFont(new Font("Arial", Font.PLAIN, 13));
-        lblDesc.setForeground(new Color(120, 120, 120));
+        lblDesc.setForeground(TemaNutrix.GRIS_TEXTO);
         lblDesc.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblDesc.setMaximumSize(new Dimension(220, 50));
 
@@ -260,14 +265,14 @@ public class PanelMenuPrincipal extends JPanel {
             public void mouseEntered(MouseEvent e) {
                 tarjeta.setBackground(new Color(250, 255, 250));
                 tarjeta.setBorder(BorderFactory.createCompoundBorder(
-                        new LineBorder(colorPrincipal, 2, true),
+                        new LineBorder(TemaNutrix.VERDE_NUTRIX, 2, true),
                         new EmptyBorder(24, 19, 24, 19)));
             }
             @Override
             public void mouseExited(MouseEvent e) {
                 tarjeta.setBackground(Color.WHITE);
                 tarjeta.setBorder(BorderFactory.createCompoundBorder(
-                        new LineBorder(new Color(230, 230, 230), 1, true),
+                        new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
                         new EmptyBorder(25, 20, 25, 20)));
             }
             @Override

@@ -20,10 +20,6 @@ public class PanelMisComidas extends JPanel {
 
     private VentanaPrincipal ventanaPadre;
     
-    private final Color COLOR_VERDE_NUTRIX = new Color(34, 139, 34);
-    private final Color COLOR_FONDO = new Color(245, 247, 250);
-    private final Color COLOR_TEXTO = new Color(50, 50, 50);
-
     private JTable tablaComidas;
     private DefaultTableModel modeloTabla;
     private Alimento alimentoPlaceholder;
@@ -33,7 +29,7 @@ public class PanelMisComidas extends JPanel {
     public PanelMisComidas(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
         setLayout(new BorderLayout());
-        setBackground(COLOR_FONDO);
+        setBackground(TemaNutrix.FONDO);
 
         add(crearCabecera(), BorderLayout.NORTH);
         add(crearZonaTabla(), BorderLayout.CENTER);
@@ -44,7 +40,7 @@ public class PanelMisComidas extends JPanel {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
         header.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
+                BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO),
                 new EmptyBorder(15, 30, 15, 30)));
 
         JPanel panelIzquierdo = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
@@ -52,7 +48,7 @@ public class PanelMisComidas extends JPanel {
 
         JButton btnVolver = new JButton("← Menú");
         btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
-        btnVolver.setForeground(COLOR_VERDE_NUTRIX);
+        btnVolver.setForeground(TemaNutrix.VERDE_NUTRIX);
         btnVolver.setContentAreaFilled(false);
         btnVolver.setBorderPainted(false);
         btnVolver.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -60,7 +56,7 @@ public class PanelMisComidas extends JPanel {
 
         JLabel lblTitulo = new JLabel("Mi Registro Diario");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
-        lblTitulo.setForeground(COLOR_TEXTO);
+        lblTitulo.setForeground(TemaNutrix.TEXTO);
 
         panelIzquierdo.add(btnVolver);
         panelIzquierdo.add(lblTitulo);
@@ -111,11 +107,11 @@ public class PanelMisComidas extends JPanel {
         tablaComidas.setRowHeight(35); 
         tablaComidas.setFont(new Font("Arial", Font.PLAIN, 14));
         tablaComidas.setSelectionBackground(new Color(230, 245, 230)); 
-        tablaComidas.setSelectionForeground(COLOR_TEXTO);
+        tablaComidas.setSelectionForeground(TemaNutrix.TEXTO);
         
         JTableHeader th = tablaComidas.getTableHeader();
         th.setFont(new Font("Arial", Font.BOLD, 13));
-        th.setBackground(COLOR_VERDE_NUTRIX);
+        th.setBackground(TemaNutrix.VERDE_NUTRIX);
         th.setForeground(Color.WHITE);
         th.setPreferredSize(new Dimension(100, 40));
         
@@ -184,7 +180,7 @@ public class PanelMisComidas extends JPanel {
 
         JScrollPane scrollTabla = new JScrollPane(tablaComidas);
         scrollTabla.getViewport().setBackground(Color.WHITE);
-        scrollTabla.setBorder(new LineBorder(new Color(220, 220, 220), 1, true));
+        scrollTabla.setBorder(new LineBorder(TemaNutrix.GRIS_CLARO, 1, true));
 
         panelCentral.add(scrollTabla, BorderLayout.CENTER);
         return panelCentral;
@@ -221,7 +217,7 @@ public class PanelMisComidas extends JPanel {
 
         JButton btnGuardar = new JButton("💾 Guardar Registro Diario");
         btnGuardar.setFont(new Font("Arial", Font.BOLD, 15));
-        btnGuardar.setBackground(COLOR_VERDE_NUTRIX);
+        btnGuardar.setBackground(TemaNutrix.VERDE_NUTRIX);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setFocusPainted(false);
         btnGuardar.setPreferredSize(new Dimension(250, 45));
@@ -316,12 +312,12 @@ public class PanelMisComidas extends JPanel {
     private JButton crearBotonSecundario(String texto) {
         JButton btn = new JButton(texto);
         btn.setFont(new Font("Arial", Font.BOLD, 13));
-        btn.setForeground(COLOR_VERDE_NUTRIX);
+        btn.setForeground(TemaNutrix.VERDE_NUTRIX);
         btn.setBackground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(220, 220, 220), 1, true),
+                new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
                 new EmptyBorder(8, 15, 8, 15)));
         return btn;
     }

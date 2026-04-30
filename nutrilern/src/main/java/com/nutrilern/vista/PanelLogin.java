@@ -34,13 +34,13 @@ public class PanelLogin extends JPanel {
                     if (url != null) {
                         imagen = javax.imageio.ImageIO.read(url);
                     } else {
-                        setBackground(new Color(34, 139, 34));
+                        setBackground(TemaNutrix.VERDE_NUTRIX);
                         // Establecer el color de fondo por defecto
-                        setBackground(new Color(34, 139, 34));
+                        setBackground(TemaNutrix.VERDE_NUTRIX);
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    setBackground(new Color(34, 139, 34));
+                    setBackground(TemaNutrix.VERDE_NUTRIX);
                 }
             }
 
@@ -60,7 +60,7 @@ public class PanelLogin extends JPanel {
         panelImagen.setLayout(new GridBagLayout());
         JLabel lblSlogan = new JLabel("NUTRIX: Nutrición basada en datos. No en mitos");
         lblSlogan.setFont(new Font("Arial", Font.BOLD, 28));
-        lblSlogan.setForeground(new Color(34, 139, 34));
+        lblSlogan.setForeground(TemaNutrix.VERDE_NUTRIX);
         panelImagen.add(lblSlogan);
 
         gbc.gridx = 0;
@@ -82,7 +82,7 @@ public class PanelLogin extends JPanel {
         JPasswordField txtPass = new JPasswordField(20);
 
         JButton btnLogin = new JButton("Entrar");
-        btnLogin.setBackground(new Color(34, 139, 34));
+        btnLogin.setBackground(TemaNutrix.VERDE_NUTRIX);
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setFocusPainted(false);
         btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
@@ -105,7 +105,7 @@ public class PanelLogin extends JPanel {
         lblRegistrar.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                lblRegistrar.setForeground(new Color(34, 139, 34));
+                lblRegistrar.setForeground(TemaNutrix.VERDE_NUTRIX);
                 lblRegistrar.setFont(fuenteSubrayada);
             }
 
@@ -201,7 +201,7 @@ public class PanelLogin extends JPanel {
         txtNewPass.setMaximumSize(new Dimension(300, 35));
 
         JButton btnCrear = new JButton("Enviar Código");
-        btnCrear.setBackground(new Color(34, 139, 34));
+        btnCrear.setBackground(TemaNutrix.VERDE_NUTRIX);
         btnCrear.setForeground(Color.WHITE);
         btnCrear.setFocusPainted(false);
         btnCrear.setFont(new Font("Arial", Font.BOLD, 14));
@@ -239,7 +239,7 @@ public class PanelLogin extends JPanel {
         txtCodigo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JButton btnVerificar = new JButton("Verificar Código");
-        btnVerificar.setBackground(new Color(34, 139, 34));
+        btnVerificar.setBackground(TemaNutrix.VERDE_NUTRIX);
         btnVerificar.setForeground(Color.WHITE);
         btnVerificar.setFocusPainted(false);
         btnVerificar.setFont(new Font("Arial", Font.BOLD, 14));
@@ -282,6 +282,12 @@ public class PanelLogin extends JPanel {
         JComboBox<String> comboObjetivo = new JComboBox<>(opciones);
         comboObjetivo.setMaximumSize(new Dimension(300, 30));
 
+        JLabel lblSexo = new JLabel("Sexo Biológico");
+        lblSexo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        String[] sexos = { "Hombre", "Mujer" };
+        JComboBox<String> comboSexo = new JComboBox<>(sexos);
+        comboSexo.setMaximumSize(new Dimension(300, 30));
+
         JLabel lblEdad = new JLabel("Edad");
         lblEdad.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtEdad = new JTextField();
@@ -298,7 +304,7 @@ public class PanelLogin extends JPanel {
         txtAltura.setMaximumSize(new Dimension(300, 30));
 
         JButton btnFinalizar = new JButton("Comenzar mi cambio");
-        btnFinalizar.setBackground(new Color(34, 139, 34));
+        btnFinalizar.setBackground(TemaNutrix.VERDE_NUTRIX);
         btnFinalizar.setForeground(Color.WHITE);
         btnFinalizar.setFocusPainted(false);
         btnFinalizar.setFont(new Font("Arial", Font.BOLD, 14));
@@ -316,6 +322,9 @@ public class PanelLogin extends JPanel {
         panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
         panelPerfil.add(lblObjetivo);
         panelPerfil.add(comboObjetivo);
+        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelPerfil.add(lblSexo);
+        panelPerfil.add(comboSexo);
         panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
         panelPerfil.add(lblEdad);
         panelPerfil.add(txtEdad);
@@ -335,7 +344,7 @@ public class PanelLogin extends JPanel {
 
         JLabel lblCargando = new JLabel("Configurando tu plan nutricional...", SwingConstants.CENTER);
         lblCargando.setFont(new Font("Arial", Font.BOLD, 14));
-        lblCargando.setForeground(new Color(34, 139, 34));
+        lblCargando.setForeground(TemaNutrix.VERDE_NUTRIX);
         lblCargando.setBorder(BorderFactory.createEmptyBorder(0, 0, 80, 0));
 
         panelCarga.add(spinner, BorderLayout.CENTER);
@@ -451,8 +460,11 @@ public class PanelLogin extends JPanel {
                         idObjetivo = 3;
                     }
 
-                    // 2. Creamos el usuario PASÁNDOLE EL idObjetivo AL FINAL
-                    Usuario nuevoUsuario = new Usuario(emailTemporal, passTemporal, nombre, apellidos, edad, altura, peso, rol, idObjetivo);
+                    String sexoElegido = (String) comboSexo.getSelectedItem();
+                    String sexoChar = sexoElegido.equals("Mujer") ? "F" : "M";
+
+                    // 2. Creamos el usuario PASÁNDOLE EL idObjetivo y sexo AL FINAL
+                    Usuario nuevoUsuario = new Usuario(emailTemporal, passTemporal, nombre, apellidos, edad, altura, peso, rol, idObjetivo, sexoChar);
 
                     // 3. Mandamos el usuario a TiDB
                     boolean exito = UsuarioDAO.registrarUsuario(nuevoUsuario);
@@ -523,10 +535,10 @@ public class PanelLogin extends JPanel {
             int diametro = 60;
 
             g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g2d.setColor(new Color(235, 235, 235));
+            g2d.setColor(TemaNutrix.GRIS_CLARO);
             g2d.drawOval((ancho - diametro) / 2, (alto - diametro) / 2, diametro, diametro);
 
-            g2d.setColor(new Color(34, 139, 34));
+            g2d.setColor(TemaNutrix.VERDE_NUTRIX);
             g2d.drawArc((ancho - diametro) / 2, (alto - diametro) / 2, diametro, diametro, -angulo, 120);
         }
     }

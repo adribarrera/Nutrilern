@@ -2,6 +2,9 @@ package com.nutrilern.vista;
 
 import com.nutrilern.modelo.Alimento;
 import com.nutrilern.modelo.AlimentoDAO;
+import com.nutrilern.modelo.CategoriaDAO;
+import com.nutrilern.modelo.ComboItem;
+import java.util.Map;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,12 +19,13 @@ public class PanelBaseAlimentos extends JPanel {
     private JTable tablaAlimentos;
     private DefaultTableModel modeloTabla;
     private JLabel lblDetalle;
-    private final Color colorPrincipal = new Color(34, 139, 34);
+    private JTextField txtBuscar;
+    private JComboBox<ComboItem> comboCategorias;
 
     public PanelBaseAlimentos(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
         setLayout(new BorderLayout(15, 15));
-        setBackground(new Color(245, 247, 250));
+        setBackground(TemaNutrix.FONDO);
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
         // --- 1. ZONA SUPERIOR: BUSCADOR Y FILTROS ---
@@ -34,7 +38,7 @@ public class PanelBaseAlimentos extends JPanel {
 
         JLabel lblTitulo = new JLabel("Base de Alimentos Nutrix");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
-        lblTitulo.setForeground(new Color(50, 50, 50));
+        lblTitulo.setForeground(TemaNutrix.TEXTO);
 
         JButton btnVolver = crearBoton("⬅ Volver al Menú", Color.DARK_GRAY, Color.WHITE);
         btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
@@ -48,18 +52,46 @@ public class PanelBaseAlimentos extends JPanel {
         JPanel panelControles = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         panelControles.setOpaque(false);
 
-        JTextField txtBuscar = new JTextField(20);
+        txtBuscar = new JTextField(20);
         txtBuscar.setFont(new Font("Arial", Font.PLAIN, 14));
-        
-        JButton btnBuscar = crearBoton("Buscar", colorPrincipal, Color.WHITE);
-        JButton btnTodos = crearBoton("Ver Todos", Color.WHITE, colorPrincipal);
-        JButton btnTopProt = crearBoton("Top Proteínas", new Color(74, 144, 226), Color.WHITE);
-        JButton btnBajosKcal = crearBoton("Bajos en Kcal", new Color(255, 140, 0), Color.WHITE);
+
+        comboCategorias = new JComboBox<>();
+        comboCategorias.addItem(new ComboItem(0, "Todas las Categorías"));
+        Map<Integer, String> categorias = CategoriaDAO.obtenerTodasLasCategorias();
+        for (Map.Entry<Integer, String> entry : categorias.entrySet()) {
+            comboCategorias.addItem(new ComboItem(entry.getKey(), entry.getValue()));
+        }
+
+        JButton btnBuscar = crearBoton("Buscar", TemaNutrix.VERDE_NUTRIX, TemaNutrix.BLANCO);
+        btnBuscar.addActionListener(e -> filtrarAlimentos());
+
+        JButton btnTodos = crearBoton("Ver Todos", TemaNutrix.BLANCO, TemaNutrix.VERDE_NUTRIX);
+        btnTodos.addActionListener(e -> {
+            txtBuscar.setText("");
+            comboCategorias.setSelectedIndex(0);
+            actualizarTabla(AlimentoDAO.obtenerTodosLosAlimentos());
+        });
+
+        JButton btnTopProt = crearBoton("Top Proteínas", TemaNutrix.CARBOHIDRATOS, TemaNutrix.BLANCO);
+        btnTopProt.addActionListener(e -> {
+            txtBuscar.setText("");
+            comboCategorias.setSelectedIndex(0);
+            actualizarTabla(AlimentoDAO.obtenerTopProteinas());
+        });
+
+        JButton btnBajosKcal = crearBoton("Bajos en Kcal", TemaNutrix.CALORIAS, TemaNutrix.BLANCO);
+        btnBajosKcal.addActionListener(e -> {
+            txtBuscar.setText("");
+            comboCategorias.setSelectedIndex(0);
+            actualizarTabla(AlimentoDAO.obtenerBajosEnCalorias());
+        });
 
         panelControles.add(new JLabel("🔍 Buscar:"));
         panelControles.add(txtBuscar);
+        panelControles.add(new JLabel("📂 Categoría:"));
+        panelControles.add(comboCategorias);
         panelControles.add(btnBuscar);
-        panelControles.add(Box.createRigidArea(new Dimension(20, 0))); // Separador
+        panelControles.add(Box.createRigidArea(new Dimension(10, 0))); // Separador
         panelControles.add(btnTodos);
         panelControles.add(btnTopProt);
         panelControles.add(btnBajosKcal);
@@ -68,20 +100,20 @@ public class PanelBaseAlimentos extends JPanel {
         add(panelNorte, BorderLayout.NORTH);
 
         // --- 2. ZONA CENTRAL: LA TABLA ---
-        String[] columnas = {"Nombre", "Marca", "Kcal", "Proteínas (g)", "Carbos (g)", "Grasas (g)"};
-        
+        String[] columnas = { "Nombre", "Marca", "Kcal", "Proteínas (g)", "Carbos (g)", "Grasas (g)" };
+
         // Evitamos que el usuario edite las celdas directamente haciendo doble clic
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; 
+                return false;
             }
         };
 
         tablaAlimentos = new JTable(modeloTabla);
         tablaAlimentos.setRowHeight(25);
         tablaAlimentos.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        tablaAlimentos.getTableHeader().setBackground(new Color(230, 230, 230));
+        tablaAlimentos.getTableHeader().setBackground(TemaNutrix.GRIS_CLARO);
         tablaAlimentos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JScrollPane scrollPane = new JScrollPane(tablaAlimentos);
@@ -93,51 +125,32 @@ public class PanelBaseAlimentos extends JPanel {
         JPanel panelSur = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelSur.setBackground(Color.WHITE);
         panelSur.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(colorPrincipal), 
-                "Información Nutricional", 
-                TitledBorder.LEFT, 
-                TitledBorder.TOP, 
-                new Font("Arial", Font.BOLD, 12), 
-                colorPrincipal));
+                BorderFactory.createLineBorder(TemaNutrix.VERDE_NUTRIX),
+                "Información Nutricional",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 12),
+                TemaNutrix.VERDE_NUTRIX));
 
         lblDetalle = new JLabel("Selecciona un alimento en la tabla para ver más detalles.");
         lblDetalle.setFont(new Font("Arial", Font.ITALIC, 14));
         panelSur.add(lblDetalle);
         add(panelSur, BorderLayout.SOUTH);
 
-        // --- EVENTOS DE LOS BOTONES ---
-        btnBuscar.addActionListener(e -> {
-            String busqueda = txtBuscar.getText().trim();
-            if (!busqueda.isEmpty()) {
-                actualizarTabla(AlimentoDAO.buscarAlimentos(busqueda));
-            }
-        });
 
-        btnTodos.addActionListener(e -> {
-            txtBuscar.setText("");
-            actualizarTabla(AlimentoDAO.obtenerTodosLosAlimentos());
-        });
-
-        btnTopProt.addActionListener(e -> {
-            txtBuscar.setText("");
-            actualizarTabla(AlimentoDAO.obtenerTopProteinas());
-        });
-
-        btnBajosKcal.addActionListener(e -> {
-            txtBuscar.setText("");
-            actualizarTabla(AlimentoDAO.obtenerBajosEnCalorias());
-        });
 
         // Evento al hacer clic en una fila de la tabla
         tablaAlimentos.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tablaAlimentos.getSelectedRow() != -1) {
                 int fila = tablaAlimentos.getSelectedRow();
                 String nombre = modeloTabla.getValueAt(fila, 0).toString();
-                String marca = modeloTabla.getValueAt(fila, 1) != null ? modeloTabla.getValueAt(fila, 1).toString() : "Genérico";
+                String marca = modeloTabla.getValueAt(fila, 1) != null ? modeloTabla.getValueAt(fila, 1).toString()
+                        : "Genérico";
                 String kcal = modeloTabla.getValueAt(fila, 2).toString();
                 String prot = modeloTabla.getValueAt(fila, 3).toString();
 
-                lblDetalle.setText(String.format("📌 %s (%s) aporta %s Kcal y %s g de proteína por cada 100g.", nombre, marca, kcal, prot));
+                lblDetalle.setText(String.format("📌 %s (%s) aporta %s Kcal y %s g de proteína por cada 100g.", nombre,
+                        marca, kcal, prot));
             }
         });
 
@@ -152,16 +165,27 @@ public class PanelBaseAlimentos extends JPanel {
         modeloTabla.setRowCount(0); // Vaciamos la tabla actual
         for (Alimento a : listaAlimentos) {
             Object[] fila = {
-                a.getNombre(),
-                a.getMarca(),
-                a.getKcal(),
-                a.getProteinas(),
-                a.getHidratosCarbono(),
-                a.getGrasas()
+                    a.getNombre(),
+                    a.getMarca(),
+                    a.getKcal(),
+                    a.getProteinas(),
+                    a.getHidratosCarbono(),
+                    a.getGrasas()
             };
             modeloTabla.addRow(fila); // Añadimos la fila
         }
         lblDetalle.setText(listaAlimentos.size() + " alimentos encontrados.");
+    }
+
+    private void filtrarAlimentos() {
+        String query = txtBuscar.getText().trim();
+        ComboItem selectedCat = (ComboItem) comboCategorias.getSelectedItem();
+        int idCat = (selectedCat != null) ? selectedCat.getId() : 0;
+
+        new Thread(() -> {
+            List<Alimento> filtrados = AlimentoDAO.obtenerAlimentosPorFiltro(query, idCat);
+            SwingUtilities.invokeLater(() -> actualizarTabla(filtrados));
+        }).start();
     }
 
     // Método para diseñar los botones rápidamente

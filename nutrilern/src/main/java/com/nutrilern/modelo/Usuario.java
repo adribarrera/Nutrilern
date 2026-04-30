@@ -12,10 +12,11 @@ public class Usuario {
     private double pesoInicial;
     private String rol;
     private int idObjetivo;
+    private String sexo;
 
     // Constructor completo (sin el ID que se genera en la BBDD con el
     // AUTO_INCREMENT
-    public Usuario(String email, String password, String nombre, String apellidos, int edad, double altura, double pesoInicial, String rol, int idObjetivo) {
+    public Usuario(String email, String password, String nombre, String apellidos, int edad, double altura, double pesoInicial, String rol, int idObjetivo, String sexo) {
         this.email = email;
         this.password = password;
         this.nombre = nombre;
@@ -25,6 +26,7 @@ public class Usuario {
         this.pesoInicial = pesoInicial;
         this.rol = rol;
         this.idObjetivo = idObjetivo;
+        this.sexo = sexo;
     }
 
     // Constructor vacío
@@ -110,5 +112,13 @@ public class Usuario {
 
     public void setIdObjetivo(int idObjetivo) {
         this.idObjetivo = idObjetivo;
+    }
+    
+    public String getSexo() {
+        return sexo;
+    }
+
+    public void setSexo(String sexo) {
+        this.sexo = sexo;
     }
 }

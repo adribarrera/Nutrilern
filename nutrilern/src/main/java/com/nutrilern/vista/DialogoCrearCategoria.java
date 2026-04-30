@@ -7,7 +7,7 @@ import java.awt.*;
 
 public class DialogoCrearCategoria extends JDialog {
 
-    private final Color COLOR_VERDE_NUTRIX = new Color(34, 139, 34);
+
     private JTextField txtNombre;
 
     public DialogoCrearCategoria(Frame parent) {
@@ -24,7 +24,7 @@ public class DialogoCrearCategoria extends JDialog {
 
         JLabel lblTitulo = new JLabel("Registrar Categoría");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
-        lblTitulo.setForeground(COLOR_VERDE_NUTRIX);
+        lblTitulo.setForeground(TemaNutrix.VERDE_NUTRIX);
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         txtNombre = new JTextField();
@@ -37,7 +37,7 @@ public class DialogoCrearCategoria extends JDialog {
         btnCancelar.addActionListener(e -> dispose());
 
         JButton btnGuardar = new JButton("💾 Guardar");
-        btnGuardar.setBackground(COLOR_VERDE_NUTRIX);
+        btnGuardar.setBackground(TemaNutrix.VERDE_NUTRIX);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setFont(new Font("Arial", Font.BOLD, 14));
         

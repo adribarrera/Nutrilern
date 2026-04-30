@@ -10,6 +10,8 @@ import java.time.format.TextStyle;
 import java.util.Locale;
 import com.nutrilern.modelo.AlimentoDAO;
 import com.nutrilern.modelo.Usuario;
+import com.nutrilern.modelo.PesoDAO;
+import java.util.List;
 
 /**
  * Este panel muestra la evolución nutricional del usuario.
@@ -20,10 +22,7 @@ public class PanelEvolucion extends JPanel {
 
     private VentanaPrincipal ventanaPadre;
     
-    // Paleta de colores para mantener la estética Nutrix
-    private final Color COLOR_VERDE_NUTRIX = new Color(34, 139, 34);
-    private final Color COLOR_FONDO = new Color(245, 247, 250);
-    private final Color COLOR_TEXTO = new Color(50, 50, 50);
+    // Paleta de colores para mantener la estética
 
     // Componentes del calendario
     private JPanel panelCalendario;
@@ -33,13 +32,14 @@ public class PanelEvolucion extends JPanel {
     // Componentes de gráficos (los guardamos para poder actualizarlos)
     private TarjetaGrafico graficoCalorias;
     private TarjetaGrafico graficoMacros;
+    private TarjetaGrafico graficoPeso;
 
     public PanelEvolucion(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
         this.mesActual = YearMonth.now();
         
         setLayout(new BorderLayout());
-        setBackground(COLOR_FONDO);
+        setBackground(TemaNutrix.FONDO);
 
         add(crearCabecera(), BorderLayout.NORTH);
         
@@ -54,6 +54,11 @@ public class PanelEvolucion extends JPanel {
 
         // --- SECCIÓN GRÁFICOS ---
         content.add(crearSeccionGraficos());
+        content.add(Box.createRigidArea(new Dimension(0, 30)));
+        
+        // --- SECCIÓN PESO ---
+        graficoPeso = new TarjetaGrafico("Evolución de Peso (kg)", new double[0]);
+        content.add(graficoPeso);
 
         JScrollPane scroll = new JScrollPane(content);
         scroll.setOpaque(false);
@@ -84,10 +89,20 @@ public class PanelEvolucion extends JPanel {
                 macrosHoy[2] = 100 - macrosHoy[0] - macrosHoy[1];      // Fat
             }
 
-            // 3. Actualizamos la interfaz en el hilo de Swing
+            // 3. Obtenemos historial de peso con fechas
+            List<Object[]> historial = PesoDAO.obtenerHistorialPesos(user.getId(), 10);
+            double[] pesosArr = new double[historial.size()];
+            String[] fechasArr = new String[historial.size()];
+            for (int i = 0; i < historial.size(); i++) {
+                pesosArr[i] = (double) historial.get(i)[0];
+                fechasArr[i] = (String) historial.get(i)[1];
+            }
+
+            // 4. Actualizamos la interfaz en el hilo de Swing
             SwingUtilities.invokeLater(() -> {
                 graficoCalorias.actualizarDatos(calSemana);
                 graficoMacros.actualizarDatos(macrosHoy);
+                graficoPeso.actualizarDatosLineal(pesosArr, fechasArr);
             });
         }).start();
     }
@@ -96,11 +111,11 @@ public class PanelEvolucion extends JPanel {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
         header.setPreferredSize(new Dimension(0, 80));
-        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO));
 
         JButton btnVolver = new JButton("← Volver");
         btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
-        btnVolver.setForeground(COLOR_VERDE_NUTRIX);
+        btnVolver.setForeground(TemaNutrix.VERDE_NUTRIX);
         btnVolver.setContentAreaFilled(false);
         btnVolver.setBorderPainted(false);
         btnVolver.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -109,7 +124,7 @@ public class PanelEvolucion extends JPanel {
 
         JLabel lblTit = new JLabel("Mi Evolución Nutricional", SwingConstants.CENTER);
         lblTit.setFont(new Font("Arial", Font.BOLD, 24));
-        lblTit.setForeground(COLOR_TEXTO);
+        lblTit.setForeground(TemaNutrix.TEXTO);
         header.add(lblTit, BorderLayout.CENTER);
 
         header.add(Box.createRigidArea(new Dimension(150, 0)), BorderLayout.EAST);
@@ -120,7 +135,7 @@ public class PanelEvolucion extends JPanel {
         JPanel container = new JPanel(new BorderLayout());
         container.setBackground(Color.WHITE);
         container.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(220, 220, 220), 1, true),
+            new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
             new EmptyBorder(20, 20, 20, 20)
         ));
         container.setMaximumSize(new Dimension(1000, 400));
@@ -186,7 +201,7 @@ public class PanelEvolucion extends JPanel {
             if (mesActual.getYear() == LocalDate.now().getYear() && 
                 mesActual.getMonth() == LocalDate.now().getMonth() && 
                 dia == LocalDate.now().getDayOfMonth()) {
-                btnDia.setBorder(new LineBorder(COLOR_VERDE_NUTRIX, 2));
+                btnDia.setBorder(new LineBorder(TemaNutrix.VERDE_NUTRIX, 2));
                 btnDia.setFont(new Font("Arial", Font.BOLD, 14));
             }
             panelCalendario.add(btnDia);
@@ -210,61 +225,87 @@ public class PanelEvolucion extends JPanel {
         return container;
     }
 
-    /**
-     * Clase interna para el dibujo de gráficos.
-     */
     class TarjetaGrafico extends JPanel {
-        private int[] datos;
+        private double[] datos;
+        private String[] etiquetas;
 
-        public TarjetaGrafico(String titulo, int[] datos) {
+        public TarjetaGrafico(String titulo, int[] datosInt) {
+            this.datos = new double[datosInt.length];
+            for(int i=0; i<datosInt.length; i++) this.datos[i] = datosInt[i];
+            init(titulo);
+        }
+
+        public TarjetaGrafico(String titulo, double[] datos) {
             this.datos = datos;
+            init(titulo);
+        }
+
+        private void init(String titulo) {
             setBackground(Color.WHITE);
+            setPreferredSize(new Dimension(0, 250));
             setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(220, 220, 220), 1, true),
-                new EmptyBorder(15, 15, 15, 15)
+                new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
+                new EmptyBorder(15, 15, 25, 15) // Más margen abajo para las fechas
             ));
             setLayout(new BorderLayout());
             
             JLabel lbl = new JLabel(titulo);
             lbl.setFont(new Font("Arial", Font.BOLD, 15));
-            lbl.setForeground(COLOR_TEXTO);
+            lbl.setForeground(TemaNutrix.TEXTO);
             add(lbl, BorderLayout.NORTH);
         }
 
         public void actualizarDatos(int[] nuevosDatos) {
+            this.datos = new double[nuevosDatos.length];
+            for(int i=0; i<nuevosDatos.length; i++) this.datos[i] = nuevosDatos[i];
+            repaint();
+        }
+
+        public void actualizarDatos(double[] nuevosDatos) {
             this.datos = nuevosDatos;
+            repaint();
+        }
+        
+        public void actualizarDatosLineal(double[] nuevosDatos, String[] nuevasEtiquetas) {
+            this.datos = nuevosDatos;
+            this.etiquetas = nuevasEtiquetas;
             repaint();
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
+            if (datos == null || datos.length == 0) {
+                g.setColor(TemaNutrix.GRIS_TEXTO);
+                g.drawString("Sin datos registrados", getWidth()/2 - 50, getHeight()/2);
+                return;
+            }
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            int w = getWidth() - 40;
-            int h = getHeight() - 80;
-            int x0 = 20;
+            int w = getWidth() - 60;
+            int h = getHeight() - 100; // Espacio para etiquetas y título
+            int x0 = 30;
             int y0 = 60;
 
-            if (datos.length > 3) { // BARRAS
+            if (datos.length > 3 && datos.length <= 7) { // BARRAS (Calorías)
                 int barW = w / datos.length - 10;
-                int max = 0;
-                for(int d : datos) if(d > max) max = d;
-                if(max < 2000) max = 2000; // Escala mínima
+                double max = 0;
+                for(double d : datos) if(d > max) max = d;
+                if(max < 2000) max = 2000; 
                 
                 for (int i = 0; i < datos.length; i++) {
-                    int barH = (int) ((datos[i] / (double) max) * h);
-                    g2d.setColor(COLOR_VERDE_NUTRIX);
+                    int barH = (int) ((datos[i] / max) * h);
+                    g2d.setColor(TemaNutrix.VERDE_NUTRIX);
                     g2d.fillRect(x0 + i * (barW + 10), y0 + (h - barH), barW, barH);
-                    g2d.setColor(new Color(120, 120, 120));
+                    g2d.setColor(TemaNutrix.GRIS_TEXTO);
                     g2d.setFont(new Font("Arial", Font.PLAIN, 10));
-                    g2d.drawString(String.valueOf(datos[i]), x0 + i * (barW + 10), y0 + (h - barH) - 5);
+                    g2d.drawString(String.valueOf((int)datos[i]), x0 + i * (barW + 10), y0 + (h - barH) - 5);
                 }
-            } else { // CIRCULAR
+            } else if (datos.length == 3) { // CIRCULAR (Macros)
                 int size = Math.min(w, h);
                 int startAngle = 90;
-                Color[] colores = {new Color(74, 144, 226), new Color(255, 127, 80), new Color(50, 205, 50)};
+                Color[] colores = {TemaNutrix.CARBOHIDRATOS, TemaNutrix.PROTEINAS, TemaNutrix.GRASAS};
                 
                 for (int i = 0; i < datos.length; i++) {
                     int arcAngle = (int) (datos[i] * 3.6); 
@@ -277,6 +318,52 @@ public class PanelEvolucion extends JPanel {
                 g2d.setColor(colores[0]); g2d.drawString("HC", x0, y0 + h + 15);
                 g2d.setColor(colores[1]); g2d.drawString("Prot", x0 + 40, y0 + h + 15);
                 g2d.setColor(colores[2]); g2d.drawString("Grasas", x0 + 85, y0 + h + 15);
+            } else { // LÍNEA (Evolución de Peso)
+                int pointW = w / (datos.length > 1 ? datos.length - 1 : 1);
+                
+                // Buscar min y max reales para la escala elástica
+                double min = datos[0], max = datos[0];
+                for(double d : datos) {
+                    if(d < min) min = d;
+                    if(d > max) max = d;
+                }
+                
+                double range = max - min;
+                if(range < 5) range = 5; // Escala mínima de 5kg para que no sea plana
+                double padding = range * 0.2; // 20% de margen arriba y abajo
+                double scaleMin = min - padding;
+                double scaleMax = max + padding;
+                double scaleRange = scaleMax - scaleMin;
+
+                int[] xPoints = new int[datos.length];
+                int[] yPoints = new int[datos.length];
+
+                for (int i = 0; i < datos.length; i++) {
+                    xPoints[i] = x0 + i * pointW;
+                    yPoints[i] = y0 + h - (int) (((datos[i] - scaleMin) / scaleRange) * h);
+                    
+                    // Dibujar punto
+                    g2d.setColor(TemaNutrix.VERDE_NUTRIX);
+                    g2d.fillOval(xPoints[i] - 5, yPoints[i] - 5, 10, 10);
+                    
+                    // Valor del peso encima del punto
+                    g2d.setColor(TemaNutrix.TEXTO);
+                    g2d.setFont(new Font("Arial", Font.BOLD, 11));
+                    String val = String.format("%.1f", datos[i]);
+                    g2d.drawString(val, xPoints[i] - 12, yPoints[i] - 12);
+                    
+                    // Fecha debajo del punto (fuera del eje)
+                    if (etiquetas != null && i < etiquetas.length) {
+                        g2d.setColor(TemaNutrix.GRIS_TEXTO);
+                        g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+                        g2d.drawString(etiquetas[i], xPoints[i] - 12, y0 + h + 25);
+                    }
+                }
+                
+                // Dibujar la línea conectora
+                g2d.setStroke(new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2d.setColor(new Color(34, 139, 34, 150)); // Verde semitransparente
+                g2d.drawPolyline(xPoints, yPoints, datos.length);
             }
         }
     }

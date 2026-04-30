@@ -20,7 +20,7 @@ public class UsuarioDAO {
         String sql = "INSERT INTO usuario (email, passwd, nombre, apellidos, edad, altura, peso_inicial, rol, id_objetivo_fk) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, nuevoUsuario.getEmail());
             pstmt.setString(2, hashSeguro);
@@ -33,7 +33,7 @@ public class UsuarioDAO {
             pstmt.setInt(9, nuevoUsuario.getIdObjetivo());
 
             int filas = pstmt.executeUpdate();
-            
+
             if (filas > 0) {
                 // Recuperamos el ID generado por la BBDD
                 try (java.sql.ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
@@ -59,7 +59,7 @@ public class UsuarioDAO {
         String sql = "SELECT * FROM usuario WHERE email = ?";
 
         try (Connection con = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = con.prepareStatement(sql)) {
+                PreparedStatement pstmt = con.prepareStatement(sql)) {
 
             pstmt.setString(1, email);
 
@@ -70,7 +70,7 @@ public class UsuarioDAO {
 
                     // 2. Verificamos si la contraseña que escribió el usuario coincide con el hash
                     if (GestorSeguridad.verificarPassword(passwordPlana, hashGuardado)) {
-                        
+
                         // ¡Éxito! Creamos el objeto Usuario con los datos de la fila
                         Usuario usu = new Usuario();
                         usu.setId(rs.getInt("id_usuario"));
@@ -100,7 +100,7 @@ public class UsuarioDAO {
         String sql = "UPDATE usuario SET email = ? WHERE id_usuario = ?";
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, nuevoEmail);
             pstmt.setInt(2, idUsuario);
@@ -113,16 +113,48 @@ public class UsuarioDAO {
         }
     }
 
+    public static boolean actualizarDatosFisicos(int idUsuario, int edad, double peso, double altura) {
+        String sql = "UPDATE usuario SET edad = ?, peso_inicial = ?, altura = ? WHERE id_usuario = ?";
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, edad);
+            pstmt.setDouble(2, peso);
+            pstmt.setDouble(3, altura);
+            pstmt.setInt(4, idUsuario);
+
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al actualizar datos físicos: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean actualizarObjetivo(int idUsuario, int idObjetivo) {
+        String sql = "UPDATE usuario SET id_objetivo_fk = ? WHERE id_usuario = ?";
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idObjetivo);
+            pstmt.setInt(2, idUsuario);
+
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al actualizar objetivo: " + e.getMessage());
+            return false;
+        }
+    }
+
     public static boolean eliminarUsuario(int idUsuario) {
         String sql = "DELETE FROM usuario WHERE id_usuario = ?";
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, idUsuario);
 
             int filasAfectadas = pstmt.executeUpdate();
-            
+
             // Si ha borrado 1 fila, es que todo ha ido bien
             return filasAfectadas > 0;
 

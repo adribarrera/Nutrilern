@@ -12,8 +12,7 @@ import java.util.Map;
 
 public class DialogoCrearAlimento extends JDialog {
 
-    private final Color COLOR_VERDE_NUTRIX = new Color(34, 139, 34);
-    private final Color COLOR_TEXTO = new Color(50, 50, 50);
+
 
     // Campos del formulario
     private JTextField txtNombre, txtMarca, txtKcal;
@@ -40,7 +39,7 @@ public class DialogoCrearAlimento extends JDialog {
         // 1. Título
         JLabel lblTitulo = new JLabel("Registrar Nuevo Alimento");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
-        lblTitulo.setForeground(COLOR_VERDE_NUTRIX);
+        lblTitulo.setForeground(TemaNutrix.VERDE_NUTRIX);
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         panelPrincipal.add(lblTitulo);
@@ -94,7 +93,7 @@ public class DialogoCrearAlimento extends JDialog {
         btnCancelar.addActionListener(e -> dispose()); // Cierra la ventana sin hacer nada
 
         JButton btnGuardar = new JButton("💾 Guardar Alimento");
-        btnGuardar.setBackground(COLOR_VERDE_NUTRIX);
+        btnGuardar.setBackground(TemaNutrix.VERDE_NUTRIX);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setFont(new Font("Arial", Font.BOLD, 14));
         btnGuardar.addActionListener(e -> guardarAlimentoBD());
@@ -110,7 +109,7 @@ public class DialogoCrearAlimento extends JDialog {
     private JLabel crearEtiqueta(String texto) {
         JLabel lbl = new JLabel(texto);
         lbl.setFont(new Font("Arial", Font.BOLD, 13));
-        lbl.setForeground(COLOR_TEXTO);
+        lbl.setForeground(TemaNutrix.TEXTO);
         return lbl;
     }
 

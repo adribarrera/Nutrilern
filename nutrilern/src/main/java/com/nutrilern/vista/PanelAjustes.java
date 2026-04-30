@@ -6,18 +6,16 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import com.nutrilern.modelo.UsuarioDAO;
 import com.nutrilern.modelo.Usuario;
+import com.nutrilern.modelo.PesoDAO;
 
 public class PanelAjustes extends JPanel {
 
     private VentanaPrincipal ventanaPadre;
 
     // Etiquetas dinámicas de datos
-    private JLabel lblNombreValor, lblEmailValor, lblEdadValor, lblAlturaValor, lblObjetivoValor;
+    private JLabel lblNombreValor, lblEmailValor, lblEdadValor, lblAlturaValor, lblSexoValor, lblObjetivoValor;
 
-    // Colores
-    private final Color COLOR_VERDE_NUTRIX = new Color(34, 139, 34);
-    private final Color COLOR_FONDO = new Color(245, 247, 250);
-    private final Color COLOR_TEXTO = new Color(50, 50, 50);
+
 
     // Navegación Superior (Tabs)
     private JButton btnNavDatos, btnNavNutricion, btnNavSeguridad, btnNavPeligro;
@@ -29,7 +27,7 @@ public class PanelAjustes extends JPanel {
     public PanelAjustes(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
         setLayout(new BorderLayout());
-        setBackground(COLOR_FONDO);
+        setBackground(TemaNutrix.FONDO);
 
         // 1. Cabecera (Título, Botón Volver y Barra de Navegación)
         add(crearCabeceraYNav(), BorderLayout.NORTH);
@@ -37,7 +35,7 @@ public class PanelAjustes extends JPanel {
         // 2. Contenedor Central con CardLayout (Pestañas)
         cardLayout = new CardLayout();
         panelContenedorCartas = new JPanel(cardLayout);
-        panelContenedorCartas.setBackground(COLOR_FONDO);
+        panelContenedorCartas.setBackground(TemaNutrix.FONDO);
 
         // Añadimos las 4 pantallas centradas
         panelContenedorCartas.add(crearPantallaCentrada(crearTarjetaDatos()), "DATOS");
@@ -66,7 +64,7 @@ public class PanelAjustes extends JPanel {
 
         JButton btnVolver = new JButton("← Volver al Menú");
         btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
-        btnVolver.setForeground(COLOR_VERDE_NUTRIX);
+        btnVolver.setForeground(TemaNutrix.VERDE_NUTRIX);
         btnVolver.setContentAreaFilled(false);
         btnVolver.setBorderPainted(false);
         btnVolver.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -75,7 +73,7 @@ public class PanelAjustes extends JPanel {
 
         JLabel lblTituloHeader = new JLabel("Ajustes de mi Cuenta", SwingConstants.CENTER);
         lblTituloHeader.setFont(new Font("Arial", Font.BOLD, 22));
-        lblTituloHeader.setForeground(COLOR_TEXTO);
+        lblTituloHeader.setForeground(TemaNutrix.TEXTO);
         header.add(lblTituloHeader, BorderLayout.CENTER);
 
         header.add(Box.createRigidArea(new Dimension(150, 0)), BorderLayout.EAST); // Balance
@@ -83,7 +81,7 @@ public class PanelAjustes extends JPanel {
         // --- Parte 2: Botones de Pestañas ---
         JPanel navBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0));
         navBar.setBackground(Color.WHITE);
-        navBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220))); // Línea gris inferior
+        navBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO)); // Línea gris inferior
 
         btnNavDatos = crearBotonNav("Datos Físicos");
         btnNavNutricion = crearBotonNav("Mi Nutrición");
@@ -109,7 +107,7 @@ public class PanelAjustes extends JPanel {
     private JButton crearBotonNav(String texto) {
         JButton btn = new JButton(texto);
         btn.setFont(new Font("Arial", Font.PLAIN, 15));
-        btn.setForeground(new Color(120, 120, 120));
+        btn.setForeground(TemaNutrix.GRIS_TEXTO);
         btn.setContentAreaFilled(false);
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -123,14 +121,14 @@ public class PanelAjustes extends JPanel {
         for (JButton btn : todos) {
             if (btn == botonActivo) {
                 btn.setFont(new Font("Arial", Font.BOLD, 15));
-                btn.setForeground(COLOR_VERDE_NUTRIX);
+                btn.setForeground(TemaNutrix.VERDE_NUTRIX);
                 btn.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 3, 0, COLOR_VERDE_NUTRIX), // Subrayado grueso verde
+                    BorderFactory.createMatteBorder(0, 0, 3, 0, TemaNutrix.VERDE_NUTRIX), // Subrayado grueso verde
                     new EmptyBorder(10, 5, 7, 5)
                 ));
             } else {
                 btn.setFont(new Font("Arial", Font.PLAIN, 15));
-                btn.setForeground(new Color(120, 120, 120));
+                btn.setForeground(TemaNutrix.GRIS_TEXTO);
                 btn.setBorder(new EmptyBorder(10, 5, 10, 5));
             }
         }
@@ -143,7 +141,7 @@ public class PanelAjustes extends JPanel {
     // Este método usa GridBagLayout para dejar la tarjeta blanca perfectamente en el medio
     private JPanel crearPantallaCentrada(JPanel tarjetaBlanca) {
         JPanel fondo = new JPanel(new GridBagLayout());
-        fondo.setBackground(COLOR_FONDO);
+        fondo.setBackground(TemaNutrix.FONDO);
         fondo.add(tarjetaBlanca);
         return fondo;
     }
@@ -158,16 +156,62 @@ public class PanelAjustes extends JPanel {
         lblEmailValor = new JLabel("-");
         lblEdadValor = new JLabel("-");
         lblAlturaValor = new JLabel("-");
+        lblSexoValor = new JLabel("-");
 
         tarjeta.add(crearFilaDato("Nombre:", lblNombreValor));
         tarjeta.add(crearFilaDato("Email:", lblEmailValor));
         tarjeta.add(crearFilaDato("Edad:", lblEdadValor));
         tarjeta.add(crearFilaDato("Altura:", lblAlturaValor));
+        tarjeta.add(crearFilaDato("Sexo:", lblSexoValor));
         
         tarjeta.add(Box.createRigidArea(new Dimension(0, 25)));
         
         JButton btnEditar = crearBotonCentrado("Actualizar Datos Físicos");
-        btnEditar.addActionListener(e -> JOptionPane.showMessageDialog(this, "Próximamente: Editar datos físicos"));
+        btnEditar.addActionListener(e -> {
+            Usuario user = ventanaPadre.getUsuarioLogueado();
+            if (user != null) {
+                JPanel panelCampos = new JPanel(new GridLayout(3, 2, 5, 5));
+                JTextField txtEdad = new JTextField(String.valueOf(user.getEdad()));
+                JTextField txtPeso = new JTextField(String.valueOf(user.getPesoInicial()));
+                JTextField txtAltura = new JTextField(String.valueOf(user.getAltura()));
+                
+                panelCampos.add(new JLabel("Nueva Edad:"));
+                panelCampos.add(txtEdad);
+                panelCampos.add(new JLabel("Nuevo Peso (kg):"));
+                panelCampos.add(txtPeso);
+                panelCampos.add(new JLabel("Nueva Altura (cm):"));
+                panelCampos.add(txtAltura);
+                
+                int result = JOptionPane.showConfirmDialog(this, panelCampos, "Actualizar Datos Físicos", JOptionPane.OK_CANCEL_OPTION);
+                if (result == JOptionPane.OK_OPTION) {
+                    try {
+                        int edad = Integer.parseInt(txtEdad.getText().trim());
+                        double peso = Double.parseDouble(txtPeso.getText().trim().replace(",", "."));
+                        double altura = Double.parseDouble(txtAltura.getText().trim().replace(",", "."));
+                        
+                        if (edad <= 0 || edad > 120 || peso < 20 || peso > 500 || altura < 50 || altura > 300) {
+                            JOptionPane.showMessageDialog(this, "Valores no válidos.", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        
+                        if (UsuarioDAO.actualizarDatosFisicos(user.getId(), edad, peso, altura)) {
+                            // Registramos en el historial para la gráfica
+                            PesoDAO.registrarPeso(user.getId(), peso);
+                            
+                            user.setEdad(edad);
+                            user.setPeso(peso);
+                            user.setAltura(altura);
+                            refrescarDatos();
+                            JOptionPane.showMessageDialog(this, "Datos actualizados correctamente.");
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Error de base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this, "Introduce solo números válidos.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
         tarjeta.add(btnEditar);
         
         return tarjeta;
@@ -182,7 +226,26 @@ public class PanelAjustes extends JPanel {
         tarjeta.add(Box.createRigidArea(new Dimension(0, 25)));
         
         JButton btnObjetivo = crearBotonCentrado("Cambiar mi Objetivo");
-        btnObjetivo.addActionListener(e -> JOptionPane.showMessageDialog(this, "Próximamente: Cambiar objetivo"));
+        btnObjetivo.addActionListener(e -> {
+            Usuario user = ventanaPadre.getUsuarioLogueado();
+            if (user != null) {
+                String[] opciones = { "Perder Peso", "Mantener Peso", "Ganar Músculo" };
+                JComboBox<String> combo = new JComboBox<>(opciones);
+                combo.setSelectedIndex(user.getIdObjetivo() - 1);
+                
+                int result = JOptionPane.showConfirmDialog(this, combo, "Selecciona tu nuevo objetivo", JOptionPane.OK_CANCEL_OPTION);
+                if (result == JOptionPane.OK_OPTION) {
+                    int idObjNuevo = combo.getSelectedIndex() + 1;
+                    if (UsuarioDAO.actualizarObjetivo(user.getId(), idObjNuevo)) {
+                        user.setIdObjetivo(idObjNuevo);
+                        refrescarDatos();
+                        JOptionPane.showMessageDialog(this, "Objetivo actualizado.");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Error al actualizar.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
         tarjeta.add(btnObjetivo);
         
         return tarjeta;
@@ -286,16 +349,16 @@ public class PanelAjustes extends JPanel {
         tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
         tarjeta.setBackground(Color.WHITE);
         // Le damos un tamaño fijo a la caja blanca para que no se estire
-        tarjeta.setPreferredSize(new Dimension(450, 350)); 
-        tarjeta.setMaximumSize(new Dimension(450, 350));
+        tarjeta.setPreferredSize(new Dimension(450, 420)); 
+        tarjeta.setMaximumSize(new Dimension(450, 420));
         
         tarjeta.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(220, 220, 220), 1, true),
+                new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
                 new EmptyBorder(30, 40, 30, 40)));
         
         JLabel lblTit = new JLabel(titulo);
         lblTit.setFont(new Font("Arial", Font.BOLD, 22));
-        lblTit.setForeground(COLOR_VERDE_NUTRIX);
+        lblTit.setForeground(TemaNutrix.VERDE_NUTRIX);
         lblTit.setAlignmentX(Component.CENTER_ALIGNMENT); // Centramos el título
         
         tarjeta.add(lblTit);
@@ -319,7 +382,7 @@ public class PanelAjustes extends JPanel {
         lblEt.setForeground(new Color(140, 140, 140));
         
         lblValor.setFont(new Font("Arial", Font.PLAIN, 15));
-        lblValor.setForeground(COLOR_TEXTO);
+        lblValor.setForeground(TemaNutrix.TEXTO);
         lblValor.setHorizontalAlignment(SwingConstants.RIGHT); // Alineamos el dato a la derecha
         
         fila.add(lblEt, BorderLayout.WEST);
@@ -338,7 +401,7 @@ public class PanelAjustes extends JPanel {
 
     private JButton crearBotonCentrado(String texto) {
         JButton btn = new JButton(texto);
-        btn.setBackground(COLOR_VERDE_NUTRIX);
+        btn.setBackground(TemaNutrix.VERDE_NUTRIX);
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setFont(new Font("Arial", Font.BOLD, 14));
@@ -360,6 +423,7 @@ public class PanelAjustes extends JPanel {
             lblEmailValor.setText(user.getEmail());
             lblEdadValor.setText(user.getEdad() + " años");
             lblAlturaValor.setText(user.getAltura() + " cm");
+            lblSexoValor.setText(user.getSexo() != null && user.getSexo().equals("F") ? "Mujer" : "Hombre");
             
             String objStr = "Desconocido";
             if (user.getIdObjetivo() == 1) objStr = "Perder Grasa";

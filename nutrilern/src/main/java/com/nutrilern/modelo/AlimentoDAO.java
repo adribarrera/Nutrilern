@@ -37,7 +37,43 @@ public class AlimentoDAO {
         return lista;
     }
 
-    
+    public static List<Alimento> obtenerAlimentosPorFiltro(String query, int idCategoria) {
+        List<Alimento> lista = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM alimento WHERE 1=1");
+        if (query != null && !query.isEmpty()) sql.append(" AND nombre LIKE ?");
+        if (idCategoria > 0) sql.append(" AND id_categoria_fk = ?");
+        sql.append(" ORDER BY nombre ASC");
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            
+            int paramIdx = 1;
+            if (query != null && !query.isEmpty()) pstmt.setString(paramIdx++, "%" + query + "%");
+            if (idCategoria > 0) pstmt.setInt(paramIdx++, idCategoria);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(new Alimento(
+                        rs.getInt("id_alimento"),
+                        rs.getString("nombre"),
+                        rs.getString("marca"),
+                        rs.getDouble("kcal"),
+                        rs.getDouble("grasas"),
+                        rs.getDouble("grasas_saturadas"),
+                        rs.getDouble("hidratos_carbono"),
+                        rs.getDouble("azucares"),
+                        rs.getDouble("proteinas"),
+                        rs.getDouble("sal"),
+                        rs.getInt("id_categoria_fk")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al filtrar alimentos: " + e.getMessage());
+        }
+        return lista;
+    }
+
      // 2. CREA UN ALIMENTO NUEVO EN LA BASE DE DATOS (Para el botón "+ Nuevo Alimento")
 
     public static boolean crearAlimentoGlobal(Alimento nuevoAlimento) {
