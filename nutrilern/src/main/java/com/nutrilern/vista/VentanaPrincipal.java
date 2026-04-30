@@ -7,38 +7,36 @@ import java.awt.*;
 public class VentanaPrincipal extends JFrame {
 
     private CardLayout cardLayout;
-    private JPanel panelContenedor; // Panel que agrupa a los demás
-    private com.nutrilern.modelo.Usuario usuarioLogueado; // Sesión del usuario actual
+    private JPanel panelContenedor;
+    private com.nutrilern.modelo.Usuario usuarioLogueado; 
+    
+    // Paneles que necesitan refrescarse desde otros sitios
     private PanelAjustes panelAjustes;
-    private PanelEvolucion panelEvo; // Guardamos referencia para refrescarlo
+    private PanelEvolucion panelEvo; 
+    private PanelMisComidas panelComidas; // NUEVO
 
     public VentanaPrincipal() {
-        // Config básica
         setTitle("NUTRIX");
         setSize(1080, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false); // No redimensionable
-        setLocationRelativeTo(null); // Centro en pantalla
+        setResizable(false); 
+        setLocationRelativeTo(null);
 
-        // Inicializo el CardLayout y el panel que lo va a usar
         cardLayout = new CardLayout();
         panelContenedor = new JPanel(cardLayout);
 
-        // Creamos los paneles (EXCEPTO EL MENÚ que se crea al entrar)
         PanelLogin panelLogin = new PanelLogin(this);
-        PanelAjustes panelAjustes = new PanelAjustes(this);
-        PanelMisComidas panelComidas = new PanelMisComidas(this);
-        PanelEvolucion panelEvo = new PanelEvolucion(this);
+        this.panelAjustes = new PanelAjustes(this);
+        this.panelComidas = new PanelMisComidas(this); // Inicializamos el global
+        this.panelEvo = new PanelEvolucion(this);
         PanelBaseAlimentos panelBase = new PanelBaseAlimentos(this);
 
-        // Añadimos los paneles al CardLayout
         panelContenedor.add(panelLogin, "LOGIN");
-        panelContenedor.add(panelAjustes, "AJUSTES");
-        panelContenedor.add(panelComidas, "COMIDAS");
-        panelContenedor.add(panelEvo, "EVOLUCION");
+        panelContenedor.add(this.panelAjustes, "AJUSTES");
+        panelContenedor.add(this.panelComidas, "COMIDAS"); // Añadimos el global
+        panelContenedor.add(this.panelEvo, "EVOLUCION");
         panelContenedor.add(panelBase, "BASE_ALIMENTOS");
 
-        // Añado el panel al JFrame
         add(panelContenedor);
 
         cardLayout.show(panelContenedor, "LOGIN");
@@ -55,24 +53,19 @@ public class VentanaPrincipal extends JFrame {
     public void cambiarPantalla(String nombrePantalla) {
         
         if (nombrePantalla.equals("MENU")) {
-            // Rescatamos el usuario loggeado
             Usuario usuarioActual = this.getUsuarioLogueado(); 
-            
-            // Creamos el panel del menú AHORA, pasándole los datos reales
             PanelMenuPrincipal panelMenu = new PanelMenuPrincipal(this, usuarioActual);
-            
-            // Lo añadimos a la baraja del CardLayout en este preciso momento
             panelContenedor.add(panelMenu, "MENU");
             
         } else if (nombrePantalla.equals("AJUSTES")) {
-            // Si entramos en ajustes, obligamos a refrescar las etiquetas con los datos reales
             panelAjustes.refrescarDatos();
         } else if (nombrePantalla.equals("EVOLUCION")) {
-            // Refrescamos los gráficos con los datos reales de la BBDD
             panelEvo.cargarDatosReales();
+        } else if (nombrePantalla.equals("COMIDAS")) {
+            // Cuando entramos en la tabla, cargamos los datos de hoy
+            panelComidas.cargarDatosHoy();
         }
         
-        // El CardLayout se encarga de mostrar la pantalla (sea el menú, o cualquier otra)
         cardLayout.show(panelContenedor, nombrePantalla);
     }
 }

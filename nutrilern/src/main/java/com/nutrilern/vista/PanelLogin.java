@@ -87,6 +87,10 @@ public class PanelLogin extends JPanel {
         btnLogin.setFocusPainted(false);
         btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
 
+        // Para que puedas pulsar el enter
+        txtEmail.addActionListener(e -> btnLogin.doClick());
+        txtPass.addActionListener(e -> btnLogin.doClick());
+
         Font fuenteNormal = new Font("Arial", Font.PLAIN, 12);
         Map<TextAttribute, Object> atributos = new HashMap<>(fuenteNormal.getAttributes());
         atributos.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);

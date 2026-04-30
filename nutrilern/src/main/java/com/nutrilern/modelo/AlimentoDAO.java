@@ -234,4 +234,47 @@ public class AlimentoDAO {
             rs.getInt("id_categoria_fk")
         );
     }
+
+    // 9. OBTIENE EL REGISTRO DIARIO DE HOY PARA RELLENAR LA TABLA
+    public static List<Object[]> obtenerRegistroDiarioHoy(int idUsuario) {
+        List<Object[]> registros = new ArrayList<>();
+        // Unimos registro_diario con alimento para sacar el nombre y la categoria
+        String sql = "SELECT r.*, a.nombre, a.id_categoria_fk " +
+                     "FROM registro_diario r " +
+                     "JOIN alimento a ON r.id_alimento_fk = a.id_alimento " +
+                     "WHERE r.id_usuario_fk = ? AND r.fecha = CURDATE() ORDER BY r.id_registro ASC";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idUsuario);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    // Recreamos el objeto Alimento para el desplegable (Columna 0)
+                    Alimento al = new Alimento();
+                    al.setIdAlimento(rs.getInt("id_alimento_fk"));
+                    al.setNombre(rs.getString("nombre"));
+                    al.setIdCategoriaFk(rs.getInt("id_categoria_fk"));
+
+                    // Metemos la fila exacta que espera el JTable
+                    registros.add(new Object[]{
+                        al, // 0: Alimento
+                        al.getIdCategoriaFk(), // 1: Categoria (Lo dejamos como ID temporalmente, luego lo arreglamos en la vista)
+                        rs.getDouble("cantidad_gramos"), // 2
+                        rs.getDouble("kcal"), // 3
+                        rs.getDouble("proteinas"), // 4
+                        rs.getDouble("hidratos_carbono"), // 5
+                        rs.getDouble("grasas"), // 6
+                        rs.getDouble("grasas_saturadas"), // 7
+                        rs.getDouble("azucares"), // 8
+                        rs.getDouble("sal"), // 9
+                        true // 10: COLUMNA OCULTA -> ¿Está en la BBDD? SÍ (true)
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al cargar registro de hoy: " + e.getMessage());
+        }
+        return registros;
+    }
 }

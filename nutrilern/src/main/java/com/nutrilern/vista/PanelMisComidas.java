@@ -20,17 +20,14 @@ public class PanelMisComidas extends JPanel {
 
     private VentanaPrincipal ventanaPadre;
     
-    // Colores corporativos
     private final Color COLOR_VERDE_NUTRIX = new Color(34, 139, 34);
     private final Color COLOR_FONDO = new Color(245, 247, 250);
     private final Color COLOR_TEXTO = new Color(50, 50, 50);
 
-    // Componentes de la tabla
     private JTable tablaComidas;
     private DefaultTableModel modeloTabla;
     private Alimento alimentoPlaceholder;
     
-    // Guardamos el combo de categorías a nivel de clase para poder usarlo en el autocompletado
     private JComboBox<ComboItem> comboCategoriasTabla;
 
     public PanelMisComidas(VentanaPrincipal ventana) {
@@ -43,9 +40,6 @@ public class PanelMisComidas extends JPanel {
         add(crearControlesInferiores(), BorderLayout.SOUTH);
     }
 
-    // =================================================================================
-    // 1. CABECERA
-    // =================================================================================
     private JPanel crearCabecera() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
@@ -87,8 +81,6 @@ public class PanelMisComidas extends JPanel {
         btnCrearCategoria.addActionListener(e -> {
             DialogoCrearCategoria dialogoCat = new DialogoCrearCategoria(ventanaPadre);
             dialogoCat.setVisible(true);
-            // NOTA: Si creamos una categoría, deberíamos recargar el combo de categorías de la tabla
-            // Lo dejaremos para afinar detalles luego si quieres.
         });
 
         panelDerecho.add(btnCrearAlimento);
@@ -100,21 +92,18 @@ public class PanelMisComidas extends JPanel {
         return header;
     }
 
-    // =================================================================================
-    // 2. EL "EXCEL" (JTABLE) 
-    // =================================================================================
     private JPanel crearZonaTabla() {
         JPanel panelCentral = new JPanel(new BorderLayout());
         panelCentral.setOpaque(false);
         panelCentral.setBorder(new EmptyBorder(20, 30, 0, 30));
 
-        // AÑADIDA LA COLUMNA DE CATEGORÍA
-        String[] columnas = {"Alimento (Doble clic)", "Categoría", "Gramos", "Kcal", "Prot (g)", "HC (g)", "Grasas (g)", "Sat. (g)", "Azúcar (g)", "Sal (g)"};
+        // AÑADIMOS LA COLUMNA OCULTA "Guardado"
+        String[] columnas = {"Alimento (Doble clic)", "Categoría", "Gramos", "Kcal", "Prot (g)", "HC (g)", "Grasas (g)", "Sat. (g)", "Azúcar (g)", "Sal (g)", "Guardado"};
         
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return true; 
+                return column != 10; // La columna 10 (Guardado) no se edita a mano
             }
         };
 
@@ -132,11 +121,10 @@ public class PanelMisComidas extends JPanel {
         
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for(int i = 2; i < tablaComidas.getColumnCount(); i++){ // Centramos desde Gramos en adelante
+        for(int i = 2; i < tablaComidas.getColumnCount() - 1; i++){ 
             tablaComidas.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        // --- COLUMNA 0: DESPLEGABLE DE ALIMENTOS ---
         JComboBox<Alimento> comboAlimentos = new JComboBox<>();
         List<Alimento> listaBD = AlimentoDAO.obtenerTodosLosAlimentos();
         alimentoPlaceholder = new Alimento();
@@ -152,9 +140,8 @@ public class PanelMisComidas extends JPanel {
         tablaComidas.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(comboAlimentos));
         tablaComidas.getColumnModel().getColumn(0).setPreferredWidth(220);
 
-        // --- COLUMNA 1: DESPLEGABLE DE CATEGORÍAS ---
         comboCategoriasTabla = new JComboBox<>();
-        comboCategoriasTabla.addItem(new ComboItem(0, "Sin Categoría")); // Opción por defecto
+        comboCategoriasTabla.addItem(new ComboItem(0, "Sin Categoría")); 
         Map<Integer, String> categoriasBD = CategoriaDAO.obtenerTodasLasCategorias();
         for (Map.Entry<Integer, String> entry : categoriasBD.entrySet()) {
             comboCategoriasTabla.addItem(new ComboItem(entry.getKey(), entry.getValue()));
@@ -162,7 +149,6 @@ public class PanelMisComidas extends JPanel {
         tablaComidas.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(comboCategoriasTabla));
         tablaComidas.getColumnModel().getColumn(1).setPreferredWidth(130);
 
-        // --- EL CEREBRO DEL EXCEL (AUTOCOMPLETADO ACTUALIZADO) ---
         modeloTabla.addTableModelListener(e -> {
             if (e.getType() == TableModelEvent.UPDATE && e.getColumn() == 0) {
                 int fila = e.getFirstRow();
@@ -172,8 +158,6 @@ public class PanelMisComidas extends JPanel {
                     Alimento al = (Alimento) valorElegido;
                     
                     if (al.getIdAlimento() != 0) {
-                        
-                        // 1. Buscamos y autocompletamos la Categoría (Columna 1)
                         for(int i = 0; i < comboCategoriasTabla.getItemCount(); i++) {
                             ComboItem itemCat = comboCategoriasTabla.getItemAt(i);
                             if(itemCat.getId() == al.getIdCategoriaFk()) {
@@ -182,8 +166,7 @@ public class PanelMisComidas extends JPanel {
                             }
                         }
                         
-                        // 2. Autocompletamos los macros (Ojo, ahora están desplazados una columna)
-                        modeloTabla.setValueAt(100.0, fila, 2); // Gramos
+                        modeloTabla.setValueAt(100.0, fila, 2); 
                         modeloTabla.setValueAt(al.getKcal(), fila, 3);
                         modeloTabla.setValueAt(al.getProteinas(), fila, 4);
                         modeloTabla.setValueAt(al.getHidratosCarbono(), fila, 5);
@@ -196,6 +179,9 @@ public class PanelMisComidas extends JPanel {
             }
         });
 
+        // OCULTAMOS LA COLUMNA DE LÓGICA INTERNA DE LA VISTA DEL USUARIO
+        tablaComidas.getColumnModel().removeColumn(tablaComidas.getColumnModel().getColumn(10));
+
         JScrollPane scrollTabla = new JScrollPane(tablaComidas);
         scrollTabla.getViewport().setBackground(Color.WHITE);
         scrollTabla.setBorder(new LineBorder(new Color(220, 220, 220), 1, true));
@@ -204,9 +190,6 @@ public class PanelMisComidas extends JPanel {
         return panelCentral;
     }
 
-    // =================================================================================
-    // 3. CONTROLES INFERIORES
-    // =================================================================================
     private JPanel crearControlesInferiores() {
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.setOpaque(false);
@@ -217,9 +200,9 @@ public class PanelMisComidas extends JPanel {
 
         JButton btnAñadirFila = crearBotonSecundario("+ Añadir Fila");
         btnAñadirFila.addActionListener(e -> {
-            // Añadimos una fila con la categoría vacía por defecto
             ComboItem categoriaVacia = comboCategoriasTabla.getItemAt(0); 
-            modeloTabla.addRow(new Object[]{alimentoPlaceholder, categoriaVacia, 0, 0, 0, 0, 0, 0, 0, 0});
+            // Añadimos 'false' al final porque es una fila nueva y sin guardar
+            modeloTabla.addRow(new Object[]{alimentoPlaceholder, categoriaVacia, 0, 0, 0, 0, 0, 0, 0, 0, false});
         });
 
         JButton btnBorrarFila = crearBotonSecundario("- Borrar Fila");
@@ -251,26 +234,26 @@ public class PanelMisComidas extends JPanel {
                 return;
             }
 
-            // Recuperamos el ID del usuario en sesión
             int idUsuario = ventanaPadre.getUsuarioLogueado().getId();
             java.sql.Date fechaHoy = new java.sql.Date(System.currentTimeMillis());
             
             int guardadasCorrectamente = 0;
+            int ignoradas = 0; // Para contar las que ya estaban guardadas
             int errores = 0;
 
             for (int i = 0; i < numFilas; i++) {
                 try {
-                    // Col 0: Alimento
-                    Object objAl = modeloTabla.getValueAt(i, 0);
-                    if (!(objAl instanceof Alimento) || ((Alimento) objAl).getIdAlimento() == 0) {
-                        continue; // Saltamos filas vacías o con el placeholder
+                    // VERIFICAMOS LA COLUMNA OCULTA (Índice 10)
+                    boolean yaGuardado = (boolean) modeloTabla.getValueAt(i, 10);
+                    if (yaGuardado) {
+                        ignoradas++;
+                        continue; 
                     }
+
+                    Object objAl = modeloTabla.getValueAt(i, 0);
+                    if (!(objAl instanceof Alimento) || ((Alimento) objAl).getIdAlimento() == 0) continue;
                     Alimento al = (Alimento) objAl;
 
-                    // Col 1: Categoría (informativo para el diario, se saca del alimento)
-                    // (Omitimos idCat ya que la tabla registro_diario no lo usa directamente)
-
-                    // Resto de columnas (Macros)
                     double gramos = doubleVal(modeloTabla.getValueAt(i, 2));
                     double kcal = doubleVal(modeloTabla.getValueAt(i, 3));
                     double prot = doubleVal(modeloTabla.getValueAt(i, 4));
@@ -280,24 +263,27 @@ public class PanelMisComidas extends JPanel {
                     double azu = doubleVal(modeloTabla.getValueAt(i, 8));
                     double sal = doubleVal(modeloTabla.getValueAt(i, 9));
 
-                    // Guardamos en la base de datos
                     boolean exito = AlimentoDAO.registrarFilaDiario(
                         idUsuario, al.getIdAlimento(), gramos, "General", fechaHoy,
                         kcal, prot, hc, gra, sat, azu, sal
                     );
 
-                    if (exito) guardadasCorrectamente++;
-                    else errores++;
-
+                    if (exito) {
+                        guardadasCorrectamente++;
+                        // Marcamos como guardada para que no se duplique luego
+                        modeloTabla.setValueAt(true, i, 10);
+                    } else {
+                        errores++;
+                    }
                 } catch (Exception ex) {
                     errores++;
-                    System.err.println("Error procesando fila " + i + ": " + ex.getMessage());
                 }
             }
 
             if (guardadasCorrectamente > 0) {
-                JOptionPane.showMessageDialog(this, "¡Éxito! Se han guardado " + guardadasCorrectamente + " registros en tu diario.", "Guardado", JOptionPane.INFORMATION_MESSAGE);
-                modeloTabla.setRowCount(0); // Limpiamos la tabla tras guardar
+                JOptionPane.showMessageDialog(this, "¡Éxito! Se han añadido " + guardadasCorrectamente + " nuevos registros a tu diario de hoy.", "Guardado", JOptionPane.INFORMATION_MESSAGE);
+            } else if (ignoradas > 0 && errores == 0) {
+                JOptionPane.showMessageDialog(this, "No hay alimentos nuevos que guardar. Todo está actualizado.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
             }
             
             if (errores > 0) {
@@ -324,9 +310,6 @@ public class PanelMisComidas extends JPanel {
         return btn;
     }
 
-    // =================================================================================
-    // MÉTODOS DE ACTUALIZACIÓN
-    // =================================================================================
     private void recargarDesplegableAlimentos() {
         List<Alimento> listaBD = AlimentoDAO.obtenerTodosLosAlimentos();
         JComboBox<Alimento> comboActualizado = new JComboBox<>();
@@ -345,9 +328,6 @@ public class PanelMisComidas extends JPanel {
         tablaComidas.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(comboActualizado));
     }
 
-    /**
-     * Convierte un objeto de la celda de la tabla a double de forma segura.
-     */
     private double doubleVal(Object v) {
         if (v == null) return 0.0;
         if (v instanceof Number) return ((Number) v).doubleValue();
@@ -355,6 +335,30 @@ public class PanelMisComidas extends JPanel {
             return Double.parseDouble(v.toString());
         } catch (Exception e) {
             return 0.0;
+        }
+    }
+
+    // MÉTODO PARA CARGAR LOS DATOS DE HOY AL ENTRAR AL PANEL
+    public void cargarDatosHoy() {
+        if (ventanaPadre.getUsuarioLogueado() == null) return;
+        
+        modeloTabla.setRowCount(0); // Limpiamos tabla antes de cargar
+        int idUser = ventanaPadre.getUsuarioLogueado().getId();
+        List<Object[]> filasHoy = AlimentoDAO.obtenerRegistroDiarioHoy(idUser);
+        
+        for (Object[] fila : filasHoy) {
+            // Buscamos el objeto ComboItem correcto de la categoría a partir del ID temporal
+            int idCat = (int) fila[1];
+            ComboItem itemCatCorrecto = comboCategoriasTabla.getItemAt(0);
+            for(int i = 0; i < comboCategoriasTabla.getItemCount(); i++) {
+                if(comboCategoriasTabla.getItemAt(i).getId() == idCat) {
+                    itemCatCorrecto = comboCategoriasTabla.getItemAt(i);
+                    break;
+                }
+            }
+            fila[1] = itemCatCorrecto; 
+            
+            modeloTabla.addRow(fila);
         }
     }
 }
