@@ -132,8 +132,8 @@ public class AlimentoDAO {
 
     // 5. OBTIENE LOS MACROS TOTALES DE HOY
     public static double[] obtenerMacrosHoy(int idUsuario) {
-        double[] macros = {0, 0, 0}; // [HC, Prot, Grasas]
-        String sql = "SELECT SUM(hidratos_carbono) as hc, SUM(proteinas) as prot, SUM(grasas) as fat " +
+        double[] macros = {0, 0, 0, 0}; // [Kcal, HC, Prot, Grasas]
+        String sql = "SELECT SUM(kcal) as kcal, SUM(hidratos_carbono) as hc, SUM(proteinas) as prot, SUM(grasas) as fat " +
                      "FROM registro_diario WHERE id_usuario_fk = ? AND fecha = CURDATE()";
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
@@ -142,9 +142,10 @@ public class AlimentoDAO {
             pstmt.setInt(1, idUsuario);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    macros[0] = rs.getDouble("hc");
-                    macros[1] = rs.getDouble("prot");
-                    macros[2] = rs.getDouble("fat");
+                    macros[0] = rs.getDouble("kcal");
+                    macros[1] = rs.getDouble("hc");
+                    macros[2] = rs.getDouble("prot");
+                    macros[3] = rs.getDouble("fat");
                 }
             }
         } catch (SQLException e) {

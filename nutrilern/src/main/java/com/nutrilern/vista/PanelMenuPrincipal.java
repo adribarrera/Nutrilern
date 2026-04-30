@@ -3,9 +3,8 @@ package com.nutrilern.vista;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-
 import com.nutrilern.modelo.Usuario;
-
+import com.nutrilern.modelo.AlimentoDAO;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -18,6 +17,10 @@ public class PanelMenuPrincipal extends JPanel {
     private final Color colorFondo = new Color(245, 247, 250);
     private final Color colorTexto = new Color(50, 50, 50);
     private Image imagenFondo;
+
+    // Componentes para actualizar datos reales
+    private JLabel lblCalVal, lblProtVal, lblHCVal, lblFatVal;
+    private JProgressBar barCal, barProt, barHC, barFat;
 
     public PanelMenuPrincipal(VentanaPrincipal ventana, Usuario usuarioLogueado) {
         this.ventanaPadre = ventana;
@@ -53,29 +56,9 @@ public class PanelMenuPrincipal extends JPanel {
         JPanel userActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
         userActions.setOpaque(false);
 
-        // 1. Inicializamos las variables vacías por defecto
-        String nombre = "";
-        String apellidos = "";
+        String nombre = (usuario != null && usuario.getNombre() != null) ? usuario.getNombre() : "Invitado";
+        String apellidos = (usuario != null && usuario.getApellidos() != null) ? usuario.getApellidos() : "";
 
-        // 2. Comprobamos si el usuario existe (no es null)
-        if (usuario != null) {
-
-            // Si el usuario tiene un nombre guardado, lo asignamos
-            if (usuario.getNombre() != null) {
-                nombre = usuario.getNombre();
-            }
-
-            // Si el usuario tiene apellidos guardados, los asignamos
-            if (usuario.getApellidos() != null) {
-                apellidos = usuario.getApellidos();
-            }
-
-        } else {
-            // Si el usuario es nulo, ponemos un texto por defecto para que no de NullPointerException
-            nombre = "Invitado";
-        }
-
-        // 3. Montamos el mensaje final en la etiqueta
         JLabel lblUser = new JLabel("Bienvenido, " + nombre + " " + apellidos);
         lblUser.setFont(new Font("Arial", Font.ITALIC, 14));
         lblUser.setForeground(colorTexto);
@@ -123,6 +106,32 @@ public class PanelMenuPrincipal extends JPanel {
         scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
+
+        // --- CARGAR DATOS REALES ---
+        cargarDatosReales();
+    }
+
+    private void cargarDatosReales() {
+        if (usuario == null) return;
+        
+        new Thread(() -> {
+            double[] macrosHoy = AlimentoDAO.obtenerMacrosHoy(usuario.getId());
+            // [0]=kcal, [1]=hc, [2]=prot, [3]=fat
+            
+            SwingUtilities.invokeLater(() -> {
+                lblCalVal.setText((int)macrosHoy[0] + " kcal / 2100");
+                barCal.setValue((int)((macrosHoy[0]/2100)*100));
+                
+                lblHCVal.setText((int)macrosHoy[1] + " g / 250");
+                barHC.setValue((int)((macrosHoy[1]/250)*100));
+
+                lblProtVal.setText((int)macrosHoy[2] + " g / 120");
+                barProt.setValue((int)((macrosHoy[2]/120)*100));
+
+                lblFatVal.setText((int)macrosHoy[3] + " g / 70");
+                barFat.setValue((int)((macrosHoy[3]/70)*100));
+            });
+        }).start();
     }
 
     private JPanel crearSeccionResumenHoy() {
@@ -135,19 +144,37 @@ public class PanelMenuPrincipal extends JPanel {
         titulo.setForeground(colorTexto);
         seccion.add(titulo, BorderLayout.NORTH);
 
-        JPanel cardsContainer = new JPanel(new GridLayout(1, 3, 20, 0));
+        JPanel cardsContainer = new JPanel(new GridLayout(1, 4, 15, 0)); // 4 tarjetas ahora
         cardsContainer.setOpaque(false);
         cardsContainer.setBorder(new EmptyBorder(15, 0, 0, 0));
 
-        cardsContainer.add(crearStatMiniCard("Calorías", "1.450 / 2.100 kcal", Color.ORANGE, 65));
-        cardsContainer.add(crearStatMiniCard("Proteínas", "82 / 120 g", new Color(74, 144, 226), 68));
-        cardsContainer.add(crearStatMiniCard("Consumo Agua", "1.5 / 2.5 L", new Color(0, 191, 255), 60));
+        // Creamos las tarjetas y guardamos referencias a los labels/bars
+        JPanel pCal = crearStatMiniCard("Calorías", Color.ORANGE);
+        lblCalVal = (JLabel) pCal.getClientProperty("valLabel");
+        barCal = (JProgressBar) pCal.getClientProperty("progressBar");
+
+        JPanel pHC = crearStatMiniCard("Carbohidratos", new Color(74, 144, 226));
+        lblHCVal = (JLabel) pHC.getClientProperty("valLabel");
+        barHC = (JProgressBar) pHC.getClientProperty("progressBar");
+
+        JPanel pProt = crearStatMiniCard("Proteínas", new Color(255, 127, 80));
+        lblProtVal = (JLabel) pProt.getClientProperty("valLabel");
+        barProt = (JProgressBar) pProt.getClientProperty("progressBar");
+
+        JPanel pFat = crearStatMiniCard("Grasas", new Color(50, 205, 50));
+        lblFatVal = (JLabel) pFat.getClientProperty("valLabel");
+        barFat = (JProgressBar) pFat.getClientProperty("progressBar");
+
+        cardsContainer.add(pCal);
+        cardsContainer.add(pHC);
+        cardsContainer.add(pProt);
+        cardsContainer.add(pFat);
 
         seccion.add(cardsContainer, BorderLayout.CENTER);
         return seccion;
     }
 
-    private JPanel crearStatMiniCard(String label, String value, Color colorBarra, int progreso) {
+    private JPanel crearStatMiniCard(String label, Color colorBarra) {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Color.WHITE);
@@ -156,15 +183,15 @@ public class PanelMenuPrincipal extends JPanel {
                 new EmptyBorder(15, 15, 15, 15)));
 
         JLabel lbl = new JLabel(label);
-        lbl.setFont(new Font("Arial", Font.BOLD, 14));
+        lbl.setFont(new Font("Arial", Font.BOLD, 13));
         lbl.setForeground(new Color(100, 100, 100));
 
-        JLabel val = new JLabel(value);
-        val.setFont(new Font("Arial", Font.BOLD, 18));
+        JLabel val = new JLabel("0 / --"); // Texto inicial
+        val.setFont(new Font("Arial", Font.BOLD, 16));
         val.setForeground(colorTexto);
 
         JProgressBar bar = new JProgressBar(0, 100);
-        bar.setValue(progreso);
+        bar.setValue(0);
         bar.setForeground(colorBarra);
         bar.setBackground(new Color(240, 240, 240));
         bar.setBorderPainted(false);
@@ -175,6 +202,10 @@ public class PanelMenuPrincipal extends JPanel {
         card.add(val);
         card.add(Box.createRigidArea(new Dimension(0, 10)));
         card.add(bar);
+
+        // Guardamos las referencias en propiedades del componente para recuperarlas
+        card.putClientProperty("valLabel", val);
+        card.putClientProperty("progressBar", bar);
 
         return card;
     }
@@ -203,13 +234,8 @@ public class PanelMenuPrincipal extends JPanel {
                 Image imgOriginal = javax.imageio.ImageIO.read(url);
                 Image imgEscalada = imgOriginal.getScaledInstance(64, 64, Image.SCALE_SMOOTH);
                 lblIcono.setIcon(new ImageIcon(imgEscalada));
-            } else {
-                lblIcono.setText("ICON");
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            lblIcono.setText("ICON");
-        }
+        } catch (Exception ex) { }
         lblIcono.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblTit = new JLabel(titulo);
@@ -237,7 +263,6 @@ public class PanelMenuPrincipal extends JPanel {
                         new LineBorder(colorPrincipal, 2, true),
                         new EmptyBorder(24, 19, 24, 19)));
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
                 tarjeta.setBackground(Color.WHITE);
@@ -245,12 +270,9 @@ public class PanelMenuPrincipal extends JPanel {
                         new LineBorder(new Color(230, 230, 230), 1, true),
                         new EmptyBorder(25, 20, 25, 20)));
             }
-
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (accion != null) {
-                    accion.run();
-                }
+                if (accion != null) accion.run();
             }
         });
 

@@ -245,11 +245,63 @@ public class PanelMisComidas extends JPanel {
         btnGuardar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btnGuardar.addActionListener(e -> {
-            int filas = modeloTabla.getRowCount();
-            if(filas == 0) {
+            int numFilas = modeloTabla.getRowCount();
+            if (numFilas == 0) {
                 JOptionPane.showMessageDialog(this, "La tabla está vacía. Añade alimentos antes de guardar.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this, "Próximamente: Recorriendo " + filas + " filas y guardando en TiDB...");
+                return;
+            }
+
+            // Recuperamos el ID del usuario en sesión
+            int idUsuario = ventanaPadre.getUsuarioLogueado().getId();
+            java.sql.Date fechaHoy = new java.sql.Date(System.currentTimeMillis());
+            
+            int guardadasCorrectamente = 0;
+            int errores = 0;
+
+            for (int i = 0; i < numFilas; i++) {
+                try {
+                    // Col 0: Alimento
+                    Object objAl = modeloTabla.getValueAt(i, 0);
+                    if (!(objAl instanceof Alimento) || ((Alimento) objAl).getIdAlimento() == 0) {
+                        continue; // Saltamos filas vacías o con el placeholder
+                    }
+                    Alimento al = (Alimento) objAl;
+
+                    // Col 1: Categoría (informativo para el diario, se saca del alimento)
+                    // (Omitimos idCat ya que la tabla registro_diario no lo usa directamente)
+
+                    // Resto de columnas (Macros)
+                    double gramos = doubleVal(modeloTabla.getValueAt(i, 2));
+                    double kcal = doubleVal(modeloTabla.getValueAt(i, 3));
+                    double prot = doubleVal(modeloTabla.getValueAt(i, 4));
+                    double hc = doubleVal(modeloTabla.getValueAt(i, 5));
+                    double gra = doubleVal(modeloTabla.getValueAt(i, 6));
+                    double sat = doubleVal(modeloTabla.getValueAt(i, 7));
+                    double azu = doubleVal(modeloTabla.getValueAt(i, 8));
+                    double sal = doubleVal(modeloTabla.getValueAt(i, 9));
+
+                    // Guardamos en la base de datos
+                    boolean exito = AlimentoDAO.registrarFilaDiario(
+                        idUsuario, al.getIdAlimento(), gramos, "General", fechaHoy,
+                        kcal, prot, hc, gra, sat, azu, sal
+                    );
+
+                    if (exito) guardadasCorrectamente++;
+                    else errores++;
+
+                } catch (Exception ex) {
+                    errores++;
+                    System.err.println("Error procesando fila " + i + ": " + ex.getMessage());
+                }
+            }
+
+            if (guardadasCorrectamente > 0) {
+                JOptionPane.showMessageDialog(this, "¡Éxito! Se han guardado " + guardadasCorrectamente + " registros en tu diario.", "Guardado", JOptionPane.INFORMATION_MESSAGE);
+                modeloTabla.setRowCount(0); // Limpiamos la tabla tras guardar
+            }
+            
+            if (errores > 0) {
+                JOptionPane.showMessageDialog(this, "Hubo errores al guardar " + errores + " filas. Por favor, revisa tu conexión.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -291,5 +343,18 @@ public class PanelMisComidas extends JPanel {
         }
 
         tablaComidas.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(comboActualizado));
+    }
+
+    /**
+     * Convierte un objeto de la celda de la tabla a double de forma segura.
+     */
+    private double doubleVal(Object v) {
+        if (v == null) return 0.0;
+        if (v instanceof Number) return ((Number) v).doubleValue();
+        try {
+            return Double.parseDouble(v.toString());
+        } catch (Exception e) {
+            return 0.0;
+        }
     }
 }

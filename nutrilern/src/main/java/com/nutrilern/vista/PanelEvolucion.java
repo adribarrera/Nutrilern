@@ -73,15 +73,15 @@ public class PanelEvolucion extends JPanel {
             // 1. Obtenemos calorías de los últimos 7 días
             int[] calSemana = AlimentoDAO.obtenerCaloriasUltimos7Dias(user.getId());
             
-            // 2. Obtenemos macros de hoy
+            // 2. Obtenemos macros de hoy [kcal, hc, prot, fat]
             double[] macrosHoyRaw = AlimentoDAO.obtenerMacrosHoy(user.getId());
             // Convertimos a porcentajes para el gráfico circular (si hay datos)
             int[] macrosHoy = new int[]{33, 33, 34}; // Por defecto si está vacío
-            double total = macrosHoyRaw[0] + macrosHoyRaw[1] + macrosHoyRaw[2];
+            double total = macrosHoyRaw[1] + macrosHoyRaw[2] + macrosHoyRaw[3];
             if (total > 0) {
-                macrosHoy[0] = (int) ((macrosHoyRaw[0] / total) * 100);
-                macrosHoy[1] = (int) ((macrosHoyRaw[1] / total) * 100);
-                macrosHoy[2] = 100 - macrosHoy[0] - macrosHoy[1];
+                macrosHoy[0] = (int) ((macrosHoyRaw[1] / total) * 100); // HC
+                macrosHoy[1] = (int) ((macrosHoyRaw[2] / total) * 100); // Prot
+                macrosHoy[2] = 100 - macrosHoy[0] - macrosHoy[1];      // Fat
             }
 
             // 3. Actualizamos la interfaz en el hilo de Swing
