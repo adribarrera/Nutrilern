@@ -10,6 +10,7 @@ public class VentanaPrincipal extends JFrame {
     private JPanel panelContenedor; // Panel que agrupa a los demás
     private com.nutrilern.modelo.Usuario usuarioLogueado; // Sesión del usuario actual
     private PanelAjustes panelAjustes;
+    private PanelEvolucion panelEvo; // Guardamos referencia para refrescarlo
 
     public VentanaPrincipal() {
         // Config básica
@@ -23,16 +24,17 @@ public class VentanaPrincipal extends JFrame {
         cardLayout = new CardLayout();
         panelContenedor = new JPanel(cardLayout);
 
-        // Creamos los paneles (EXCEPTO EL MENÚ)
+        // Creamos los paneles (EXCEPTO EL MENÚ que se crea al entrar)
         PanelLogin panelLogin = new PanelLogin(this);
         panelAjustes = new PanelAjustes(this);
         PanelMisComidas panelComidas = new PanelMisComidas(this);
+        panelEvo = new PanelEvolucion(this);
 
         // Añadimos los paneles al CardLayout
         panelContenedor.add(panelLogin, "LOGIN");
         panelContenedor.add(panelAjustes, "AJUSTES");
         panelContenedor.add(panelComidas, "COMIDAS");
-        // ATENCIÓN: He borrado de aquí la línea del menú.
+        panelContenedor.add(panelEvo, "EVOLUCION");
 
         // Añado el panel al JFrame
         add(panelContenedor);
@@ -63,6 +65,9 @@ public class VentanaPrincipal extends JFrame {
         } else if (nombrePantalla.equals("AJUSTES")) {
             // Si entramos en ajustes, obligamos a refrescar las etiquetas con los datos reales
             panelAjustes.refrescarDatos();
+        } else if (nombrePantalla.equals("EVOLUCION")) {
+            // Refrescamos los gráficos con los datos reales de la BBDD
+            panelEvo.cargarDatosReales();
         }
         
         // El CardLayout se encarga de mostrar la pantalla (sea el menú, o cualquier otra)

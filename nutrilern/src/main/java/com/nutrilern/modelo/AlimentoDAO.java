@@ -102,4 +102,54 @@ public class AlimentoDAO {
             return false;
         }
     }
+
+    // 4. OBTIENE LAS CALORÍAS TOTALES DE LOS ÚLTIMOS 7 DÍAS
+    public static int[] obtenerCaloriasUltimos7Dias(int idUsuario) {
+        int[] calorias = new int[7];
+        String sql = "SELECT fecha, SUM(kcal) as total_kcal FROM registro_diario " +
+                     "WHERE id_usuario_fk = ? AND fecha >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) " +
+                     "GROUP BY fecha ORDER BY fecha ASC";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, idUsuario);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Date fechaFila = rs.getDate("fecha");
+                    long diff = (new Date(System.currentTimeMillis()).getTime() - fechaFila.getTime()) / (1000 * 60 * 60 * 24);
+                    int index = 6 - (int)diff;
+                    if (index >= 0 && index < 7) {
+                        calorias[index] = rs.getInt("total_kcal");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al obtener calorías semanales: " + e.getMessage());
+        }
+        return calorias;
+    }
+
+    // 5. OBTIENE LOS MACROS TOTALES DE HOY
+    public static double[] obtenerMacrosHoy(int idUsuario) {
+        double[] macros = {0, 0, 0}; // [HC, Prot, Grasas]
+        String sql = "SELECT SUM(hidratos_carbono) as hc, SUM(proteinas) as prot, SUM(grasas) as fat " +
+                     "FROM registro_diario WHERE id_usuario_fk = ? AND fecha = CURDATE()";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, idUsuario);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    macros[0] = rs.getDouble("hc");
+                    macros[1] = rs.getDouble("prot");
+                    macros[2] = rs.getDouble("fat");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al obtener macros de hoy: " + e.getMessage());
+        }
+        return macros;
+    }
 }
