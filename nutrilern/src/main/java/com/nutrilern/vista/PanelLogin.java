@@ -385,14 +385,39 @@ public class PanelLogin extends JPanel {
         btnCrear.addActionListener(e -> {
             emailTemporal = txtNewEmail.getText().trim();
             passTemporal = new String(txtNewPass.getPassword());
-            if (emailTemporal.isEmpty() || passTemporal.isEmpty())
+            
+            if (emailTemporal.isEmpty() || passTemporal.isEmpty()) {
+                JOptionPane.showMessageDialog(dialogo, "Por favor, rellena todos los campos.", "Aviso", JOptionPane.WARNING_MESSAGE);
                 return;
+            }
+
+            if (!com.nutrilern.controlador.ControladorUsuario.esEmailValido(emailTemporal)) {
+                JOptionPane.showMessageDialog(dialogo, "El formato del correo no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (!com.nutrilern.controlador.ControladorUsuario.esPasswordValida(passTemporal)) {
+                JOptionPane.showMessageDialog(dialogo, "La contraseña debe tener al menos 8 caracteres.", "Seguridad", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Estado de carga en el botón
+            btnCrear.setEnabled(false);
+            btnCrear.setText("Enviando código...");
 
             codigoSecretoGenerado = com.nutrilern.controlador.ControladorUsuario.generarCodigoVerificacion();
             new Thread(() -> {
-                if (com.nutrilern.controlador.ControladorUsuario.enviarCodigo(emailTemporal, codigoSecretoGenerado)) {
-                    SwingUtilities.invokeLater(() -> cardLayout.show(panelContenedorCartas, "2"));
-                }
+                boolean enviado = com.nutrilern.controlador.ControladorUsuario.enviarCodigo(emailTemporal, codigoSecretoGenerado);
+                SwingUtilities.invokeLater(() -> {
+                    if (enviado) {
+                        cardLayout.show(panelContenedorCartas, "2");
+                    } else {
+                        JOptionPane.showMessageDialog(dialogo, "Error al enviar el código de verificación.", "Error", JOptionPane.ERROR_MESSAGE);
+                        // Restaurar botón si hay error
+                        btnCrear.setEnabled(true);
+                        btnCrear.setText("Enviar Código");
+                    }
+                });
             }).start();
         });
 

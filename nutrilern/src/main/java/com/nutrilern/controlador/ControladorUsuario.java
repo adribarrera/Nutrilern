@@ -14,6 +14,7 @@ public class ControladorUsuario {
 
     /**
      * Intenta iniciar sesión con las credenciales proporcionadas.
+     * 
      * @return El objeto Usuario si tiene éxito, null en caso contrario.
      */
     public static Usuario autenticar(String email, String password) {
@@ -67,8 +68,19 @@ public class ControladorUsuario {
      * Actualiza el email del usuario.
      */
     public static boolean actualizarEmail(int id, String email) {
-        if (!esEmailValido(email)) return false;
+        if (!esEmailValido(email))
+            return false;
         return UsuarioDAO.actualizarEmail(id, email);
+    }
+
+    /**
+     * Actualiza la contraseña del usuario.
+     */
+    public static boolean actualizarPassword(int id, String password) {
+        if (!esPasswordValida(password))
+            return false;
+        String hash = GestorSeguridad.hashearPassword(password);
+        return UsuarioDAO.actualizarPassword(id, hash);
     }
 
     /**
@@ -82,6 +94,13 @@ public class ControladorUsuario {
      * Valida el formato del email.
      */
     public static boolean esEmailValido(String email) {
-        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
+    }
+
+    /**
+     * Valida que la contraseña cumpla los requisitos mínimos (mínimo 8 caracteres).
+     */
+    public static boolean esPasswordValida(String password) {
+        return password != null && password.length() >= 8;
     }
 }

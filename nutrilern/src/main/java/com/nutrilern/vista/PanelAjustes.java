@@ -208,29 +208,122 @@ public class PanelAjustes extends JPanel {
 
     private JPanel crearTarjetaSeguridad() {
         JPanel tarjeta = crearTarjetaBase("Seguridad");
+        
         JButton btnEmail = crearBotonCentrado("Cambiar Email");
         btnEmail.addActionListener(e -> {
             Usuario user = ventanaPadre.getUsuarioLogueado();
-            if (user != null) {
-                String nuevoEmail = (String) JOptionPane.showInputDialog(this, "Nuevo correo:", "Cambiar Email", 
-                        JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo(), null, user.getEmail());
-                if (nuevoEmail != null && !nuevoEmail.trim().isEmpty()) {
-                    if (com.nutrilern.controlador.ControladorUsuario.actualizarEmail(user.getId(), nuevoEmail.trim())) {
-                        user.setEmail(nuevoEmail.trim());
-                        refrescarDatos();
-                        JOptionPane.showMessageDialog(this, "Email actualizado.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+            if (user == null) return;
+
+            String nuevoEmail = (String) JOptionPane.showInputDialog(this, 
+                "Introduce tu nuevo correo electrónico:", "Cambiar Email", 
+                JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo(), null, user.getEmail());
+
+            if (nuevoEmail != null) {
+                nuevoEmail = nuevoEmail.trim();
+                if (nuevoEmail.isEmpty() || nuevoEmail.equals(user.getEmail())) return;
+
+                if (!com.nutrilern.controlador.ControladorUsuario.esEmailValido(nuevoEmail)) {
+                    JOptionPane.showMessageDialog(this, "El formato del correo no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    // VERIFICACIÓN POR CORREO
+                    if (mostrarDialogoVerificacion(nuevoEmail)) {
+                        if (com.nutrilern.controlador.ControladorUsuario.actualizarEmail(user.getId(), nuevoEmail)) {
+                            user.setEmail(nuevoEmail);
+                            refrescarDatos();
+                            JOptionPane.showMessageDialog(this, "Correo electrónico actualizado correctamente.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+                        } else {
+                            JOptionPane.showMessageDialog(this, "No se pudo actualizar el correo. Es posible que ya esté en uso.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
                     }
                 }
             }
         });
 
         JButton btnPass = crearBotonCentrado("Cambiar Contraseña");
-        btnPass.addActionListener(e -> JOptionPane.showMessageDialog(this, "Módulo en desarrollo", "Info", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo()));
+        btnPass.addActionListener(e -> {
+            Usuario user = ventanaPadre.getUsuarioLogueado();
+            if (user == null) return;
+
+            JPanel panelPass = new JPanel(new GridLayout(4, 1, 5, 5));
+            JLabel lblNew = new JLabel("Nueva Contraseña (mín. 8 caracteres):");
+            JPasswordField txtNew = new JPasswordField();
+            JLabel lblConf = new JLabel("Confirmar Contraseña:");
+            JPasswordField txtConf = new JPasswordField();
+            
+            panelPass.add(lblNew);
+            panelPass.add(txtNew);
+            panelPass.add(lblConf);
+            panelPass.add(txtConf);
+
+            int result = JOptionPane.showConfirmDialog(this, panelPass, "Cambiar Contraseña",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+
+            if (result == JOptionPane.OK_OPTION) {
+                String pass = new String(txtNew.getPassword());
+                String conf = new String(txtConf.getPassword());
+
+                if (pass.isEmpty()) return;
+
+                if (!pass.equals(conf)) {
+                    JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else if (!com.nutrilern.controlador.ControladorUsuario.esPasswordValida(pass)) {
+                    JOptionPane.showMessageDialog(this, "La contraseña debe tener al menos 8 caracteres.", "Seguridad", JOptionPane.WARNING_MESSAGE);
+                } else {
+                    // VERIFICACIÓN POR CORREO (al email actual)
+                    if (mostrarDialogoVerificacion(user.getEmail())) {
+                        if (com.nutrilern.controlador.ControladorUsuario.actualizarPassword(user.getId(), pass)) {
+                            JOptionPane.showMessageDialog(this, "Contraseña actualizada correctamente.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Error al actualizar la contraseña.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+            }
+        });
 
         tarjeta.add(btnEmail);
         tarjeta.add(Box.createRigidArea(new Dimension(0, 15)));
         tarjeta.add(btnPass);
         return tarjeta;
+    }
+
+    /**
+     * Muestra un diálogo para verificar un código enviado por email.
+     */
+    private boolean mostrarDialogoVerificacion(String emailDestino) {
+        String codigoGenerado = com.nutrilern.controlador.ControladorUsuario.generarCodigoVerificacion();
+        
+        // Diálogo de carga no modal para no bloquear el envío
+        JOptionPane paneCarga = new JOptionPane("Enviando código de verificación a:\n" + emailDestino, 
+                JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, TemaNutrix.obtenerIconoDialogo(), new Object[]{}, null);
+        JDialog dialogCarga = paneCarga.createDialog(this, "Enviando...");
+        
+        final boolean[] enviado = {false};
+        new Thread(() -> {
+            if (com.nutrilern.controlador.ControladorUsuario.enviarCodigo(emailDestino, codigoGenerado)) {
+                enviado[0] = true;
+                SwingUtilities.invokeLater(dialogCarga::dispose);
+            } else {
+                SwingUtilities.invokeLater(() -> {
+                    dialogCarga.dispose();
+                    JOptionPane.showMessageDialog(this, "Error al enviar el código de verificación.", "Error", JOptionPane.ERROR_MESSAGE);
+                });
+            }
+        }).start();
+        dialogCarga.setVisible(true);
+
+        if (!enviado[0]) return false;
+
+        String input = (String) JOptionPane.showInputDialog(this, 
+                "Introduce el código de 8 dígitos enviado a su correo:", 
+                "Verificación requerida", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo(), null, "");
+        
+        if (input != null && input.equals(codigoGenerado)) {
+            return true;
+        } else if (input != null) {
+            JOptionPane.showMessageDialog(this, "Código incorrecto. No se realizaron cambios.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return false;
     }
 
     private JPanel crearTarjetaPeligro() {
