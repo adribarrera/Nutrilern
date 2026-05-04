@@ -44,9 +44,22 @@ public class PanelMenuPrincipal extends JPanel {
                 BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO),
                 BorderFactory.createEmptyBorder(0, 30, 0, 30)));
 
-        JLabel lblLogo = new JLabel("NUTRIX");
-        lblLogo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 26));
-        lblLogo.setForeground(TemaNutrix.PRIMARIO);
+        JLabel lblLogo = new JLabel();
+        try {
+            java.net.URL urlLogo = getClass().getResource("/images/logo.png");
+            if (urlLogo != null) {
+                ImageIcon iconoOriginal = new ImageIcon(urlLogo);
+                // Escalado proporcional para la barra superior (máximo 60px de alto)
+                ImageIcon logoEscalado = TemaNutrix.escalarImagenProporcional(iconoOriginal, 150, 60);
+                lblLogo.setIcon(logoEscalado);
+            } else {
+                lblLogo.setText("NUTRIX");
+                lblLogo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 26));
+                lblLogo.setForeground(TemaNutrix.PRIMARIO);
+            }
+        } catch (Exception e) {
+            lblLogo.setText("NUTRIX");
+        }
         header.add(lblLogo, BorderLayout.WEST);
 
         JPanel userActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));

@@ -53,6 +53,7 @@ public class PanelEvolucion extends JPanel {
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
         scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(20);
         add(scroll, BorderLayout.CENTER);
     }
 

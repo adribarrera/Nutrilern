@@ -71,7 +71,7 @@ public class ServicioCorreo {
             mensaje.setSubject("Nutrix - Tu código de verificación");
 
             String contenidoHtml = "<div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>" +
-                    "  <h2 style='color: #228B22;'>¡Bienvenido a Nutrix!</h2>" +
+                    "  <h2 style='color: #ff7043;'>¡Bienvenido a Nutrix!</h2>" +
                     "  <p>Estás a un solo paso de completar tu registro y empezar a dominar tu nutrición.</p>" +
                     "  <p>Tu código de seguridad de 8 dígitos es:</p>" +
                     "  <div style='background-color: #f4f4f4; padding: 15px; border-radius: 5px; display: inline-block;'>"

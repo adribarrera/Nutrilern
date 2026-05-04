@@ -125,7 +125,7 @@ public class DialogoCrearAlimento extends JDialog {
         // 1. Validaciones básicas
         if (txtNombre.getText().trim().isEmpty() || txtKcal.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, "El Nombre y las Calorías son obligatorios.", "Aviso",
-                    JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
             return;
         }
 
@@ -158,18 +158,18 @@ public class DialogoCrearAlimento extends JDialog {
             boolean exito = AlimentoDAO.crearAlimentoGlobal(nuevo);
 
             if (exito) {
-                JOptionPane.showMessageDialog(this, "¡Alimento guardado correctamente en la Base de Datos!");
+                JOptionPane.showMessageDialog(this, "¡Alimento guardado correctamente en la Base de Datos!", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                 alimentoCreado = true; // Avisamos de que hubo éxito
                 dispose(); // Cerramos esta ventanita emergente
             } else {
                 JOptionPane.showMessageDialog(this, "Error de SQL al intentar guardar el alimento.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
             }
 
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this,
                     "Por favor, introduce solo números válidos para los valores nutricionales (ej: 12.5).",
-                    "Error de Formato", JOptionPane.ERROR_MESSAGE);
+                    "Error de Formato", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
         }
     }
 

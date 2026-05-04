@@ -26,9 +26,7 @@ public class PanelAdminUsuarios extends JPanel {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
         header.setPreferredSize(new Dimension(0, 80));
-        header.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO),
-                BorderFactory.createEmptyBorder(0, 30, 0, 30)));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO));
 
         JButton btnVolver = TemaNutrix.crearBotonVolver("← Volver");
         btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
@@ -74,7 +72,11 @@ public class PanelAdminUsuarios extends JPanel {
         JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelAcciones.setOpaque(false);
 
-        JButton btnModificar = new JButton("Modificar");
+        JButton btnModificar = crearBotonSecundario("Modificar");
+        btnModificar.setForeground(TemaNutrix.ACCENTO);
+        btnModificar.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(TemaNutrix.ACCENTO, 1, true),
+                BorderFactory.createEmptyBorder(8, 15, 8, 15)));
         btnModificar.addActionListener(e -> {
             int fila = tablaUsuarios.getSelectedRow();
             if (fila != -1) {
@@ -82,19 +84,18 @@ public class PanelAdminUsuarios extends JPanel {
                 Usuario u = buscarUsuarioEnTabla(id);
                 mostrarDialogoEdicion(u);
             } else {
-                JOptionPane.showMessageDialog(this, "Selecciona un usuario de la tabla");
+                JOptionPane.showMessageDialog(this, "Selecciona un usuario de la tabla", "Aviso", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
             }
         });
 
-        JButton btnEliminar = new JButton("Borrar");
-        btnEliminar.setBackground(new Color(255, 100, 100));
-        btnEliminar.setForeground(Color.WHITE);
+        JButton btnEliminar = crearBotonSecundario("Borrar");
         btnEliminar.addActionListener(e -> {
             int fila = tablaUsuarios.getSelectedRow();
             if (fila != -1) {
                 int id = (int) modeloTabla.getValueAt(fila, 0);
                 if (JOptionPane.showConfirmDialog(this,
-                        "¿Seguro que quieres borrar al usuario con ID " + id + "?") == JOptionPane.YES_OPTION) {
+                        "¿Seguro que quieres borrar al usuario con ID " + id + "?", 
+                        "Confirmar eliminación", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo()) == JOptionPane.YES_OPTION) {
                     if (ControladorVistas.eliminarUsuarioAdmin(id)) {
                         refrescarTabla();
                     }
@@ -163,7 +164,7 @@ public class PanelAdminUsuarios extends JPanel {
         };
 
         int option = JOptionPane.showConfirmDialog(this, message,
-                esNuevo ? "Crear Nuevo Usuario" : "Editar Perfil", JOptionPane.OK_CANCEL_OPTION);
+                esNuevo ? "Crear Nuevo Usuario" : "Editar Perfil", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
 
         if (option == JOptionPane.OK_OPTION) {
             try {
@@ -178,11 +179,23 @@ public class PanelAdminUsuarios extends JPanel {
                 if (ControladorVistas.guardarUsuarioAdmin(tempUser, txtPass.getText(), esNuevo)) {
                     refrescarTabla();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Error al guardar los cambios.");
+                    JOptionPane.showMessageDialog(this, "Error al guardar los cambios.", "Error", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Datos inválidos: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Datos inválidos: " + ex.getMessage(), "Error de formato", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
             }
         }
+    }
+    private JButton crearBotonSecundario(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 13));
+        btn.setForeground(TemaNutrix.PRIMARIO);
+        btn.setBackground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                new javax.swing.border.LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
+                BorderFactory.createEmptyBorder(8, 15, 8, 15)));
+        return btn;
     }
 }

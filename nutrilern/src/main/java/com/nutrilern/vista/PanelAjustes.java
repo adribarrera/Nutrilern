@@ -153,7 +153,7 @@ public class PanelAjustes extends JPanel {
                 panelCampos.add(txtAltura);
 
                 int result = JOptionPane.showConfirmDialog(this, panelCampos, "Actualizar Datos",
-                        JOptionPane.OK_CANCEL_OPTION);
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                 if (result == JOptionPane.OK_OPTION) {
                     try {
                         int edad = Integer.parseInt(txtEdad.getText().trim());
@@ -166,7 +166,7 @@ public class PanelAjustes extends JPanel {
                             user.setPeso(peso);
                             user.setAltura(altura);
                             refrescarDatos();
-                            JOptionPane.showMessageDialog(this, "Datos actualizados.");
+                            JOptionPane.showMessageDialog(this, "Datos actualizados.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                         }
                     } catch (Exception ex) {}
                 }
@@ -191,13 +191,13 @@ public class PanelAjustes extends JPanel {
                 combo.setSelectedIndex(user.getIdObjetivo() - 1);
 
                 int result = JOptionPane.showConfirmDialog(this, combo, "Nuevo objetivo",
-                        JOptionPane.OK_CANCEL_OPTION);
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                 if (result == JOptionPane.OK_OPTION) {
                     int idObjNuevo = combo.getSelectedIndex() + 1;
                     if (com.nutrilern.controlador.ControladorUsuario.actualizarObjetivo(user.getId(), idObjNuevo)) {
                         user.setIdObjetivo(idObjNuevo);
                         refrescarDatos();
-                        JOptionPane.showMessageDialog(this, "Objetivo actualizado.");
+                        JOptionPane.showMessageDialog(this, "Objetivo actualizado.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                     }
                 }
             }
@@ -212,19 +212,20 @@ public class PanelAjustes extends JPanel {
         btnEmail.addActionListener(e -> {
             Usuario user = ventanaPadre.getUsuarioLogueado();
             if (user != null) {
-                String nuevoEmail = JOptionPane.showInputDialog(this, "Nuevo correo:", user.getEmail());
+                String nuevoEmail = (String) JOptionPane.showInputDialog(this, "Nuevo correo:", "Cambiar Email", 
+                        JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo(), null, user.getEmail());
                 if (nuevoEmail != null && !nuevoEmail.trim().isEmpty()) {
                     if (com.nutrilern.controlador.ControladorUsuario.actualizarEmail(user.getId(), nuevoEmail.trim())) {
                         user.setEmail(nuevoEmail.trim());
                         refrescarDatos();
-                        JOptionPane.showMessageDialog(this, "Email actualizado.");
+                        JOptionPane.showMessageDialog(this, "Email actualizado.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                     }
                 }
             }
         });
 
         JButton btnPass = crearBotonCentrado("Cambiar Contraseña");
-        btnPass.addActionListener(e -> JOptionPane.showMessageDialog(this, "Módulo en desarrollo"));
+        btnPass.addActionListener(e -> JOptionPane.showMessageDialog(this, "Módulo en desarrollo", "Info", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo()));
 
         tarjeta.add(btnEmail);
         tarjeta.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -245,11 +246,11 @@ public class PanelAjustes extends JPanel {
         btnBorrar.setBackground(new Color(220, 53, 69));
         btnBorrar.addActionListener(e -> {
             int res = JOptionPane.showConfirmDialog(this, "¿Borrar cuenta permanentemente?", "¡Atención!",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
             if (res == JOptionPane.YES_OPTION) {
                 Usuario user = ventanaPadre.getUsuarioLogueado();
                 if (user != null && com.nutrilern.controlador.ControladorUsuario.eliminarCuenta(user.getId())) {
-                    JOptionPane.showMessageDialog(this, "Cuenta eliminada.");
+                    JOptionPane.showMessageDialog(this, "Cuenta eliminada.", "Info", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                     ventanaPadre.setUsuarioLogueado(null);
                     ventanaPadre.cambiarPantalla("LOGIN");
                 }

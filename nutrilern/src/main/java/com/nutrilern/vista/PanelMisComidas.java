@@ -169,13 +169,17 @@ public class PanelMisComidas extends JPanel {
         panelGestorFilas.setOpaque(false);
 
         JButton btnAñadirFila = crearBotonSecundario("+ Añadir Fila");
+        btnAñadirFila.setForeground(TemaNutrix.ACCENTO); 
+        btnAñadirFila.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(TemaNutrix.ACCENTO, 1, true),
+                BorderFactory.createEmptyBorder(8, 15, 8, 15)));
         btnAñadirFila.addActionListener(e -> {
             ComboItem categoriaVacia = comboCategoriasTabla.getItemAt(0); 
             modeloTabla.addRow(new Object[]{alimentoPlaceholder, categoriaVacia, 0, 0, 0, 0, 0, 0, 0, 0, false});
         });
 
         JButton btnBorrarFila = crearBotonSecundario("- Borrar Fila");
-        btnBorrarFila.setForeground(new Color(200, 50, 50)); 
+        btnBorrarFila.setForeground(TemaNutrix.PRIMARIO);
         btnBorrarFila.addActionListener(e -> {
             int filaSeleccionada = tablaComidas.getSelectedRow();
             if (filaSeleccionada != -1) {

@@ -2,6 +2,9 @@ package com.nutrilern.vista;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Definición de colores, fuentes y estilos globales.
@@ -81,5 +84,79 @@ public class TemaNutrix {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setPreferredSize(new java.awt.Dimension(140, 80));
         return btn;
+    }
+
+    /**
+     * Obtiene el icono personalizado para los diálogos de la aplicación.
+     */
+    public static ImageIcon obtenerIconoDialogo() {
+        try {
+            java.net.URL url = TemaNutrix.class.getResource("/images/logoDialogos.png");
+            if (url != null) {
+                ImageIcon iconoOriginal = new ImageIcon(url);
+                // Aumentamos a 96px para mejor calidad y usamos escalado suave
+                Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(96, 96, Image.SCALE_SMOOTH);
+                return new ImageIcon(imagenEscalada);
+            }
+        } catch (Exception e) {
+            System.err.println("Error al cargar el icono de diálogos: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Utilidad para escalar una imagen manteniendo su relación de aspecto con máxima nitidez.
+     * Implementa escalado multi-paso para evitar pixelación en imágenes grandes.
+     */
+    public static ImageIcon escalarImagenProporcional(ImageIcon original, int anchoMax, int altoMax) {
+        Image img = original.getImage();
+        int anchoOriginal = img.getWidth(null);
+        int altoOriginal = img.getHeight(null);
+
+        double ratio = (double) anchoOriginal / altoOriginal;
+        int nuevoAncho = anchoMax;
+        int nuevoAlto = (int) (nuevoAncho / ratio);
+
+        if (nuevoAlto > altoMax) {
+            nuevoAlto = altoMax;
+            nuevoAncho = (int) (nuevoAlto * ratio);
+        }
+
+        // Si la imagen es mucho más grande que el destino, escalamos en pasos para mantener nitidez
+        BufferedImage tempImg = toBufferedImage(img);
+        int w = anchoOriginal;
+        int h = altoOriginal;
+        
+        while (w > nuevoAncho * 2 && h > nuevoAlto * 2) {
+            w /= 2;
+            h /= 2;
+            tempImg = aplicarEscaladoCalidad(tempImg, w, h);
+        }
+
+        return new ImageIcon(aplicarEscaladoCalidad(tempImg, nuevoAncho, nuevoAlto));
+    }
+
+    private static BufferedImage aplicarEscaladoCalidad(Image img, int w, int h) {
+        BufferedImage dimg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = dimg.createGraphics();
+        
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        
+        g2.drawImage(img, 0, 0, w, h, null);
+        g2.dispose();
+        return dimg;
+    }
+
+    private static BufferedImage toBufferedImage(Image img) {
+        if (img instanceof BufferedImage) return (BufferedImage) img;
+        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D bGr = bimage.createGraphics();
+        bGr.drawImage(img, 0, 0, null);
+        bGr.dispose();
+        return bimage;
     }
 }

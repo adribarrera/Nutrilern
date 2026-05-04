@@ -19,9 +19,32 @@ public class VentanaPrincipal extends JFrame {
     public VentanaPrincipal() {
         setTitle("NUTRIX");
         setSize(1080, 720);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setResizable(false); 
         setLocationRelativeTo(null);
+
+        // Icono de la aplicación
+        try {
+            java.net.URL urlIcono = getClass().getResource("/images/icono.png");
+            if (urlIcono != null) {
+                setIconImage(new ImageIcon(urlIcono).getImage());
+            }
+        } catch (Exception e) {
+            System.err.println("No se pudo cargar el icono de la ventana: " + e.getMessage());
+        }
+
+        // Mensaje de despedida al cerrar el programa
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                JOptionPane.showMessageDialog(null, 
+                    "¡Gracias por usar Nutrix!\nEsperamos verte pronto para seguir cumpliendo tus objetivos.", 
+                    "Finalizando Nutrix", 
+                    JOptionPane.PLAIN_MESSAGE, 
+                    TemaNutrix.obtenerIconoDialogo());
+                System.exit(0);
+            }
+        });
 
         cardLayout = new CardLayout();
         panelContenedor = new JPanel(cardLayout);

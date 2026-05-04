@@ -52,10 +52,10 @@ public class PanelLogin extends JPanel {
                     g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
                     g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
                     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    
+
                     double imgAspect = (double) imagen.getWidth(null) / imagen.getHeight(null);
                     double panelAspect = (double) getWidth() / getHeight();
-                    
+
                     int drawW, drawH, x, y;
                     if (panelAspect > imgAspect) {
                         drawW = getWidth();
@@ -90,6 +90,8 @@ public class PanelLogin extends JPanel {
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         formPanel.setBackground(Color.WHITE);
+        // Añadimos márgenes laterales para que no sea tan ancho
+        formPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
 
         JLabel lblEmail = new JLabel("Correo electrónico");
         JTextField txtEmail = new JTextField(20);
@@ -118,11 +120,13 @@ public class PanelLogin extends JPanel {
                 lblRegistrar.setForeground(TemaNutrix.PRIMARIO);
                 lblRegistrar.setFont(fuenteSubrayada);
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 lblRegistrar.setForeground(Color.BLACK);
                 lblRegistrar.setFont(fuenteNormal);
             }
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 abrirDialogoRegistro();
@@ -145,9 +149,27 @@ public class PanelLogin extends JPanel {
                 ventanaPadre.setUsuarioLogueado(user);
                 ventanaPadre.cambiarPantalla("MENU");
             } else {
-                JOptionPane.showMessageDialog(this, "Email o contraseña incorrectos.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Email o contraseña incorrectos.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
+
+        // Logo superior en el formulario
+        try {
+            java.net.URL urlLogo = getClass().getResource("/images/logo.png");
+            if (urlLogo != null) {
+                ImageIcon iconoOriginal = new ImageIcon(urlLogo);
+                // Tamaño un poco más refinado
+                // Espacio fijo arriba para bajar la posición del logo
+                formPanel.add(Box.createRigidArea(new Dimension(0, 80))); 
+                ImageIcon logoEscalado = TemaNutrix.escalarImagenProporcional(iconoOriginal, 250, 120);
+                JLabel lblLogo = new JLabel(logoEscalado);
+                lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
+                formPanel.add(lblLogo);
+                formPanel.add(Box.createVerticalGlue()); // Espacio entre logo y campos
+            }
+        } catch (Exception e) {
+        }
 
         formPanel.add(lblEmail);
         formPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -158,10 +180,17 @@ public class PanelLogin extends JPanel {
         formPanel.add(txtPass);
         formPanel.add(Box.createRigidArea(new Dimension(0, 25)));
         formPanel.add(btnLogin);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        formPanel.add(Box.createVerticalGlue()); // Espacio entre botón y registro
         formPanel.add(lblRegistrar);
+        formPanel.add(Box.createVerticalGlue()); // Empuja hacia arriba desde el fondo
 
-        panelFormularioContenedor.add(formPanel);
+        // Hacemos que el panel del formulario ocupe todo el alto para que el Glue
+        // funcione
+        GridBagConstraints gbcForm = new GridBagConstraints();
+        gbcForm.fill = GridBagConstraints.BOTH;
+        gbcForm.weighty = 1.0;
+        gbcForm.weightx = 1.0;
+        panelFormularioContenedor.add(formPanel, gbcForm);
         gbc.gridx = 1;
         gbc.weightx = 0.34;
         add(panelFormularioContenedor, gbc);
@@ -193,13 +222,26 @@ public class PanelLogin extends JPanel {
         JButton btnCrear = TemaNutrix.crearBotonEstandar("Enviar Código");
         btnCrear.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        JLabel lblEmailReg = new JLabel("Email:");
+        lblEmailReg.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblEmailReg.setMaximumSize(new Dimension(300, 20));
+        lblEmailReg.setHorizontalAlignment(SwingConstants.LEFT);
+
+        JLabel lblPassReg = new JLabel("Contraseña:");
+        lblPassReg.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblPassReg.setMaximumSize(new Dimension(300, 20));
+        lblPassReg.setHorizontalAlignment(SwingConstants.LEFT);
+
+        txtNewEmail.setAlignmentX(Component.CENTER_ALIGNMENT);
+        txtNewPass.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         panelFormulario.add(Box.createVerticalGlue());
         panelFormulario.add(lblTitulo);
         panelFormulario.add(Box.createRigidArea(new Dimension(0, 30)));
-        panelFormulario.add(new JLabel("Email:"));
+        panelFormulario.add(lblEmailReg);
         panelFormulario.add(txtNewEmail);
         panelFormulario.add(Box.createRigidArea(new Dimension(0, 20)));
-        panelFormulario.add(new JLabel("Contraseña:"));
+        panelFormulario.add(lblPassReg);
         panelFormulario.add(txtNewPass);
         panelFormulario.add(Box.createRigidArea(new Dimension(0, 40)));
         panelFormulario.add(btnCrear);
@@ -246,11 +288,11 @@ public class PanelLogin extends JPanel {
         txtNombre.setMaximumSize(new Dimension(300, 30));
         JTextField txtApellidos = new JTextField();
         txtApellidos.setMaximumSize(new Dimension(300, 30));
-        
+
         String[] opciones = { "Perder Peso", "Mantener Peso", "Ganar Músculo" };
         JComboBox<String> comboObjetivo = new JComboBox<>(opciones);
         comboObjetivo.setMaximumSize(new Dimension(300, 30));
-        
+
         String[] sexos = { "Hombre", "Mujer" };
         JComboBox<String> comboSexo = new JComboBox<>(sexos);
         comboSexo.setMaximumSize(new Dimension(300, 30));
@@ -265,22 +307,66 @@ public class PanelLogin extends JPanel {
         JButton btnFinalizar = TemaNutrix.crearBotonEstandar("Comenzar");
         btnFinalizar.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        txtNombre.setAlignmentX(Component.CENTER_ALIGNMENT);
+        txtApellidos.setAlignmentX(Component.CENTER_ALIGNMENT);
+        comboObjetivo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        comboSexo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        txtEdad.setAlignmentX(Component.CENTER_ALIGNMENT);
+        txtPeso.setAlignmentX(Component.CENTER_ALIGNMENT);
+        txtAltura.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         panelPerfil.add(lblTituloPerfil);
         panelPerfil.add(Box.createRigidArea(new Dimension(0, 10)));
-        panelPerfil.add(new JLabel("Nombre:"));
+
+        JLabel lblNom = new JLabel("Nombre:");
+        lblNom.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblNom.setMaximumSize(new Dimension(300, 20));
+        lblNom.setHorizontalAlignment(SwingConstants.LEFT);
+        panelPerfil.add(lblNom);
         panelPerfil.add(txtNombre);
-        panelPerfil.add(new JLabel("Apellidos:"));
+
+        JLabel lblApe = new JLabel("Apellidos:");
+        lblApe.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblApe.setMaximumSize(new Dimension(300, 20));
+        lblApe.setHorizontalAlignment(SwingConstants.LEFT);
+        panelPerfil.add(lblApe);
         panelPerfil.add(txtApellidos);
-        panelPerfil.add(new JLabel("Objetivo:"));
+
+        JLabel lblObj = new JLabel("Objetivo:");
+        lblObj.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblObj.setMaximumSize(new Dimension(300, 20));
+        lblObj.setHorizontalAlignment(SwingConstants.LEFT);
+        panelPerfil.add(lblObj);
         panelPerfil.add(comboObjetivo);
-        panelPerfil.add(new JLabel("Sexo:"));
+
+        JLabel lblSex = new JLabel("Sexo:");
+        lblSex.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblSex.setMaximumSize(new Dimension(300, 20));
+        lblSex.setHorizontalAlignment(SwingConstants.LEFT);
+        panelPerfil.add(lblSex);
         panelPerfil.add(comboSexo);
-        panelPerfil.add(new JLabel("Edad:"));
+
+        JLabel lblEda = new JLabel("Edad:");
+        lblEda.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblEda.setMaximumSize(new Dimension(300, 20));
+        lblEda.setHorizontalAlignment(SwingConstants.LEFT);
+        panelPerfil.add(lblEda);
         panelPerfil.add(txtEdad);
-        panelPerfil.add(new JLabel("Peso (kg):"));
+
+        JLabel lblPes = new JLabel("Peso (kg):");
+        lblPes.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblPes.setMaximumSize(new Dimension(300, 20));
+        lblPes.setHorizontalAlignment(SwingConstants.LEFT);
+        panelPerfil.add(lblPes);
         panelPerfil.add(txtPeso);
-        panelPerfil.add(new JLabel("Altura (cm):"));
+
+        JLabel lblAlt = new JLabel("Altura (cm):");
+        lblAlt.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblAlt.setMaximumSize(new Dimension(300, 20));
+        lblAlt.setHorizontalAlignment(SwingConstants.LEFT);
+        panelPerfil.add(lblAlt);
         panelPerfil.add(txtAltura);
+
         panelPerfil.add(Box.createRigidArea(new Dimension(0, 20)));
         panelPerfil.add(btnFinalizar);
 
@@ -299,8 +385,9 @@ public class PanelLogin extends JPanel {
         btnCrear.addActionListener(e -> {
             emailTemporal = txtNewEmail.getText().trim();
             passTemporal = new String(txtNewPass.getPassword());
-            if (emailTemporal.isEmpty() || passTemporal.isEmpty()) return;
-            
+            if (emailTemporal.isEmpty() || passTemporal.isEmpty())
+                return;
+
             codigoSecretoGenerado = com.nutrilern.controlador.ControladorUsuario.generarCodigoVerificacion();
             new Thread(() -> {
                 if (com.nutrilern.controlador.ControladorUsuario.enviarCodigo(emailTemporal, codigoSecretoGenerado)) {
@@ -310,7 +397,8 @@ public class PanelLogin extends JPanel {
         });
 
         btnVerificar.addActionListener(e -> {
-            if (txtCodigo.getText().equals(codigoSecretoGenerado)) cardLayout.show(panelContenedorCartas, "3");
+            if (txtCodigo.getText().equals(codigoSecretoGenerado))
+                cardLayout.show(panelContenedorCartas, "3");
         });
 
         btnFinalizar.addActionListener(e -> {
@@ -327,7 +415,8 @@ public class PanelLogin extends JPanel {
                 spinner.iniciar();
 
                 new Thread(() -> {
-                    Usuario nU = new Usuario(emailTemporal, passTemporal, nom, ape, edad, alt, peso, "USUARIO", obj, sex);
+                    Usuario nU = new Usuario(emailTemporal, passTemporal, nom, ape, edad, alt, peso, "USUARIO", obj,
+                            sex);
                     if (com.nutrilern.controlador.ControladorUsuario.registrarNuevoUsuario(nU)) {
                         SwingUtilities.invokeLater(() -> {
                             ventanaPadre.setUsuarioLogueado(nU);
@@ -336,7 +425,8 @@ public class PanelLogin extends JPanel {
                         });
                     }
                 }).start();
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+            }
         });
 
         dialogo.add(panelContenedorCartas);
@@ -355,8 +445,14 @@ public class PanelLogin extends JPanel {
                 repaint();
             });
         }
-        public void iniciar() { timer.start(); }
-        public void detener() { timer.stop(); }
+
+        public void iniciar() {
+            timer.start();
+        }
+
+        public void detener() {
+            timer.stop();
+        }
 
         @Override
         protected void paintComponent(Graphics g) {
