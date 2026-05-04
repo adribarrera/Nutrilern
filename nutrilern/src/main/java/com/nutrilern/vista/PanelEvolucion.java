@@ -28,6 +28,7 @@ public class PanelEvolucion extends JPanel {
     private JPanel panelCalendario;
     private JLabel lblMesAno;
     private YearMonth mesActual;
+    private LocalDate diaSeleccionado;
 
     // Componentes de gráficos (los guardamos para poder actualizarlos)
     private TarjetaGrafico graficoCalorias;
@@ -37,6 +38,7 @@ public class PanelEvolucion extends JPanel {
     public PanelEvolucion(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
         this.mesActual = YearMonth.now();
+        this.diaSeleccionado = LocalDate.now();
         
         setLayout(new BorderLayout());
         setBackground(TemaNutrix.FONDO);
@@ -75,8 +77,8 @@ public class PanelEvolucion extends JPanel {
         if (user == null) return;
 
         new Thread(() -> {
-            // Obtenemos todos los datos procesados desde el controlador
-            java.util.Map<String, Object> datos = com.nutrilern.controlador.ControladorVistas.obtenerDatosEvolucion(user);
+            // Obtenemos todos los datos procesados desde el controlador, pasando la fecha seleccionada
+            java.util.Map<String, Object> datos = com.nutrilern.controlador.ControladorVistas.obtenerDatosEvolucion(user, diaSeleccionado);
             
             int[] calSemana = (int[]) datos.get("caloriasSemana");
             int[] macrosHoy = (int[]) datos.get("macrosHoyPorcentaje");
@@ -93,6 +95,7 @@ public class PanelEvolucion extends JPanel {
             // Actualizamos la interfaz en el hilo de Swing
             SwingUtilities.invokeLater(() -> {
                 graficoCalorias.actualizarDatos(calSemana);
+                graficoMacros.setTitulo("Macros: " + diaSeleccionado.getDayOfMonth() + "/" + diaSeleccionado.getMonthValue());
                 graficoMacros.actualizarDatos(macrosHoy);
                 graficoPeso.actualizarDatosLineal(pesosArr, fechasArr);
             });
@@ -190,12 +193,25 @@ public class PanelEvolucion extends JPanel {
             btnDia.setBorder(new LineBorder(new Color(240, 240, 240)));
             btnDia.setPreferredSize(new Dimension(40, 40));
             
-            if (mesActual.getYear() == LocalDate.now().getYear() && 
-                mesActual.getMonth() == LocalDate.now().getMonth() && 
-                dia == LocalDate.now().getDayOfMonth()) {
+            LocalDate fechaBoton = mesActual.atDay(dia);
+            
+            if (fechaBoton.equals(LocalDate.now())) {
                 btnDia.setBorder(new LineBorder(TemaNutrix.VERDE_NUTRIX, 2));
                 btnDia.setFont(new Font("Arial", Font.BOLD, 14));
             }
+            
+            if (fechaBoton.equals(diaSeleccionado)) {
+                btnDia.setBackground(new Color(230, 245, 230));
+                btnDia.setForeground(TemaNutrix.VERDE_NUTRIX);
+            }
+
+            int diaClick = dia;
+            btnDia.addActionListener(e -> {
+                diaSeleccionado = mesActual.atDay(diaClick);
+                actualizarCalendario();
+                cargarDatosReales();
+            });
+
             panelCalendario.add(btnDia);
         }
         panelCalendario.revalidate();
@@ -220,6 +236,7 @@ public class PanelEvolucion extends JPanel {
     class TarjetaGrafico extends JPanel {
         private double[] datos;
         private String[] etiquetas;
+        private JLabel lblTitulo;
 
         public TarjetaGrafico(String titulo, int[] datosInt) {
             this.datos = new double[datosInt.length];
@@ -237,14 +254,18 @@ public class PanelEvolucion extends JPanel {
             setPreferredSize(new Dimension(0, 250));
             setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
-                new EmptyBorder(15, 15, 25, 15) // Más margen abajo para las fechas
+                new EmptyBorder(15, 15, 35, 15) // Más margen abajo para las fechas
             ));
             setLayout(new BorderLayout());
             
-            JLabel lbl = new JLabel(titulo);
-            lbl.setFont(new Font("Arial", Font.BOLD, 15));
-            lbl.setForeground(TemaNutrix.TEXTO);
-            add(lbl, BorderLayout.NORTH);
+            lblTitulo = new JLabel(titulo);
+            lblTitulo.setFont(new Font("Arial", Font.BOLD, 15));
+            lblTitulo.setForeground(TemaNutrix.TEXTO);
+            add(lblTitulo, BorderLayout.NORTH);
+        }
+
+        public void setTitulo(String t) {
+            lblTitulo.setText(t);
         }
 
         public void actualizarDatos(int[] nuevosDatos) {
@@ -267,50 +288,22 @@ public class PanelEvolucion extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            if (datos == null || datos.length == 0) {
-                g.setColor(TemaNutrix.GRIS_TEXTO);
-                g.drawString("Sin datos registrados", getWidth()/2 - 50, getHeight()/2);
-                return;
-            }
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            if (datos == null || datos.length == 0) {
+                g2d.setColor(TemaNutrix.GRIS_TEXTO);
+                g2d.setFont(new Font("Arial", Font.ITALIC, 14));
+                g2d.drawString("No hay registros para este día", getWidth()/2 - 90, getHeight()/2 + 10);
+                return;
+            }
 
             int w = getWidth() - 60;
             int h = getHeight() - 100; // Espacio para etiquetas y título
             int x0 = 30;
             int y0 = 60;
 
-            if (datos.length > 3 && datos.length <= 7) { // BARRAS (Calorías)
-                int barW = w / datos.length - 10;
-                double max = 0;
-                for(double d : datos) if(d > max) max = d;
-                if(max < 2000) max = 2000; 
-                
-                for (int i = 0; i < datos.length; i++) {
-                    int barH = (int) ((datos[i] / max) * h);
-                    g2d.setColor(TemaNutrix.VERDE_NUTRIX);
-                    g2d.fillRect(x0 + i * (barW + 10), y0 + (h - barH), barW, barH);
-                    g2d.setColor(TemaNutrix.GRIS_TEXTO);
-                    g2d.setFont(new Font("Arial", Font.PLAIN, 10));
-                    g2d.drawString(String.valueOf((int)datos[i]), x0 + i * (barW + 10), y0 + (h - barH) - 5);
-                }
-            } else if (datos.length == 3) { // CIRCULAR (Macros)
-                int size = Math.min(w, h);
-                int startAngle = 90;
-                Color[] colores = {TemaNutrix.CARBOHIDRATOS, TemaNutrix.PROTEINAS, TemaNutrix.GRASAS};
-                
-                for (int i = 0; i < datos.length; i++) {
-                    int arcAngle = (int) (datos[i] * 3.6); 
-                    g2d.setColor(colores[i]);
-                    g2d.fillArc(x0 + (w - size) / 2, y0 + (h - size) / 2, size, size, startAngle, arcAngle);
-                    startAngle += arcAngle;
-                }
-                // Leyenda pequeña
-                g2d.setFont(new Font("Arial", Font.PLAIN, 11));
-                g2d.setColor(colores[0]); g2d.drawString("HC", x0, y0 + h + 15);
-                g2d.setColor(colores[1]); g2d.drawString("Prot", x0 + 40, y0 + h + 15);
-                g2d.setColor(colores[2]); g2d.drawString("Grasas", x0 + 85, y0 + h + 15);
-            } else { // LÍNEA (Evolución de Peso)
+            if (etiquetas != null) { // LÍNEA (Evolución de Peso) - Prioridad si hay etiquetas
                 int pointW = w / (datos.length > 1 ? datos.length - 1 : 1);
                 
                 // Buscar min y max reales para la escala elástica
@@ -321,8 +314,8 @@ public class PanelEvolucion extends JPanel {
                 }
                 
                 double range = max - min;
-                if(range < 5) range = 5; // Escala mínima de 5kg para que no sea plana
-                double padding = range * 0.2; // 20% de margen arriba y abajo
+                if(range < 5) range = 5; // Escala mínima de 5kg
+                double padding = range * 0.2;
                 double scaleMin = min - padding;
                 double scaleMax = max + padding;
                 double scaleRange = scaleMax - scaleMin;
@@ -338,24 +331,73 @@ public class PanelEvolucion extends JPanel {
                     g2d.setColor(TemaNutrix.VERDE_NUTRIX);
                     g2d.fillOval(xPoints[i] - 5, yPoints[i] - 5, 10, 10);
                     
-                    // Valor del peso encima del punto
+                    // Valor del peso
                     g2d.setColor(TemaNutrix.TEXTO);
                     g2d.setFont(new Font("Arial", Font.BOLD, 11));
-                    String val = String.format("%.1f", datos[i]);
-                    g2d.drawString(val, xPoints[i] - 12, yPoints[i] - 12);
+                    g2d.drawString(String.format("%.1f", datos[i]), xPoints[i] - 12, yPoints[i] - 12);
                     
-                    // Fecha debajo del punto (fuera del eje)
-                    if (etiquetas != null && i < etiquetas.length) {
-                        g2d.setColor(TemaNutrix.GRIS_TEXTO);
+                    // Fecha (Más visible y un poco más arriba)
+                    if (i < etiquetas.length) {
+                        g2d.setColor(TemaNutrix.TEXTO);
                         g2d.setFont(new Font("Arial", Font.PLAIN, 10));
-                        g2d.drawString(etiquetas[i], xPoints[i] - 12, y0 + h + 25);
+                        g2d.drawString(etiquetas[i], xPoints[i] - 12, y0 + h + 20);
                     }
                 }
                 
-                // Dibujar la línea conectora
                 g2d.setStroke(new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2d.setColor(new Color(34, 139, 34, 150)); // Verde semitransparente
+                g2d.setColor(new Color(34, 139, 34, 150));
                 g2d.drawPolyline(xPoints, yPoints, datos.length);
+
+            } else if (datos.length == 3) { // CIRCULAR (Macros)
+                int size = Math.min(w, h) - 20;
+                int startAngle = 90;
+                Color[] colores = {TemaNutrix.CARBOHIDRATOS, TemaNutrix.PROTEINAS, TemaNutrix.GRASAS};
+                String[] nombres = {"HC", "Prot", "Grasas"};
+                
+                int centerX = x0 + w / 2;
+                int centerY = y0 + h / 2;
+
+                for (int i = 0; i < datos.length; i++) {
+                    int arcAngle = (int) (datos[i] * 3.6); 
+                    g2d.setColor(colores[i]);
+                    g2d.fillArc(centerX - size/2, centerY - size/2, size, size, startAngle, arcAngle);
+                    
+                    // Dibujar porcentaje sobre la porción si es significativo
+                    if (datos[i] > 5) {
+                        double midAngle = Math.toRadians(startAngle + arcAngle / 2.0);
+                        int labelR = size / 3;
+                        int labelX = (int) (centerX + labelR * Math.cos(midAngle)) - 10;
+                        int labelY = (int) (centerY - labelR * Math.sin(midAngle)) + 5;
+                        
+                        g2d.setColor(Color.WHITE);
+                        g2d.setFont(new Font("Arial", Font.BOLD, 12));
+                        g2d.drawString((int)datos[i] + "%", labelX, labelY);
+                    }
+                    
+                    startAngle += arcAngle;
+                }
+                // Leyenda inferior mejorada
+                g2d.setFont(new Font("Arial", Font.PLAIN, 11));
+                for(int i=0; i<3; i++) {
+                    g2d.setColor(colores[i]);
+                    g2d.fillRect(x0 + i*60, y0 + h + 15, 10, 10);
+                    g2d.setColor(TemaNutrix.TEXTO);
+                    g2d.drawString(nombres[i], x0 + i*60 + 15, y0 + h + 25);
+                }
+            } else { // BARRAS (Calorías)
+                int barW = w / datos.length - 10;
+                double max = 0;
+                for(double d : datos) if(d > max) max = d;
+                if(max < 2000) max = 2000; 
+                
+                for (int i = 0; i < datos.length; i++) {
+                    int barH = (int) ((datos[i] / max) * h);
+                    g2d.setColor(TemaNutrix.VERDE_NUTRIX);
+                    g2d.fillRect(x0 + i * (barW + 10), y0 + (h - barH), barW, barH);
+                    g2d.setColor(TemaNutrix.GRIS_TEXTO);
+                    g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+                    g2d.drawString(String.valueOf((int)datos[i]), x0 + i * (barW + 10), y0 + (h - barH) - 5);
+                }
             }
         }
     }

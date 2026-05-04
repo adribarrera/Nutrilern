@@ -167,15 +167,17 @@ public class AlimentoDAO {
     }
 
     // 5. OBTIENE LOS MACROS TOTALES DE HOY
-    public static double[] obtenerMacrosHoy(int idUsuario) {
+    public static double[] obtenerMacrosPorDia(int idUsuario, java.time.LocalDate fecha) {
         double[] macros = {0, 0, 0, 0}; // [Kcal, HC, Prot, Grasas]
         String sql = "SELECT SUM(kcal) as kcal, SUM(hidratos_carbono) as hc, SUM(proteinas) as prot, SUM(grasas) as fat " +
-                     "FROM registro_diario WHERE id_usuario_fk = ? AND fecha = CURDATE()";
+                     "FROM registro_diario WHERE id_usuario_fk = ? AND fecha = ?";
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, idUsuario);
+            pstmt.setDate(2, java.sql.Date.valueOf(fecha));
+            
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     macros[0] = rs.getDouble("kcal");
@@ -185,9 +187,13 @@ public class AlimentoDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("NUTRILERN > Error al obtener macros de hoy: " + e.getMessage());
+            System.err.println("NUTRILERN > Error al obtener macros por día: " + e.getMessage());
         }
         return macros;
+    }
+
+    public static double[] obtenerMacrosHoy(int idUsuario) {
+        return obtenerMacrosPorDia(idUsuario, java.time.LocalDate.now());
     }
 
     // --- MÉTODOS ANALÍTICOS PARA EL PANEL BASE DE ALIMENTOS ---

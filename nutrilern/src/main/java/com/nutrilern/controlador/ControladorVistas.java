@@ -36,19 +36,26 @@ public class ControladorVistas {
     }
 
     /**
-     * Obtiene los datos necesarios para las gráficas del panel de evolución.
+     * Obtiene los datos necesarios para las gráficas del panel de evolución,
+     * filtrando los macros por una fecha específica.
      */
-    public static Map<String, Object> obtenerDatosEvolucion(Usuario usuario) {
+    public static Map<String, Object> obtenerDatosEvolucion(Usuario usuario, java.time.LocalDate fecha) {
         Map<String, Object> datos = new HashMap<>();
 
         // 1. Calorías última semana
         int[] calSemana = AlimentoDAO.obtenerCaloriasUltimos7Dias(usuario.getId());
         datos.put("caloriasSemana", calSemana);
 
-        // 2. Distribución de macros de hoy (en porcentajes para el gráfico circular)
-        double[] macrosHoyRaw = AlimentoDAO.obtenerMacrosHoy(usuario.getId());
-        int[] macrosPorcentaje = calcularPorcentajesMacros(macrosHoyRaw);
-        datos.put("macrosHoyPorcentaje", macrosPorcentaje);
+        // 2. Distribución de macros del día solicitado
+        double[] macrosRaw = AlimentoDAO.obtenerMacrosPorDia(usuario.getId(), fecha);
+        
+        // Si no hay calorías consumidas, mandamos array vacío para indicar "Sin registros"
+        if (macrosRaw[0] == 0) {
+            datos.put("macrosHoyPorcentaje", new int[0]);
+        } else {
+            int[] macrosPorcentaje = calcularPorcentajesMacros(macrosRaw);
+            datos.put("macrosHoyPorcentaje", macrosPorcentaje);
+        }
 
         // 3. Historial de peso
         List<Object[]> historialPe = PesoDAO.obtenerHistorialPesos(usuario.getId(), 10);
