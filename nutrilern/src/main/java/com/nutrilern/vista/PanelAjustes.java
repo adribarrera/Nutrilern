@@ -17,6 +17,10 @@ public class PanelAjustes extends JPanel {
     private JPanel panelContenedorCartas;
     private CardLayout cardLayout;
 
+    /**
+     * Constructor del panel de ajustes.
+     * @param ventana Referencia a la ventana principal para navegación.
+     */
     public PanelAjustes(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
         setLayout(new BorderLayout());
@@ -37,6 +41,10 @@ public class PanelAjustes extends JPanel {
         cambiarPestana(btnNavDatos, "DATOS");
     }
 
+    /**
+     * Crea la cabecera superior y la barra de navegación de pestañas.
+     * @return Panel configurado con cabecera y nav.
+     */
     private JPanel crearCabeceraYNav() {
         JPanel panelTop = new JPanel();
         panelTop.setLayout(new BoxLayout(panelTop, BoxLayout.Y_AXIS));
@@ -83,6 +91,11 @@ public class PanelAjustes extends JPanel {
         return panelTop;
     }
 
+    /**
+     * Crea un botón de navegación con estilo personalizado.
+     * @param texto Etiqueta del botón.
+     * @return Botón configurado.
+     */
     private JButton crearBotonNav(String texto) {
         JButton btn = new JButton(texto);
         btn.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 15));
@@ -94,6 +107,11 @@ public class PanelAjustes extends JPanel {
         return btn;
     }
 
+    /**
+     * Gestiona el cambio de pestaña visual y lógica.
+     * @param botonActivo Botón que ha sido pulsado.
+     * @param nombreCarta Identificador de la carta en el CardLayout.
+     */
     private void cambiarPestana(JButton botonActivo, String nombreCarta) {
         JButton[] todos = { btnNavDatos, btnNavNutricion, btnNavSeguridad, btnNavPeligro };
         for (JButton btn : todos) {
@@ -112,6 +130,11 @@ public class PanelAjustes extends JPanel {
         cardLayout.show(panelContenedorCartas, nombreCarta);
     }
 
+    /**
+     * Envuelve una tarjeta en un panel con GridBagLayout para centrarla.
+     * @param tarjetaBlanca Tarjeta a centrar.
+     * @return Panel contenedor centrado.
+     */
     private JPanel crearPantallaCentrada(JPanel tarjetaBlanca) {
         JPanel fondo = new JPanel(new GridBagLayout());
         fondo.setBackground(TemaNutrix.FONDO);
@@ -119,6 +142,10 @@ public class PanelAjustes extends JPanel {
         return fondo;
     }
 
+    /**
+     * Crea la tarjeta de visualización y edición de datos físicos.
+     * @return Panel con la tarjeta de datos.
+     */
     private JPanel crearTarjetaDatos() {
         JPanel tarjeta = crearTarjetaBase("Mis Datos Físicos");
 
@@ -166,9 +193,11 @@ public class PanelAjustes extends JPanel {
                             user.setPeso(peso);
                             user.setAltura(altura);
                             refrescarDatos();
-                            JOptionPane.showMessageDialog(this, "Datos actualizados.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+                            JOptionPane.showMessageDialog(this, "Datos actualizados.", "Éxito",
+                                    JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                         }
-                    } catch (Exception ex) {}
+                    } catch (Exception ex) {
+                    }
                 }
             }
         });
@@ -176,6 +205,10 @@ public class PanelAjustes extends JPanel {
         return tarjeta;
     }
 
+    /**
+     * Crea la tarjeta de gestión del plan nutricional y objetivos.
+     * @return Panel con la tarjeta de nutrición.
+     */
     private JPanel crearTarjetaNutricion() {
         JPanel tarjeta = crearTarjetaBase("Plan Nutricional");
         lblObjetivoValor = new JLabel("-");
@@ -197,7 +230,8 @@ public class PanelAjustes extends JPanel {
                     if (com.nutrilern.controlador.ControladorUsuario.actualizarObjetivo(user.getId(), idObjNuevo)) {
                         user.setIdObjetivo(idObjNuevo);
                         refrescarDatos();
-                        JOptionPane.showMessageDialog(this, "Objetivo actualizado.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+                        JOptionPane.showMessageDialog(this, "Objetivo actualizado.", "Éxito", JOptionPane.PLAIN_MESSAGE,
+                                TemaNutrix.obtenerIconoDialogo());
                     }
                 }
             }
@@ -206,33 +240,43 @@ public class PanelAjustes extends JPanel {
         return tarjeta;
     }
 
+    /**
+     * Crea la tarjeta de opciones de seguridad (email, contraseña).
+     * @return Panel con la tarjeta de seguridad.
+     */
     private JPanel crearTarjetaSeguridad() {
         JPanel tarjeta = crearTarjetaBase("Seguridad");
-        
+
         JButton btnEmail = crearBotonCentrado("Cambiar Email");
         btnEmail.addActionListener(e -> {
             Usuario user = ventanaPadre.getUsuarioLogueado();
-            if (user == null) return;
+            if (user == null)
+                return;
 
-            String nuevoEmail = (String) JOptionPane.showInputDialog(this, 
-                "Introduce tu nuevo correo electrónico:", "Cambiar Email", 
-                JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo(), null, user.getEmail());
+            String nuevoEmail = (String) JOptionPane.showInputDialog(this,
+                    "Introduce tu nuevo correo electrónico:", "Cambiar Email",
+                    JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo(), null, user.getEmail());
 
             if (nuevoEmail != null) {
                 nuevoEmail = nuevoEmail.trim();
-                if (nuevoEmail.isEmpty() || nuevoEmail.equals(user.getEmail())) return;
+                if (nuevoEmail.isEmpty() || nuevoEmail.equals(user.getEmail()))
+                    return;
 
                 if (!com.nutrilern.controlador.ControladorUsuario.esEmailValido(nuevoEmail)) {
-                    JOptionPane.showMessageDialog(this, "El formato del correo no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "El formato del correo no es válido.", "Error",
+                            JOptionPane.ERROR_MESSAGE);
                 } else {
                     // VERIFICACIÓN POR CORREO
                     if (mostrarDialogoVerificacion(nuevoEmail)) {
                         if (com.nutrilern.controlador.ControladorUsuario.actualizarEmail(user.getId(), nuevoEmail)) {
                             user.setEmail(nuevoEmail);
                             refrescarDatos();
-                            JOptionPane.showMessageDialog(this, "Correo electrónico actualizado correctamente.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+                            JOptionPane.showMessageDialog(this, "Correo electrónico actualizado correctamente.",
+                                    "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                         } else {
-                            JOptionPane.showMessageDialog(this, "No se pudo actualizar el correo. Es posible que ya esté en uso.", "Error", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(this,
+                                    "No se pudo actualizar el correo. Es posible que ya esté en uso.", "Error",
+                                    JOptionPane.ERROR_MESSAGE);
                         }
                     }
                 }
@@ -240,16 +284,18 @@ public class PanelAjustes extends JPanel {
         });
 
         JButton btnPass = crearBotonCentrado("Cambiar Contraseña");
+        btnPass.setBackground(TemaNutrix.ACCENTO);
         btnPass.addActionListener(e -> {
             Usuario user = ventanaPadre.getUsuarioLogueado();
-            if (user == null) return;
+            if (user == null)
+                return;
 
             JPanel panelPass = new JPanel(new GridLayout(4, 1, 5, 5));
             JLabel lblNew = new JLabel("Nueva Contraseña (mín. 8 caracteres):");
             JPasswordField txtNew = new JPasswordField();
             JLabel lblConf = new JLabel("Confirmar Contraseña:");
             JPasswordField txtConf = new JPasswordField();
-            
+
             panelPass.add(lblNew);
             panelPass.add(txtNew);
             panelPass.add(lblConf);
@@ -262,19 +308,24 @@ public class PanelAjustes extends JPanel {
                 String pass = new String(txtNew.getPassword());
                 String conf = new String(txtConf.getPassword());
 
-                if (pass.isEmpty()) return;
+                if (pass.isEmpty())
+                    return;
 
                 if (!pass.equals(conf)) {
-                    JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden.", "Error",
+                            JOptionPane.ERROR_MESSAGE);
                 } else if (!com.nutrilern.controlador.ControladorUsuario.esPasswordValida(pass)) {
-                    JOptionPane.showMessageDialog(this, "La contraseña debe tener al menos 8 caracteres.", "Seguridad", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "La contraseña debe tener al menos 8 caracteres.", "Seguridad",
+                            JOptionPane.WARNING_MESSAGE);
                 } else {
                     // VERIFICACIÓN POR CORREO (al email actual)
                     if (mostrarDialogoVerificacion(user.getEmail())) {
                         if (com.nutrilern.controlador.ControladorUsuario.actualizarPassword(user.getId(), pass)) {
-                            JOptionPane.showMessageDialog(this, "Contraseña actualizada correctamente.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+                            JOptionPane.showMessageDialog(this, "Contraseña actualizada correctamente.", "Éxito",
+                                    JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
                         } else {
-                            JOptionPane.showMessageDialog(this, "Error al actualizar la contraseña.", "Error", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(this, "Error al actualizar la contraseña.", "Error",
+                                    JOptionPane.ERROR_MESSAGE);
                         }
                     }
                 }
@@ -292,13 +343,14 @@ public class PanelAjustes extends JPanel {
      */
     private boolean mostrarDialogoVerificacion(String emailDestino) {
         String codigoGenerado = com.nutrilern.controlador.ControladorUsuario.generarCodigoVerificacion();
-        
+
         // Diálogo de carga no modal para no bloquear el envío
-        JOptionPane paneCarga = new JOptionPane("Enviando código de verificación a:\n" + emailDestino, 
-                JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, TemaNutrix.obtenerIconoDialogo(), new Object[]{}, null);
+        JOptionPane paneCarga = new JOptionPane("Enviando código de verificación a:\n" + emailDestino,
+                JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, TemaNutrix.obtenerIconoDialogo(),
+                new Object[] {}, null);
         JDialog dialogCarga = paneCarga.createDialog(this, "Enviando...");
-        
-        final boolean[] enviado = {false};
+
+        final boolean[] enviado = { false };
         new Thread(() -> {
             if (com.nutrilern.controlador.ControladorUsuario.enviarCodigo(emailDestino, codigoGenerado)) {
                 enviado[0] = true;
@@ -306,44 +358,52 @@ public class PanelAjustes extends JPanel {
             } else {
                 SwingUtilities.invokeLater(() -> {
                     dialogCarga.dispose();
-                    JOptionPane.showMessageDialog(this, "Error al enviar el código de verificación.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Error al enviar el código de verificación.", "Error",
+                            JOptionPane.ERROR_MESSAGE);
                 });
             }
         }).start();
         dialogCarga.setVisible(true);
 
-        if (!enviado[0]) return false;
+        if (!enviado[0])
+            return false;
 
-        String input = (String) JOptionPane.showInputDialog(this, 
-                "Introduce el código de 8 dígitos enviado a su correo:", 
+        String input = (String) JOptionPane.showInputDialog(this,
+                "Introduce el código de 8 dígitos enviado a su correo:",
                 "Verificación requerida", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo(), null, "");
-        
+
         if (input != null && input.equals(codigoGenerado)) {
             return true;
         } else if (input != null) {
-            JOptionPane.showMessageDialog(this, "Código incorrecto. No se realizaron cambios.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Código incorrecto. No se realizaron cambios.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
         return false;
     }
 
+    /**
+     * Crea la tarjeta con acciones críticas (cerrar sesión, eliminar cuenta).
+     * @return Panel con la tarjeta de peligro/cuenta.
+     */
     private JPanel crearTarjetaPeligro() {
-        JPanel tarjeta = crearTarjetaBase("Zona de Peligro");
+        JPanel tarjeta = crearTarjetaBase("Mi Cuenta");
         JButton btnLogout = crearBotonCentrado("Cerrar Sesión");
-        btnLogout.setBackground(new Color(100, 100, 100));
+        btnLogout.setBackground(TemaNutrix.PRIMARIO);
         btnLogout.addActionListener(e -> {
             ventanaPadre.setUsuarioLogueado(null);
             ventanaPadre.cambiarPantalla("LOGIN");
         });
 
         JButton btnBorrar = crearBotonCentrado("Eliminar Cuenta");
-        btnBorrar.setBackground(new Color(220, 53, 69));
+        btnBorrar.setBackground(TemaNutrix.ACCENTO);
         btnBorrar.addActionListener(e -> {
             int res = JOptionPane.showConfirmDialog(this, "¿Borrar cuenta permanentemente?", "¡Atención!",
                     JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
             if (res == JOptionPane.YES_OPTION) {
                 Usuario user = ventanaPadre.getUsuarioLogueado();
                 if (user != null && com.nutrilern.controlador.ControladorUsuario.eliminarCuenta(user.getId())) {
-                    JOptionPane.showMessageDialog(this, "Cuenta eliminada.", "Info", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+                    JOptionPane.showMessageDialog(this, "Cuenta eliminada.", "Info", JOptionPane.PLAIN_MESSAGE,
+                            TemaNutrix.obtenerIconoDialogo());
                     ventanaPadre.setUsuarioLogueado(null);
                     ventanaPadre.cambiarPantalla("LOGIN");
                 }
@@ -356,6 +416,11 @@ public class PanelAjustes extends JPanel {
         return tarjeta;
     }
 
+    /**
+     * Crea la base visual blanca redondeada para las tarjetas.
+     * @param titulo Título de la tarjeta.
+     * @return Panel base configurado.
+     */
     private JPanel crearTarjetaBase(String titulo) {
         JPanel tarjeta = new JPanel();
         tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
@@ -381,6 +446,12 @@ public class PanelAjustes extends JPanel {
         return tarjeta;
     }
 
+    /**
+     * Crea una fila visual con etiqueta y valor de dato.
+     * @param etiqueta Nombre del dato.
+     * @param lblValor Label donde se muestra el valor.
+     * @return Panel de la fila.
+     */
     private JPanel crearFilaDato(String etiqueta, JLabel lblValor) {
         JPanel fila = new JPanel(new BorderLayout());
         fila.setOpaque(false);
@@ -406,6 +477,11 @@ public class PanelAjustes extends JPanel {
         return contenedorCentrado;
     }
 
+    /**
+     * Crea un botón estandarizado y centrado para las tarjetas.
+     * @param texto Texto del botón.
+     * @return Botón configurado.
+     */
     private JButton crearBotonCentrado(String texto) {
         JButton btn = new JButton(texto);
         btn.setBackground(TemaNutrix.PRIMARIO);
@@ -419,6 +495,9 @@ public class PanelAjustes extends JPanel {
         return btn;
     }
 
+    /**
+     * Actualiza los valores de los labels con los datos actuales del usuario logueado.
+     */
     public void refrescarDatos() {
         Usuario user = ventanaPadre.getUsuarioLogueado();
         if (user != null) {
@@ -427,12 +506,15 @@ public class PanelAjustes extends JPanel {
             lblEdadValor.setText(user.getEdad() + " años");
             lblAlturaValor.setText(user.getAltura() + " cm");
             lblSexoValor.setText(user.getSexo() != null && user.getSexo().equals("F") ? "Mujer" : "Hombre");
-            
+
             String objStr = "No definido";
-            if (user.getIdObjetivo() == 1) objStr = "Perder Grasa";
-            else if (user.getIdObjetivo() == 2) objStr = "Mantener";
-            else if (user.getIdObjetivo() == 3) objStr = "Ganar Volumen";
-            
+            if (user.getIdObjetivo() == 1)
+                objStr = "Perder Grasa";
+            else if (user.getIdObjetivo() == 2)
+                objStr = "Mantener";
+            else if (user.getIdObjetivo() == 3)
+                objStr = "Ganar Volumen";
+
             lblObjetivoValor.setText(objStr);
         }
     }

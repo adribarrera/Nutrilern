@@ -252,4 +252,22 @@ public class UsuarioDAO {
             return false;
         }
     }
+
+    /**
+     * Obtiene el ID de un usuario por su email. Devuelve -1 si no existe.
+     */
+    public static int obtenerIdPorEmail(String email) {
+        String sql = "SELECT id_usuario FROM usuario WHERE email = ?";
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next())
+                    return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al buscar ID por email: " + e.getMessage());
+        }
+        return -1;
+    }
 }

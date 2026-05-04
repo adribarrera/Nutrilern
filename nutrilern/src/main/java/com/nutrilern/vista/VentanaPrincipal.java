@@ -4,6 +4,10 @@ import javax.swing.*;
 import com.nutrilern.modelo.Usuario;
 import java.awt.*;
 
+/**
+ * Ventana principal que actúa como contenedor de todas las pantallas de la aplicación.
+ * Utiliza un CardLayout para gestionar la navegación.
+ */
 public class VentanaPrincipal extends JFrame {
 
     private CardLayout cardLayout;
@@ -16,6 +20,9 @@ public class VentanaPrincipal extends JFrame {
     private PanelMisComidas panelComidas;
     private PanelAdminUsuarios panelAdmin;
 
+    /**
+     * Constructor de la ventana principal. Configura el layout y añade las pantallas.
+     */
     public VentanaPrincipal() {
         setTitle("NUTRIX");
         setSize(1080, 720);
@@ -68,14 +75,26 @@ public class VentanaPrincipal extends JFrame {
         cardLayout.show(panelContenedor, "LOGIN");
     }
 
+    /**
+     * Establece el usuario que ha iniciado sesión globalmente.
+     * @param usuario Datos del usuario.
+     */
     public void setUsuarioLogueado(com.nutrilern.modelo.Usuario usuario) {
         this.usuarioLogueado = usuario;
     }
 
+    /**
+     * Obtiene el usuario actualmente logueado.
+     * @return El usuario en sesión.
+     */
     public com.nutrilern.modelo.Usuario getUsuarioLogueado() {
         return usuarioLogueado;
     }
 
+    /**
+     * Gestiona la navegación entre pantallas.
+     * @param nombrePantalla Identificador de la pantalla de destino.
+     */
     public void cambiarPantalla(String nombrePantalla) {
 
         if (nombrePantalla.equals("MENU")) {

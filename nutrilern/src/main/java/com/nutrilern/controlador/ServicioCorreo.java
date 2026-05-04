@@ -10,6 +10,10 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+/**
+ * Servicio encargado del envío de correos electrónicos para verificaciones de seguridad.
+ * Utiliza JavaMail y carga credenciales desde un archivo externo.
+ */
 public class ServicioCorreo {
 
     // Variables que se llenarán desde el archivo .properties
@@ -21,6 +25,9 @@ public class ServicioCorreo {
         cargarCredenciales();
     }
 
+    /**
+     * Carga las credenciales del servidor SMTP desde el archivo correo.properties.
+     */
     private static void cargarCredenciales() {
         Properties propiedades = new Properties();
         // Buscamos el archivo en la carpeta resources
@@ -42,6 +49,12 @@ public class ServicioCorreo {
         }
     }
 
+    /**
+     * Envía un código de verificación por email al destinatario indicado.
+     * @param correoDestino Dirección de email del destinatario.
+     * @param codigo Código de 8 dígitos a enviar.
+     * @return true si el envío fue exitoso, false en caso contrario.
+     */
     public static boolean enviarCodigoVerificacion(String correoDestino, String codigo) {
 
         // Medida de seguridad: Si no se cargaron los datos, no intentamos enviar nada

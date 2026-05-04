@@ -103,4 +103,13 @@ public class ControladorUsuario {
     public static boolean esPasswordValida(String password) {
         return password != null && password.length() >= 8;
     }
+
+    /**
+     * Comprueba si un email existe en el sistema y devuelve su ID.
+     */
+    public static int obtenerIdPorEmail(String email) {
+        if (!esEmailValido(email))
+            return -1;
+        return UsuarioDAO.obtenerIdPorEmail(email);
+    }
 }

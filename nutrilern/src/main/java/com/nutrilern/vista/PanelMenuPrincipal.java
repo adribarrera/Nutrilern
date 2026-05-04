@@ -7,6 +7,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * Panel de inicio que muestra el resumen diario, macros y accesos directos.
+ */
 public class PanelMenuPrincipal extends JPanel {
     private VentanaPrincipal ventanaPadre;
     private Usuario usuario;
@@ -18,6 +21,11 @@ public class PanelMenuPrincipal extends JPanel {
     private JLabel lblCalVal, lblProtVal, lblHCVal, lblFatVal, lblIMCVal;
     private JProgressBar barCal, barProt, barHC, barFat, barIMC;
 
+    /**
+     * Constructor del menú principal.
+     * @param ventana Ventana principal para navegación.
+     * @param usuarioLogueado Usuario que ha iniciado sesión.
+     */
     public PanelMenuPrincipal(VentanaPrincipal ventana, Usuario usuarioLogueado) {
         this.ventanaPadre = ventana;
         this.usuario = usuarioLogueado;
@@ -82,6 +90,18 @@ public class PanelMenuPrincipal extends JPanel {
         String nombreUser = (usuario != null && usuario.getNombre() != null) ? usuario.getNombre() : "Invitado";
         String apellidosUser = (usuario != null && usuario.getApellidos() != null) ? usuario.getApellidos() : "";
 
+        JButton btnLogout = new JButton("Cerrar Sesión");
+        btnLogout.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 12));
+        btnLogout.setForeground(Color.WHITE);
+        btnLogout.setBackground(TemaNutrix.PRIMARIO);
+        btnLogout.setFocusPainted(false);
+        btnLogout.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnLogout.addActionListener(e -> {
+            ventanaPadre.setUsuarioLogueado(null);
+            ventanaPadre.cambiarPantalla("LOGIN");
+        });
+        userActions.add(btnLogout);
+
         JLabel lblUser = new JLabel("Bienvenido, " + nombreUser + " " + apellidosUser);
         lblUser.setFont(new Font(TemaNutrix.FONT_NAME, Font.ITALIC, 14));
         lblUser.setForeground(TemaNutrix.TEXTO);
@@ -134,6 +154,9 @@ public class PanelMenuPrincipal extends JPanel {
         cargarDatosReales();
     }
 
+    /**
+     * Lanza un hilo secundario para cargar los datos nutricionales reales del usuario.
+     */
     private void cargarDatosReales() {
         if (usuario == null) return;
         
@@ -157,6 +180,16 @@ public class PanelMenuPrincipal extends JPanel {
         }).start();
     }
 
+    /**
+     * Actualiza los componentes visuales con los datos obtenidos.
+     * @param hoy Macros consumidos hoy.
+     * @param mK Calorías objetivo.
+     * @param mH Carbohidratos objetivo.
+     * @param mP Proteínas objetivo.
+     * @param mF Grasas objetivo.
+     * @param imc Valor del IMC.
+     * @param clas Clasificación del IMC.
+     */
     private void actualizarInterfaz(double[] hoy, int mK, int mH, int mP, int mF, double imc, String clas) {
         double pctKcal = (hoy[0] / mK) * 100;
         
@@ -193,6 +226,10 @@ public class PanelMenuPrincipal extends JPanel {
     private JLabel lblProgresoMsg;
     private JProgressBar barProgresoGeneral;
 
+    /**
+     * Crea la sección de resumen de hoy con la barra de progreso y mini-tarjetas de macros.
+     * @return Panel con la sección de resumen.
+     */
     private JPanel crearSeccionResumenHoy() {
         JPanel seccion = new JPanel(new BorderLayout());
         seccion.setOpaque(false);
@@ -250,11 +287,11 @@ public class PanelMenuPrincipal extends JPanel {
         lblCalVal = (JLabel) pCal.getClientProperty("valLabel");
         barCal = (JProgressBar) pCal.getClientProperty("progressBar");
 
-        JPanel pHC = crearStatMiniCard("Carbo", TemaNutrix.CARBOHIDRATOS);
+        JPanel pHC = crearStatMiniCard("Carbohidratos", TemaNutrix.CARBOHIDRATOS);
         lblHCVal = (JLabel) pHC.getClientProperty("valLabel");
         barHC = (JProgressBar) pHC.getClientProperty("progressBar");
 
-        JPanel pProt = crearStatMiniCard("Protes", TemaNutrix.PROTEINAS);
+        JPanel pProt = crearStatMiniCard("Proteínas", TemaNutrix.PROTEINAS);
         lblProtVal = (JLabel) pProt.getClientProperty("valLabel");
         barProt = (JProgressBar) pProt.getClientProperty("progressBar");
 
@@ -278,6 +315,12 @@ public class PanelMenuPrincipal extends JPanel {
         return seccion;
     }
 
+    /**
+     * Crea una mini-tarjeta para mostrar un estadístico individual (macro o IMC).
+     * @param label Nombre del estadístico.
+     * @param colorBarra Color para la barra de progreso.
+     * @return Panel de la mini-tarjeta.
+     */
     private JPanel crearStatMiniCard(String label, Color colorBarra) {
         JPanel card = new JPanel() {
             @Override
@@ -348,6 +391,14 @@ public class PanelMenuPrincipal extends JPanel {
         }
     }
 
+    /**
+     * Crea una tarjeta de acceso directo para el menú principal.
+     * @param titulo Título de la sección.
+     * @param imagePath Ruta de la imagen/icono.
+     * @param descripcion Breve explicación.
+     * @param accion Acción a ejecutar al hacer clic.
+     * @return Panel de la tarjeta.
+     */
     private JPanel crearTarjetaMenu(String titulo, String imagePath, String descripcion, Runnable accion) {
         JPanel tarjeta = new JPanel() {
             @Override
@@ -378,15 +429,16 @@ public class PanelMenuPrincipal extends JPanel {
         } catch (Exception ex) { }
         lblIcono.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblTit = new JLabel(titulo);
+        JLabel lblTit = new JLabel(titulo, SwingConstants.CENTER);
         lblTit.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 20));
         lblTit.setForeground(TemaNutrix.TEXTO);
         lblTit.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblDesc = new JLabel("<html><center>" + descripcion + "</center></html>");
+        JLabel lblDesc = new JLabel("<html><center>" + descripcion + "</center></html>", SwingConstants.CENTER);
         lblDesc.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 13));
         lblDesc.setForeground(TemaNutrix.GRIS_TEXTO);
         lblDesc.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblDesc.setHorizontalAlignment(SwingConstants.CENTER);
         lblDesc.setMaximumSize(new Dimension(220, 50));
 
         tarjeta.add(lblIcono);
@@ -415,6 +467,11 @@ public class PanelMenuPrincipal extends JPanel {
         return tarjeta;
     }
 
+    /**
+     * Crea un botón estilizado para acciones de administrador en la cabecera.
+     * @param texto Texto del botón.
+     * @return Botón configurado.
+     */
     private JButton crearBotonCabeceraAdmin(String texto) {
         JButton btn = new JButton(texto);
         btn.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 12));
@@ -429,6 +486,9 @@ public class PanelMenuPrincipal extends JPanel {
         return btn;
     }
 
+    /**
+     * Abre un selector de archivos para importar alimentos desde un CSV.
+     */
     private void abrirImportadorCSV() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Seleccionar archivo CSV de alimentos");

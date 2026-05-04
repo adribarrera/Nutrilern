@@ -25,6 +25,10 @@ public class PanelEvolucion extends JPanel {
     private TarjetaGrafico graficoMacros;
     private TarjetaGrafico graficoPeso;
 
+    /**
+     * Constructor del panel de evolución.
+     * @param ventana Referencia a la ventana principal.
+     */
     public PanelEvolucion(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
         this.mesActual = YearMonth.now();
@@ -89,6 +93,10 @@ public class PanelEvolucion extends JPanel {
         }).start();
     }
 
+    /**
+     * Crea la cabecera del panel con el botón de volver y el título.
+     * @return Panel de cabecera.
+     */
     private JPanel crearCabecera() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
@@ -108,6 +116,10 @@ public class PanelEvolucion extends JPanel {
         return header;
     }
 
+    /**
+     * Crea la sección que contiene el calendario interactivo.
+     * @return Panel con el calendario.
+     */
     private JPanel crearSeccionCalendario() {
         JPanel container = new JPanel(new BorderLayout());
         container.setBackground(Color.WHITE);
@@ -162,6 +174,9 @@ public class PanelEvolucion extends JPanel {
         return container;
     }
 
+    /**
+     * Regenera los componentes visuales del calendario basándose en el mes seleccionado.
+     */
     private void actualizarCalendario() {
         lblMesAno.setText(
                 mesActual.getMonth().getDisplayName(TextStyle.FULL, Locale.forLanguageTag("es-ES")).toUpperCase() + " "
@@ -208,6 +223,10 @@ public class PanelEvolucion extends JPanel {
         panelCalendario.repaint();
     }
 
+    /**
+     * Crea el contenedor para las tarjetas de gráficos (calorías y macros).
+     * @return Panel con los gráficos.
+     */
     private JPanel crearSeccionGraficos() {
         JPanel container = new JPanel(new GridLayout(1, 2, 30, 0));
         container.setOpaque(false);
@@ -385,7 +404,17 @@ public class PanelEvolucion extends JPanel {
             for (double d : datos) if (d > max) max = d;
             max = Math.max(max, 2000); // Mínimo 2000 kcal de escala
 
-            String[] dias = {"L", "M", "X", "J", "V", "S", "D"};
+            // Generar etiquetas dinámicas basadas en el día actual
+            String[] nombresDias = {"L", "M", "X", "J", "V", "S", "D"};
+            String[] etiquetasDias = new String[7];
+            int hoy = java.time.LocalDate.now().getDayOfWeek().getValue(); // 1=Lunes, 7=Domingo
+            
+            for (int i = 0; i < 7; i++) {
+                // El índice i=6 es hoy, i=5 ayer, etc.
+                // Calculamos qué día de la semana corresponde a cada posición de la barra
+                int diaSemanaIdx = (hoy - 1 - (6 - i) + 7 * 10) % 7;
+                etiquetasDias[i] = nombresDias[diaSemanaIdx];
+            }
 
             for (int i = 0; i < datos.length; i++) {
                 int barH = (int) ((datos[i] / max) * h);
@@ -403,7 +432,7 @@ public class PanelEvolucion extends JPanel {
                 // Etiquetas de días
                 g2d.setColor(TemaNutrix.GRIS_TEXTO);
                 g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 11));
-                g2d.drawString(dias[i], bx + barW / 2 - 4, y0 + h + 25);
+                g2d.drawString(etiquetasDias[i], bx + barW / 2 - 4, y0 + h + 25);
                 
                 // Valor numérico (si es > 0)
                 if (datos[i] > 0) {

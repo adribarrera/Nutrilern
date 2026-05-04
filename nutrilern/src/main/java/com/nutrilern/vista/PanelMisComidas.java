@@ -16,6 +16,9 @@ import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Panel de registro diario de comidas con tabla interactiva.
+ */
 public class PanelMisComidas extends JPanel {
 
     private VentanaPrincipal ventanaPadre;
@@ -26,6 +29,10 @@ public class PanelMisComidas extends JPanel {
 
     private JComboBox<ComboItem> comboCategoriasTabla;
 
+    /**
+     * Constructor del panel de comidas.
+     * @param ventana Referencia a la ventana principal.
+     */
     public PanelMisComidas(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
         setLayout(new BorderLayout());
@@ -36,6 +43,10 @@ public class PanelMisComidas extends JPanel {
         add(crearControlesInferiores(), BorderLayout.SOUTH);
     }
 
+    /**
+     * Crea la cabecera del panel con el botón de volver, título y acciones rápidas.
+     * @return Panel de cabecera.
+     */
     private JPanel crearCabecera() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
@@ -77,6 +88,10 @@ public class PanelMisComidas extends JPanel {
         return header;
     }
 
+    /**
+     * Crea la zona central con la tabla de registro diario.
+     * @return Panel con la tabla.
+     */
     private JPanel crearZonaTabla() {
         JPanel panelCentral = new JPanel(new BorderLayout());
         panelCentral.setOpaque(false);
@@ -188,6 +203,10 @@ public class PanelMisComidas extends JPanel {
         return panelCentral;
     }
 
+    /**
+     * Crea la barra inferior de acciones (añadir fila, guardar).
+     * @return Panel de controles.
+     */
     private JPanel crearControlesInferiores() {
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.setOpaque(false);
@@ -270,6 +289,9 @@ public class PanelMisComidas extends JPanel {
         return btn;
     }
 
+    /**
+     * Recarga la lista de alimentos disponibles en los desplegables de la tabla.
+     */
     private void recargarDesplegableAlimentos() {
         List<Alimento> listaBD = AlimentoDAO.obtenerTodosLosAlimentos();
         JComboBox<Alimento> comboActualizado = new JComboBox<>();
@@ -300,6 +322,9 @@ public class PanelMisComidas extends JPanel {
         }
     }
 
+    /**
+     * Carga el registro diario del usuario para el día actual desde la base de datos.
+     */
     public void cargarDatosHoy() {
         if (ventanaPadre.getUsuarioLogueado() == null)
             return;

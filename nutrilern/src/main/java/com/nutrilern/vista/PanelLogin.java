@@ -19,6 +19,10 @@ public class PanelLogin extends JPanel {
     private String emailTemporal;
     private String passTemporal;
 
+    /**
+     * Constructor de la pantalla de login.
+     * @param ventana Referencia a la ventana principal.
+     */
     public PanelLogin(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
 
@@ -133,6 +137,31 @@ public class PanelLogin extends JPanel {
             }
         });
 
+        JLabel lblOlvidoPass = new JLabel("¿Has olvidado la contraseña?");
+        lblOlvidoPass.setForeground(Color.BLACK);
+        lblOlvidoPass.setFont(fuenteNormal);
+        lblOlvidoPass.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        lblOlvidoPass.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        lblOlvidoPass.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                lblOlvidoPass.setForeground(TemaNutrix.PRIMARIO);
+                lblOlvidoPass.setFont(fuenteSubrayada);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                lblOlvidoPass.setForeground(Color.BLACK);
+                lblOlvidoPass.setFont(fuenteNormal);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                abrirDialogoRecuperacion();
+            }
+        });
+
         // Configuración de tamaños y alineación
         lblEmail.setAlignmentX(Component.CENTER_ALIGNMENT);
         txtEmail.setMaximumSize(new Dimension(300, 30));
@@ -182,6 +211,8 @@ public class PanelLogin extends JPanel {
         formPanel.add(btnLogin);
         formPanel.add(Box.createVerticalGlue()); // Espacio entre botón y registro
         formPanel.add(lblRegistrar);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        formPanel.add(lblOlvidoPass);
         formPanel.add(Box.createVerticalGlue()); // Empuja hacia arriba desde el fondo
 
         // Hacemos que el panel del formulario ocupe todo el alto para que el Glue
@@ -196,6 +227,9 @@ public class PanelLogin extends JPanel {
         add(panelFormularioContenedor, gbc);
     }
 
+    /**
+     * Abre el diálogo de registro de nuevos usuarios con un flujo de varios pasos.
+     */
     private void abrirDialogoRegistro() {
         JDialog dialogo = new JDialog(ventanaPadre, "Registro de usuario", true);
         dialogo.setSize(450, 550);
@@ -456,6 +490,74 @@ public class PanelLogin extends JPanel {
 
         dialogo.add(panelContenedorCartas);
         dialogo.setVisible(true);
+    }
+
+    /**
+     * Abre el diálogo para la recuperación de contraseña olvidada.
+     */
+    private void abrirDialogoRecuperacion() {
+        String email = (String) JOptionPane.showInputDialog(this, 
+                "Introduce tu correo electrónico para recuperar el acceso:", "Recuperar Contraseña", 
+                JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo(), null, "");
+
+        if (email == null || email.trim().isEmpty()) return;
+        email = email.trim();
+
+        int idUser = com.nutrilern.controlador.ControladorUsuario.obtenerIdPorEmail(email);
+        if (idUser == -1) {
+            JOptionPane.showMessageDialog(this, "No existe ningún usuario registrado con ese email.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Proceso de verificación (similar al de ajustes)
+        String codigoGenerado = com.nutrilern.controlador.ControladorUsuario.generarCodigoVerificacion();
+        
+        JOptionPane paneCarga = new JOptionPane("Enviando código de recuperación a:\n" + email, 
+                JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, TemaNutrix.obtenerIconoDialogo(), new Object[]{}, null);
+        JDialog dialogCarga = paneCarga.createDialog(this, "Enviando...");
+        
+        final boolean[] enviado = {false};
+        String finalEmail = email;
+        new Thread(() -> {
+            if (com.nutrilern.controlador.ControladorUsuario.enviarCodigo(finalEmail, codigoGenerado)) {
+                enviado[0] = true;
+                SwingUtilities.invokeLater(dialogCarga::dispose);
+            } else {
+                SwingUtilities.invokeLater(() -> {
+                    dialogCarga.dispose();
+                    JOptionPane.showMessageDialog(this, "Error al enviar el código de verificación.", "Error", JOptionPane.ERROR_MESSAGE);
+                });
+            }
+        }).start();
+        dialogCarga.setVisible(true);
+
+        if (!enviado[0]) return;
+
+        String input = (String) JOptionPane.showInputDialog(this, 
+                "Introduce el código de 8 dígitos enviado a su correo:", 
+                "Verificación requerida", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo(), null, "");
+        
+        if (input != null && input.equals(codigoGenerado)) {
+            // Código correcto -> Pedir nueva contraseña
+            JPasswordField pf = new JPasswordField();
+            int res = JOptionPane.showConfirmDialog(this, new Object[]{"Introduce tu nueva contraseña:", pf}, 
+                    "Restablecer Contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+            
+            if (res == JOptionPane.OK_OPTION) {
+                String newPass = new String(pf.getPassword());
+                if (com.nutrilern.controlador.ControladorUsuario.esPasswordValida(newPass)) {
+                    if (com.nutrilern.controlador.ControladorUsuario.actualizarPassword(idUser, newPass)) {
+                        JOptionPane.showMessageDialog(this, "Contraseña restablecida correctamente. Ya puedes iniciar sesión.", "Éxito", JOptionPane.PLAIN_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Error al actualizar la contraseña.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "La contraseña debe tener al menos 8 caracteres.", "Seguridad", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        } else if (input != null) {
+            JOptionPane.showMessageDialog(this, "Código incorrecto.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     // Spinner visual para estados de carga
