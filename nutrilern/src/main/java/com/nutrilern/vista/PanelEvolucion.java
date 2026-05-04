@@ -271,77 +271,146 @@ public class PanelEvolucion extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            Graphics2D g2d = (Graphics2D) g;
+            Graphics2D g2d = (Graphics2D) g.create();
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            if (datos == null || datos.length == 0) {
+            // Fondo blanco redondeado para la tarjeta
+            g2d.setColor(Color.WHITE);
+            g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+            g2d.setColor(TemaNutrix.GRIS_CLARO);
+            g2d.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
+
+            // Verificar si hay datos significativos
+            boolean tieneDatos = false;
+            if (datos != null && datos.length > 0) {
+                for (double d : datos) if (d > 0) { tieneDatos = true; break; }
+            }
+
+            if (!tieneDatos) {
                 g2d.setColor(TemaNutrix.GRIS_TEXTO);
                 g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.ITALIC, 13));
-                g2d.drawString("Sin datos", getWidth() / 2 - 30, getHeight() / 2 + 10);
+                g2d.drawString("Sin datos registrados", getWidth() / 2 - 60, getHeight() / 2 + 10);
+                g2d.dispose();
                 return;
             }
 
-            int w = getWidth() - 60;
-            int h = getHeight() - 100;
-            int x0 = 30, y0 = 70;
+            // Margen para el dibujo de la gráfica
+            int x0 = 40, y0 = 60;
+            int w = getWidth() - 80;
+            int h = getHeight() - 120;
 
-            if (etiquetas != null) dibujarGraficaLineal(g2d, x0, y0, w, h);
-            else if (datos.length == 3) dibujarGraficaCircular(g2d, x0, y0, w, h);
-            else dibujarGraficaBarras(g2d, x0, y0, w, h);
+            if (etiquetas != null) {
+                dibujarGraficaLineal(g2d, x0, y0, w, h);
+            } else if (datos.length == 3) {
+                dibujarGraficaCircular(g2d, x0, y0, w, h);
+            } else {
+                dibujarGraficaBarras(g2d, x0, y0, w, h);
+            }
+            g2d.dispose();
         }
 
         private void dibujarGraficaLineal(Graphics2D g2d, int x0, int y0, int w, int h) {
-            if (datos.length < 1) return;
-            int pointW = w / (datos.length > 1 ? datos.length - 1 : 1);
-            double min = datos[0], max = datos[0];
+            double max = 0, min = 1000;
             for (double d : datos) {
-                if (d < min) min = d;
                 if (d > max) max = d;
+                if (d < min) min = d;
             }
-            double range = Math.max(max - min, 5);
-            double scaleMin = min - (range * 0.2), scaleMax = max + (range * 0.2);
-            double scaleRange = scaleMax - scaleMin;
+            max += 5; min -= 5;
+            
+            int n = datos.length;
+            int pointW = (n > 1) ? w / (n - 1) : 0;
+            int[] xPoints = new int[n], yPoints = new int[n];
 
-            int[] xPoints = new int[datos.length], yPoints = new int[datos.length];
-            for (int i = 0; i < datos.length; i++) {
-                xPoints[i] = x0 + i * pointW;
-                yPoints[i] = y0 + h - (int) (((datos[i] - scaleMin) / scaleRange) * h);
-                g2d.setColor(TemaNutrix.ACCENTO);
-                g2d.fillOval(xPoints[i] - 5, yPoints[i] - 5, 10, 10);
-                if (i < etiquetas.length) {
-                    g2d.setColor(TemaNutrix.TEXTO);
+            for (int i = 0; i < n; i++) {
+                xPoints[i] = x0 + (n > 1 ? i * pointW : w / 2);
+                yPoints[i] = y0 + h - (int) (((datos[i] - min) / (max - min)) * h);
+                
+                // Punto
+                g2d.setColor(TemaNutrix.PRIMARIO);
+                g2d.fillOval(xPoints[i] - 4, yPoints[i] - 4, 8, 8);
+                
+                // Etiqueta de fecha (abajo)
+                if (etiquetas != null && i < etiquetas.length) {
+                    g2d.setColor(TemaNutrix.GRIS_TEXTO);
                     g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 10));
-                    g2d.drawString(etiquetas[i], xPoints[i] - 15, y0 + h + 20);
+                    g2d.drawString(etiquetas[i], xPoints[i] - 15, y0 + h + 25);
                 }
+                
+                // Valor (arriba del punto)
+                g2d.setColor(TemaNutrix.TEXTO);
+                g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 10));
+                g2d.drawString(String.format("%.1f", datos[i]), xPoints[i] - 12, yPoints[i] - 10);
             }
-            g2d.setStroke(new BasicStroke(3f));
-            g2d.setColor(new Color(255, 112, 67, 100));
-            g2d.drawPolyline(xPoints, yPoints, datos.length);
+            
+            if (n > 1) {
+                g2d.setStroke(new BasicStroke(2.5f));
+                g2d.setColor(new Color(TemaNutrix.PRIMARIO.getRed(), TemaNutrix.PRIMARIO.getGreen(), TemaNutrix.PRIMARIO.getBlue(), 120));
+                g2d.drawPolyline(xPoints, yPoints, n);
+            }
         }
 
         private void dibujarGraficaCircular(Graphics2D g2d, int x0, int y0, int w, int h) {
-            int size = Math.min(w, h), startAngle = 90;
+            int size = Math.min(w, h - 20);
+            int startAngle = 90;
             Color[] colores = { TemaNutrix.CARBOHIDRATOS, TemaNutrix.PROTEINAS, TemaNutrix.GRASAS };
-            int centerX = x0 + w / 2, centerY = y0 + h / 2;
+            String[] nombres = { "Carbo", "Prot", "Grasas" };
+            int centerX = x0 + w / 2, centerY = y0 + size / 2;
 
             for (int i = 0; i < datos.length; i++) {
                 int arcAngle = (int) (datos[i] * 3.6);
                 g2d.setColor(colores[i]);
-                g2d.fillArc(centerX - size / 2, centerY - size / 2, size, size, startAngle, arcAngle);
-                startAngle += arcAngle;
+                g2d.fillArc(centerX - size / 2, centerY - size / 2, size, size, startAngle, -arcAngle);
+                
+                // Leyenda horizontal inferior
+                int lx = x0 + i * (w/3);
+                int ly = y0 + size + 25;
+                g2d.fillRect(lx, ly, 12, 12);
+                g2d.setColor(TemaNutrix.TEXTO);
+                g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 10));
+                g2d.drawString(nombres[i] + " (" + (int)datos[i] + "%)", lx + 16, ly + 10);
+                
+                startAngle -= arcAngle;
             }
+            
+            // Efecto Donut
+            g2d.setColor(Color.WHITE);
+            int inner = size / 2;
+            g2d.fillOval(centerX - inner / 2, centerY - inner / 2, inner, inner);
         }
 
         private void dibujarGraficaBarras(Graphics2D g2d, int x0, int y0, int w, int h) {
-            int barW = w / datos.length - 10;
+            int barW = (w / datos.length) - 10;
             double max = 0;
             for (double d : datos) if (d > max) max = d;
-            max = Math.max(max, 2000);
+            max = Math.max(max, 2000); // Mínimo 2000 kcal de escala
+
+            String[] dias = {"L", "M", "X", "J", "V", "S", "D"};
 
             for (int i = 0; i < datos.length; i++) {
                 int barH = (int) ((datos[i] / max) * h);
+                int bx = x0 + i * (barW + 10);
+                int by = y0 + h - barH;
+
+                // Barra de fondo (guía)
+                g2d.setColor(new Color(245, 245, 245));
+                g2d.fillRoundRect(bx, y0, barW, h, 8, 8);
+
+                // Barra real
                 g2d.setColor(TemaNutrix.PRIMARIO);
-                g2d.fillRoundRect(x0 + i * (barW + 10), y0 + (h - barH), barW, barH, 10, 10);
+                g2d.fillRoundRect(bx, by, barW, barH, 8, 8);
+
+                // Etiquetas de días
+                g2d.setColor(TemaNutrix.GRIS_TEXTO);
+                g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 11));
+                g2d.drawString(dias[i], bx + barW / 2 - 4, y0 + h + 25);
+                
+                // Valor numérico (si es > 0)
+                if (datos[i] > 0) {
+                    g2d.setColor(TemaNutrix.TEXTO);
+                    g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 9));
+                    String val = String.valueOf((int)datos[i]);
+                    g2d.drawString(val, bx + barW/2 - (val.length() * 3), by - 5);
+                }
             }
         }
     }

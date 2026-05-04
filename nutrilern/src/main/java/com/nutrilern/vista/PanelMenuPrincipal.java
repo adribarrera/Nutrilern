@@ -147,22 +147,40 @@ public class PanelMenuPrincipal extends JPanel {
     }
 
     private void actualizarInterfaz(double[] hoy, int mK, int mH, int mP, int mF, double imc, String clas) {
+        double pctKcal = (hoy[0] / mK) * 100;
+        
         lblCalVal.setText((int)hoy[0] + " kcal / " + mK);
-        barCal.setValue((int)((hoy[0]/mK)*100));
+        barCal.setValue((int)Math.min(100, pctKcal));
         
         lblHCVal.setText((int)hoy[1] + " g / " + mH);
-        barHC.setValue((int)((hoy[1]/mH)*100));
+        barHC.setValue((int)Math.min(100, (hoy[1]/mH)*100));
 
         lblProtVal.setText((int)hoy[2] + " g / " + mP);
-        barProt.setValue((int)((hoy[2]/mP)*100));
+        barProt.setValue((int)Math.min(100, (hoy[2]/mP)*100));
 
         lblFatVal.setText((int)hoy[3] + " g / " + mF);
-        barFat.setValue((int)((hoy[3]/mF)*100));
+        barFat.setValue((int)Math.min(100, (hoy[3]/mF)*100));
 
         lblIMCVal.setText(String.format("%.1f (%s)", imc, clas));
         int progresoIMC = (int) (((imc - 15) / (40 - 15)) * 100);
         barIMC.setValue(Math.min(100, Math.max(0, progresoIMC)));
+
+        // --- LÓGICA DE MENSAJE DE ESTADO ---
+        barProgresoGeneral.setValue((int)Math.min(100, pctKcal));
+        if (pctKcal < 50) {
+            lblProgresoMsg.setText("¡Ánimo! Aún tienes margen para completar tu objetivo de hoy.");
+            barProgresoGeneral.setForeground(new Color(255, 167, 38)); // Naranja claro
+        } else if (pctKcal <= 100) {
+            lblProgresoMsg.setText("¡Vas genial! Estás muy cerca de cumplir tu meta diaria.");
+            barProgresoGeneral.setForeground(TemaNutrix.PRIMARIO);
+        } else {
+            lblProgresoMsg.setText("Has superado tu objetivo hoy. ¡Ojo con los excesos!");
+            barProgresoGeneral.setForeground(new Color(239, 83, 80)); // Rojo suave
+        }
     }
+
+    private JLabel lblProgresoMsg;
+    private JProgressBar barProgresoGeneral;
 
     private JPanel crearSeccionResumenHoy() {
         JPanel seccion = new JPanel(new BorderLayout());
@@ -174,11 +192,49 @@ public class PanelMenuPrincipal extends JPanel {
         titulo.setForeground(TemaNutrix.TEXTO);
         seccion.add(titulo, BorderLayout.NORTH);
 
-        JPanel cardsContainer = new JPanel(new GridLayout(1, 5, 10, 0)); // 5 tarjetas ahora
-        cardsContainer.setOpaque(false);
-        cardsContainer.setBorder(new EmptyBorder(15, 0, 0, 0));
+        JPanel mainStats = new JPanel();
+        mainStats.setLayout(new BoxLayout(mainStats, BoxLayout.Y_AXIS));
+        mainStats.setOpaque(false);
+        mainStats.setBorder(new EmptyBorder(15, 0, 0, 0));
 
-        // Creamos las tarjetas y guardamos referencias a los labels/bars
+        // --- TARJETA DE ESTADO GLOBAL ---
+        JPanel cardEstado = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 25, 25);
+                g2.setColor(TemaNutrix.GRIS_CLARO);
+                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 25, 25);
+                g2.dispose();
+            }
+        };
+        cardEstado.setOpaque(false);
+        cardEstado.setLayout(new BorderLayout(20, 0));
+        cardEstado.setBorder(new EmptyBorder(20, 25, 20, 25));
+        cardEstado.setMaximumSize(new Dimension(2000, 100));
+
+        lblProgresoMsg = new JLabel("Calculando tu progreso...");
+        lblProgresoMsg.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 15));
+        lblProgresoMsg.setForeground(TemaNutrix.TEXTO);
+
+        barProgresoGeneral = new JProgressBar(0, 100);
+        barProgresoGeneral.setPreferredSize(new Dimension(300, 15));
+        barProgresoGeneral.setForeground(TemaNutrix.PRIMARIO);
+        barProgresoGeneral.setBackground(new Color(240, 240, 240));
+        barProgresoGeneral.setBorderPainted(false);
+
+        cardEstado.add(lblProgresoMsg, BorderLayout.CENTER);
+        cardEstado.add(barProgresoGeneral, BorderLayout.EAST);
+        
+        mainStats.add(cardEstado);
+        mainStats.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        // --- GRID DE MINI CARDS ---
+        JPanel cardsContainer = new JPanel(new GridLayout(1, 5, 12, 0)); 
+        cardsContainer.setOpaque(false);
+
         JPanel pCal = crearStatMiniCard("Calorías", TemaNutrix.CALORIAS);
         lblCalVal = (JLabel) pCal.getClientProperty("valLabel");
         barCal = (JProgressBar) pCal.getClientProperty("progressBar");
@@ -195,7 +251,7 @@ public class PanelMenuPrincipal extends JPanel {
         lblFatVal = (JLabel) pFat.getClientProperty("valLabel");
         barFat = (JProgressBar) pFat.getClientProperty("progressBar");
 
-        JPanel pIMC = crearStatMiniCard("Mi IMC", new Color(147, 112, 219)); // Color violeta
+        JPanel pIMC = crearStatMiniCard("Mi IMC", new Color(147, 112, 219));
         lblIMCVal = (JLabel) pIMC.getClientProperty("valLabel");
         barIMC = (JProgressBar) pIMC.getClientProperty("progressBar");
 
@@ -205,7 +261,9 @@ public class PanelMenuPrincipal extends JPanel {
         cardsContainer.add(pFat);
         cardsContainer.add(pIMC);
 
-        seccion.add(cardsContainer, BorderLayout.CENTER);
+        mainStats.add(cardsContainer);
+
+        seccion.add(mainStats, BorderLayout.CENTER);
         return seccion;
     }
 
