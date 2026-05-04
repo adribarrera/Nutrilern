@@ -24,6 +24,9 @@
 # 100 - Sin Categoria
 # ==========================================
 
+# FORMATO DE ALIMENTOS
+#Nombre;Marca;Kcal;Proteinas;Carbos;Grasas;ID_Categoria
+
 # DATOS PARA IMPORTAR
 Aceite de Oliva Virgen Extra;Hacendado;822;0;0;91,4;10
 Cereales con chocolate blanco rellenos de leche;Mercadona;488;7,2;65;22;8
