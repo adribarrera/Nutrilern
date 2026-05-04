@@ -4,9 +4,9 @@ Este documento explica cómo funciona internamente la aplicación Nutrix tras la
 
 ---
 
-## 1. El Corazón de la App: Patrón MVC
+## 1. El Corazón de la App: Patrón MVC y Diseño Earthy
 
-Para que el código sea fácil de leer y mantener, hemos separado las responsabilidades en tres capas:
+Para que el código sea fácil de leer y mantener, hemos separado las responsabilidades en tres capas, todo envuelto en una estética cálida de **tonos tierra y café**.
 
 ### 🏛️ El Modelo (`com.nutrilern.modelo`)
 Son las clases que gestionan los datos y la base de datos (DAOs).
