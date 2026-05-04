@@ -2,15 +2,22 @@ package com.nutrilern.controlador;
 
 import com.nutrilern.modelo.Usuario;
 
+/**
+ * Esta clase es el "cerebro" matemático de Nutrix.
+ * Aquí es donde calculamos cuántas calorías y qué cantidad de cada nutriente 
+ * necesita una persona basándonos en su cuerpo y en lo que quiere conseguir 
+ * (adelgazar, mantenerse o ganar músculo).
+ */
 public class CalculadoraNutricional {
 
     /**
-     * Calcula los macros diarios (Kcal, HC, Prot, Grasas) basados en los datos del
-     * usuario.
-     * Utiliza la fórmula revisada de Harris-Benedict para el Metabolismo Basal.
+     * Este método hace toda la magia para saber cuántas calorías debe comer el usuario al día.
+     * Usamos la fórmula de Mifflin-St Jeor (una de las más precisas hoy en día) para 
+     * calcular el metabolismo basal y luego ajustamos según si es hombre o mujer 
+     * y cuál es su objetivo personal.
      * 
-     * @param usuario El objeto usuario con peso, altura, edad, sexo y objetivo.
-     * @return Array con [Kcal_Totales, Kcal_HC, Kcal_Prot, Kcal_Grasas]
+     * @param usuario El perfil del usuario (peso, altura, edad, etc.)
+     * @return Devuelve una lista de números: [Calorías Totales, gramos de Carbohidratos, gramos de Proteína, gramos de Grasa]
      */
     public static double[] calcularMacros(Usuario usuario) {
         double peso = usuario.getPesoInicial();
@@ -18,67 +25,56 @@ public class CalculadoraNutricional {
         int edad = usuario.getEdad();
         String sexo = usuario.getSexo() != null ? usuario.getSexo().toUpperCase() : "M";
 
-        // 1. Tasa Metabólica Basal (TMB) - Ecuación de Mifflin-St Jeor o Harris
-        // Benedict
+        // Primero calculamos el Metabolismo Basal (lo que el cuerpo quema solo por estar vivo)
         double tmb;
-        if (sexo.equals("M") || sexo.equals("HOMBRE")) { // Hombre
+        if (sexo.equals("M") || sexo.equals("HOMBRE")) { 
             tmb = (10 * peso) + (6.25 * altura) - (5 * edad) + 5;
-        } else { // Mujer
+        } else { 
             tmb = (10 * peso) + (6.25 * altura) - (5 * edad) - 161;
         }
 
-        // 2. Multiplicador de actividad física
-        // Asumimos un factor moderado/ligero estándar para la app de momento: 1.375
+        // Le aplicamos un multiplicador de actividad física moderada 
         double caloriasMantenimiento = tmb * 1.375;
 
-        // 3. Ajuste según el objetivo
+        // Ajustamos las calorías según el plan:
+        // Objetivo 1: Perder peso (comemos 500 kcal menos)
+        // Objetivo 3: Ganar músculo (comemos 300 kcal más)
         int idObjetivo = usuario.getIdObjetivo();
         double caloriasObjetivo = caloriasMantenimiento;
 
         if (idObjetivo == 1) {
-            // Perder Peso (-500 kcal)
             caloriasObjetivo -= 500;
         } else if (idObjetivo == 3) {
-            // Ganar Músculo (+300 kcal)
             caloriasObjetivo += 300;
         }
 
-        // Nunca dejar que las calorías bajen de un umbral
+        // Seguridad: nunca bajamos de un mínimo vital para evitar problemas de salud
         if (sexo.equals("M") || sexo.equals("HOMBRE")) {
-            if (caloriasObjetivo < 1500)
-                caloriasObjetivo = 1500;
+            if (caloriasObjetivo < 1500) caloriasObjetivo = 1500;
         } else {
-            if (caloriasObjetivo < 1200)
-                caloriasObjetivo = 1200;
+            if (caloriasObjetivo < 1200) caloriasObjetivo = 1200;
         }
 
-        // 4. Repartición de Macros (En gramos)
-        // Proteína: 2.0g por Kg de peso
+        // Ahora repartimos esas calorías en nutrientes:
+        // Ponemos 2g de proteína por cada kilo de peso (para cuidar el músculo)
+        // Ponemos 1g de grasa por cada kilo de peso (temas hormonales y salud)
         double gramosProt = peso * 2.0;
-        // Grasa: 1.0g por Kg de peso
         double gramosGrasa = peso * 1.0;
 
-        // Pasamos a calorías (1g Prot = 4 kcal, 1g Grasa = 9 kcal)
+        // Calculamos cuántas calorías nos quedan para los hidratos de carbono
         double kcalProt = gramosProt * 4;
         double kcalGrasa = gramosGrasa * 9;
-
-        // Hidratos: el resto de calorías (1g HC = 4 kcal)
         double kcalRestantes = caloriasObjetivo - (kcalProt + kcalGrasa);
+        
         double gramosHC = kcalRestantes / 4.0;
+        if (gramosHC < 0) gramosHC = 0;
 
-        if (gramosHC < 0) {
-            // Caso extremo donde prot+grasa superan las calorias objetivo
-            gramosHC = 0;
-            kcalRestantes = 0;
-        }
-
-        // Devolvemos los macros para que encaje con la interfaz
         return new double[] { caloriasObjetivo, gramosHC, gramosProt, gramosGrasa };
     }
 
     /**
-     * Calcula el Índice de Masa Corporal (IMC).
-     * IMC = Peso / Altura^2 (en metros)
+     * Calcula el IMC (Índice de Masa Corporal).
+     * Es una forma rápida de ver si el peso de alguien es adecuado para su altura.
      */
     public static double calcularIMC(double peso, double alturaCm) {
         if (alturaCm <= 0) return 0;
@@ -87,7 +83,8 @@ public class CalculadoraNutricional {
     }
 
     /**
-     * Devuelve la clasificación de la OMS para un valor de IMC.
+     * Traduce el número del IMC a una etiqueta que todos entendamos (Normal, Sobrepeso, etc.).
+     * Lo basamos en los rangos oficiales de la Organización Mundial de la Salud (OMS).
      */
     public static String getClasificacionIMC(double imc) {
         if (imc <= 0) return "Desconocido";

@@ -10,10 +10,21 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Esta clase es la responsable de hablar con la base de datos para todo lo
+ * relacionado con los usuarios.
+ * Aquí es donde guardamos nuevos registros, comprobamos logins y actualizamos 
+ * perfiles.
+ */
 public class UsuarioDAO {
 
     /**
-     * Registra un nuevo usuario hasheando su contraseña antes de guardarla.
+     * Crea un nuevo usuario en el sistema. 
+     * Antes de guardarlo, nos aseguramos de que su contraseña está bien protegida 
+     * (hasheada) para que nadie pueda verla.
+     * 
+     * @param nuevoUsuario El objeto con todos los datos de la persona.
+     * @return true si se guardó bien; false si hubo algún problema con la base de datos.
      */
     public static boolean registrarUsuario(Usuario nuevoUsuario) {
         String hashSeguro = GestorSeguridad.hashearPassword(nuevoUsuario.getPassword());
@@ -59,8 +70,11 @@ public class UsuarioDAO {
     }
 
     /**
-     * Inicia sesión verificando el email y comparando la contraseña plana
-     * contra el hash de la base de datos usando BCrypt.
+     * Comprueba si el email y la contraseña son correctos para dejar entrar al usuario.
+     * 
+     * @param email El correo que ha escrito el usuario.
+     * @param passwordPlana La contraseña tal cual la ha escrito.
+     * @return El objeto Usuario completo si los datos son correctos; null si no lo son.
      */
     public static Usuario iniciarSesion(String email, String passwordPlana) {
         String sql = "SELECT * FROM usuario WHERE email = ?";
@@ -74,6 +88,7 @@ public class UsuarioDAO {
                 if (rs.next()) {
                     String hashGuardado = rs.getString("passwd");
 
+                    // Comparamos la contraseña escrita contra el código secreto guardado
                     if (GestorSeguridad.verificarPassword(passwordPlana, hashGuardado)) {
                         Usuario usu = new Usuario();
                         usu.setId(rs.getInt("id_usuario"));
@@ -97,7 +112,7 @@ public class UsuarioDAO {
     }
 
     /**
-     * Actualiza el correo electrónico de un usuario.
+     * Cambia el correo electrónico de un usuario por uno nuevo.
      */
     public static boolean actualizarEmail(int idUsuario, String nuevoEmail) {
         String sql = "UPDATE usuario SET email = ? WHERE id_usuario = ?";
@@ -116,6 +131,9 @@ public class UsuarioDAO {
         }
     }
 
+    /**
+     * Actualiza la edad, peso y altura de un usuario.
+     */
     public static boolean actualizarDatosFisicos(int idUsuario, int edad, double peso, double altura) {
         String sql = "UPDATE usuario SET edad = ?, peso_inicial = ?, altura = ? WHERE id_usuario = ?";
         try (Connection conn = BaseDeDatos.obtenerConexion();
@@ -133,6 +151,9 @@ public class UsuarioDAO {
         }
     }
 
+    /**
+     * Cambia el objetivo (perder peso, ganar músculo, etc.) de un usuario.
+     */
     public static boolean actualizarObjetivo(int idUsuario, int idObjetivo) {
         String sql = "UPDATE usuario SET id_objetivo_fk = ? WHERE id_usuario = ?";
         try (Connection conn = BaseDeDatos.obtenerConexion();
@@ -148,6 +169,9 @@ public class UsuarioDAO {
         }
     }
 
+    /**
+     * Borra permanentemente a un usuario del sistema por su ID.
+     */
     public static boolean eliminarUsuario(int idUsuario) {
         String sql = "DELETE FROM usuario WHERE id_usuario = ?";
 
@@ -163,10 +187,9 @@ public class UsuarioDAO {
         }
     }
 
-    // --- MÉTODOS DE ADMINISTRACIÓN ---
-
     /**
-     * Obtiene una lista de todos los usuarios registrados.
+     * Saca una lista de todos los usuarios de la base de datos.
+     * Útil para el panel de administración.
      */
     public static List<Usuario> obtenerTodosLosUsuarios() {
         List<Usuario> lista = new ArrayList<>();
@@ -197,7 +220,8 @@ public class UsuarioDAO {
     }
 
     /**
-     * Permite a un admin actualizar todos los campos de un usuario.
+     * Permite editar cualquier dato de un usuario de golpe.
+     * Pensado para que un administrador pueda corregir perfiles.
      */
     public static boolean actualizarUsuarioCompleto(Usuario u) {
         String sql = "UPDATE usuario SET email=?, nombre=?, apellidos=?, edad=?, altura=?, peso_inicial=?, rol=?, id_objetivo_fk=?, sexo=? WHERE id_usuario=?";
@@ -230,8 +254,7 @@ public class UsuarioDAO {
     }
 
     /**
-     * Actualiza la contraseña de un usuario con un hash ya calculado.
-     * Usado por el panel de administración para cambios de contraseña.
+     * Sobrescribe la contraseña de un usuario con un nuevo código secreto.
      */
     public static boolean actualizarPassword(int idUsuario, String hashNuevo) {
         String sql = "UPDATE usuario SET passwd = ? WHERE id_usuario = ?";

@@ -2,53 +2,39 @@ package com.nutrilern.controlador;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+/**
+ * Esta clase se encarga de que las contraseñas de los usuarios estén a salvo.
+ * En lugar de guardar la contraseña tal cual (lo cual sería peligroso), 
+ * la "encriptamos" usando un algoritmo llamado BCrypt.
+ */
 public class GestorSeguridad {
 
     /**
-     * Coge una contraseña normal y la convierte en un hash
+     * Transforma una contraseña de texto plano en un "hash" indescifrable.
+     * Usamos un factor de seguridad de 12 para que sea muy difícil de hackear 
+     * incluso con ordenadores potentes.
      * 
-     * @param passwordPlana La contraseña que escribe el usuario
-     * @return El hash
+     * @param passwordPlana La contraseña que ha escrito el usuario.
+     * @return Una cadena de texto larga y compleja para guardar en la base de datos.
      */
     public static String hashearPassword(String passwordPlana) {
-        // El "12" es el factor de trabajo (Work Factor).
-        // Cuanto más alto, más seguro, pero más tarda en calcularse.
         return BCrypt.hashpw(passwordPlana, BCrypt.gensalt(12));
     }
 
     /**
-     * Compara la contraseña que acaba de escribir el usuario en el Login
-     * con el hash que tenemos guardado en la Base de Datos.
+     * Comprueba si la contraseña que alguien introduce al entrar coincide con 
+     * la que tenemos guardada. 
      * 
-     * @param passwordLogin     La contraseña que intenta usar para entrar.
-     * @param hashEnBaseDeDatos El hash guardado en la BBDD.
-     * @return true si coinciden, false si se ha equivocado.
+     * @param passwordLogin La contraseña que el usuario acaba de escribir.
+     * @param hashEnBaseDeDatos El "código" complejo que tenemos guardado en la base de datos.
+     * @return true si la contraseña es la correcta; false si no coinciden.
      */
     public static boolean verificarPassword(String passwordLogin, String hashEnBaseDeDatos) {
         try {
             return BCrypt.checkpw(passwordLogin, hashEnBaseDeDatos);
         } catch (Exception e) {
-            // Por si el hash de la BBDD está corrupto o vacío
+            // Si el código guardado está mal o vacío, devolvemos falso por seguridad.
             return false;
         }
-    }
-
-    // --- MÉTODO TEMPORAL DE PRUEBA ---
-    public static void main(String[] args) {
-        String miPasswordSecreta = "Nutrix2026!";
-
-        System.out.println("1. Contraseña original: " + miPasswordSecreta);
-
-        // Hasheamos la contraseña
-        String hashGenerado = hashearPassword(miPasswordSecreta);
-        System.out.println("2. Hash a guardar en TiDB: " + hashGenerado);
-
-        // Simulamos un intento de login CORRECTO
-        System.out.println("\n¿Coincide con 'Nutrix2026!'? " +
-                verificarPassword("Nutrix2026!", hashGenerado));
-
-        // Simulamos un intento de login INCORRECTO
-        System.out.println("¿Coincide con 'nutrix2026!'? (minúscula): " +
-                verificarPassword("nutrix2026!", hashGenerado));
     }
 }
