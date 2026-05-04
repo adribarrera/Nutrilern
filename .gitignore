@@ -26,3 +26,19 @@ replay_pid*
 # Database credentials
 **/db.properties
 **/correo.properties
+
+# CSV
+**/importar.csv
+
+# Maven
+**/target/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project
+.classpath
