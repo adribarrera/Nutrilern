@@ -208,6 +208,9 @@ public class PanelMisComidas extends JPanel {
                         SwingUtilities.invokeLater(() -> modeloTabla.setValueAt(true, f, 10));
                     }
                 }
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(this, "¡Registro guardado con éxito!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                });
             }).start();
         });
 
