@@ -63,6 +63,25 @@ public class AlimentoDAO {
     }
 
     /**
+     * Comprueba si un alimento ya existe por nombre y marca.
+     */
+    public static boolean existeAlimento(String nombre, String marca) {
+        String sql = "SELECT COUNT(*) FROM alimento WHERE nombre = ? AND (marca = ? OR (marca IS NULL AND ? IS NULL))";
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, nombre);
+            pstmt.setString(2, marca);
+            pstmt.setString(3, marca);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar duplicado: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
      * Registra un nuevo alimento global.
      */
     public static boolean crearAlimentoGlobal(Alimento nuevoAlimento) {

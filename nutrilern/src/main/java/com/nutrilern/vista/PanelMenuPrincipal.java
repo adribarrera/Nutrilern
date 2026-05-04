@@ -65,29 +65,27 @@ public class PanelMenuPrincipal extends JPanel {
         JPanel userActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
         userActions.setOpaque(false);
 
-        String nombre = (usuario != null && usuario.getNombre() != null) ? usuario.getNombre() : "Invitado";
-        String apellidos = (usuario != null && usuario.getApellidos() != null) ? usuario.getApellidos() : "";
+        JPanel adminActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+        adminActions.setOpaque(false);
 
-        JLabel lblUser = new JLabel("Bienvenido, " + nombre + " " + apellidos);
+        if (usuario != null && "ADMIN".equalsIgnoreCase(usuario.getRol())) {
+            JButton btnAdmin = crearBotonCabeceraAdmin("Gestionar Usuarios");
+            btnAdmin.addActionListener(e -> ventanaPadre.cambiarPantalla("ADMIN_USUARIOS"));
+            adminActions.add(btnAdmin);
+
+            JButton btnImportar = crearBotonCabeceraAdmin("Importar CSV");
+            btnImportar.addActionListener(e -> abrirImportadorCSV());
+            adminActions.add(btnImportar);
+        }
+        userActions.add(adminActions);
+
+        String nombreUser = (usuario != null && usuario.getNombre() != null) ? usuario.getNombre() : "Invitado";
+        String apellidosUser = (usuario != null && usuario.getApellidos() != null) ? usuario.getApellidos() : "";
+
+        JLabel lblUser = new JLabel("Bienvenido, " + nombreUser + " " + apellidosUser);
         lblUser.setFont(new Font(TemaNutrix.FONT_NAME, Font.ITALIC, 14));
         lblUser.setForeground(TemaNutrix.TEXTO);
         userActions.add(lblUser);
-
-        // Botón de Admin (Solo si el rol es ADMIN)
-        if (usuario != null && "ADMIN".equalsIgnoreCase(usuario.getRol())) {
-            JButton btnAdmin = new JButton("Gestionar Usuarios");
-            btnAdmin.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 12));
-            btnAdmin.setForeground(TemaNutrix.PRIMARIO);
-            btnAdmin.setBackground(Color.WHITE);
-            btnAdmin.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(TemaNutrix.PRIMARIO, 1),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)
-            ));
-            btnAdmin.setFocusPainted(false);
-            btnAdmin.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            btnAdmin.addActionListener(e -> ventanaPadre.cambiarPantalla("ADMIN_USUARIOS"));
-            userActions.add(btnAdmin);
-        }
 
         header.add(userActions, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
@@ -415,5 +413,80 @@ public class PanelMenuPrincipal extends JPanel {
         });
 
         return tarjeta;
+    }
+
+    private JButton crearBotonCabeceraAdmin(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 12));
+        btn.setForeground(TemaNutrix.PRIMARIO);
+        btn.setBackground(Color.WHITE);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(TemaNutrix.PRIMARIO, 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        btn.setFocusPainted(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    private void abrirImportadorCSV() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Seleccionar archivo CSV de alimentos");
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos CSV", "csv"));
+
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            java.io.File archivo = fileChooser.getSelectedFile();
+            new Thread(() -> {
+                int añadidos = 0;
+                int duplicados = 0;
+                int errores = 0;
+
+                try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(archivo))) {
+                    String linea;
+                    while ((linea = br.readLine()) != null) {
+                        String lineaTrim = linea.trim();
+                        if (lineaTrim.isEmpty() || lineaTrim.startsWith("#")) continue;
+                        
+                        String[] datos = linea.split(";");
+                        if (datos.length >= 7) {
+                            try {
+                                String nombre = datos[0].trim();
+                                String marca = datos[1].trim();
+                                double kcal = Double.parseDouble(datos[2].replace(",", "."));
+                                double prot = Double.parseDouble(datos[3].replace(",", "."));
+                                double carb = Double.parseDouble(datos[4].replace(",", "."));
+                                double gras = Double.parseDouble(datos[5].replace(",", "."));
+                                int idCat = Integer.parseInt(datos[6].trim());
+
+                                if (com.nutrilern.modelo.AlimentoDAO.existeAlimento(nombre, marca)) {
+                                    duplicados++;
+                                } else {
+                                    com.nutrilern.modelo.Alimento al = new com.nutrilern.modelo.Alimento(0, nombre, marca, kcal, gras, 0, carb, 0, prot, 0, idCat);
+                                    if (com.nutrilern.modelo.AlimentoDAO.crearAlimentoGlobal(al)) {
+                                        añadidos++;
+                                    } else {
+                                        errores++;
+                                    }
+                                }
+                            } catch (Exception ex) {
+                                errores++;
+                            }
+                        }
+                    }
+                } catch (java.io.IOException ex) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, "Error al leer el archivo: " + ex.getMessage()));
+                }
+
+                final int fAñadidos = añadidos;
+                final int fDuplicados = duplicados;
+                final int fErrores = errores;
+
+                SwingUtilities.invokeLater(() -> {
+                    String mensaje = String.format("Importación completada:\n- %d alimentos añadidos\n- %d omitidos por duplicados\n- %d errores de formato", 
+                                    fAñadidos, fDuplicados, fErrores);
+                    JOptionPane.showMessageDialog(this, mensaje, "Resultado Importación", JOptionPane.INFORMATION_MESSAGE, TemaNutrix.obtenerIconoDialogo());
+                });
+            }).start();
+        }
     }
 }

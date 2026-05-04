@@ -100,6 +100,8 @@ public class PanelBaseAlimentos extends JPanel {
         panelControles.add(btnTopProt);
         panelControles.add(btnBajosKcal);
 
+        panelControles.add(btnBajosKcal);
+
         panelNorte.add(panelControles, BorderLayout.CENTER);
         panelContenido.add(panelNorte, BorderLayout.NORTH);
 
@@ -118,6 +120,8 @@ public class PanelBaseAlimentos extends JPanel {
         tablaAlimentos.getTableHeader().setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
         tablaAlimentos.getTableHeader().setBackground(TemaNutrix.GRIS_CLARO);
         tablaAlimentos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tablaAlimentos.setSelectionBackground(new Color(255, 235, 210));
+        tablaAlimentos.setSelectionForeground(TemaNutrix.TEXTO);
 
         JScrollPane scrollPane = new JScrollPane(tablaAlimentos);
         scrollPane.getViewport().setBackground(Color.WHITE);

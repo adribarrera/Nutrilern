@@ -19,11 +19,11 @@ import java.util.Map;
 public class PanelMisComidas extends JPanel {
 
     private VentanaPrincipal ventanaPadre;
-    
+
     private JTable tablaComidas;
     private DefaultTableModel modeloTabla;
     private Alimento alimentoPlaceholder;
-    
+
     private JComboBox<ComboItem> comboCategoriasTabla;
 
     public PanelMisComidas(VentanaPrincipal ventana) {
@@ -62,7 +62,7 @@ public class PanelMisComidas extends JPanel {
                 recargarDesplegableAlimentos();
             }
         });
-        
+
         JButton btnCrearCategoria = crearBotonSecundario("+ Nueva Categoría");
         btnCrearCategoria.addActionListener(e -> {
             DialogoCrearCategoria dialogoCat = new DialogoCrearCategoria(ventanaPadre);
@@ -83,30 +83,32 @@ public class PanelMisComidas extends JPanel {
         panelCentral.setBorder(new EmptyBorder(20, 30, 0, 30));
 
         // AÑADIMOS LA COLUMNA OCULTA "Guardado"
-        String[] columnas = {"Alimento (Doble clic)", "Categoría", "Gramos", "Kcal", "Prot (g)", "HC (g)", "Grasas (g)", "Sat. (g)", "Azúcar (g)", "Sal (g)", "Guardado"};
-        
+        String[] columnas = { "Alimento (Doble clic)", "Categoría", "Gramos", "Kcal", "Prot (g)", "HC (g)",
+                "Grasas (g)", "Sat. (g)", "Azúcar (g)", "Sal (g)", "Guardado" };
+
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column != 10; // La columna 10 (Guardado) no se edita a mano
+                // Solo permitimos editar Alimento (0), Categoría (1) y Gramos (2)
+                return column >= 0 && column <= 2;
             }
         };
 
         tablaComidas = new JTable(modeloTabla);
-        tablaComidas.setRowHeight(35); 
+        tablaComidas.setRowHeight(35);
         tablaComidas.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 14));
-        tablaComidas.setSelectionBackground(new Color(230, 245, 230)); 
+        tablaComidas.setSelectionBackground(new Color(255, 235, 210)); // Naranja muy suave para selección
         tablaComidas.setSelectionForeground(TemaNutrix.TEXTO);
-        
+
         JTableHeader th = tablaComidas.getTableHeader();
         th.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 13));
         th.setBackground(TemaNutrix.PRIMARIO);
         th.setForeground(Color.WHITE);
         th.setPreferredSize(new Dimension(100, 40));
-        
+
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for(int i = 2; i < tablaComidas.getColumnCount() - 1; i++){ 
+        for (int i = 2; i < tablaComidas.getColumnCount() - 1; i++) {
             tablaComidas.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
@@ -119,14 +121,14 @@ public class PanelMisComidas extends JPanel {
             alimentoPlaceholder.setNombre("Selecciona alimento...");
         }
         comboAlimentos.addItem(alimentoPlaceholder);
-        for(Alimento a : listaBD) {
-            comboAlimentos.addItem(a); 
+        for (Alimento a : listaBD) {
+            comboAlimentos.addItem(a);
         }
         tablaComidas.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(comboAlimentos));
         tablaComidas.getColumnModel().getColumn(0).setPreferredWidth(220);
 
         comboCategoriasTabla = new JComboBox<>();
-        comboCategoriasTabla.addItem(new ComboItem(0, "Sin Categoría")); 
+        comboCategoriasTabla.addItem(new ComboItem(0, "Sin Categoría"));
         Map<Integer, String> categoriasBD = CategoriaDAO.obtenerTodasLasCategorias();
         for (Map.Entry<Integer, String> entry : categoriasBD.entrySet()) {
             comboCategoriasTabla.addItem(new ComboItem(entry.getKey(), entry.getValue()));
@@ -135,15 +137,41 @@ public class PanelMisComidas extends JPanel {
         tablaComidas.getColumnModel().getColumn(1).setPreferredWidth(130);
 
         modeloTabla.addTableModelListener(e -> {
-            if (e.getType() == TableModelEvent.UPDATE && e.getColumn() == 0) {
+            if (e.getType() == TableModelEvent.UPDATE) {
                 int fila = e.getFirstRow();
-                Object obj = modeloTabla.getValueAt(fila, 0);
-                if (obj instanceof Alimento) {
-                    Alimento al = (Alimento) obj;
-                    if (al.getIdAlimento() != 0) {
-                        // Usar controlador para cálculos
-                        double[] ms = com.nutrilern.controlador.ControladorComidas.calcularMacrosProporcionales(al, 100.0);
-                        for(int i = 0; i < ms.length; i++) modeloTabla.setValueAt(ms[i], fila, i + 3);
+                int col = e.getColumn();
+
+                if (col == 0 || col == 2) { // Si cambia el Alimento o los Gramos
+                    Object objAlimento = modeloTabla.getValueAt(fila, 0);
+                    if (objAlimento instanceof Alimento) {
+                        Alimento al = (Alimento) objAlimento;
+                        if (al.getIdAlimento() != 0) {
+                            // Si cambió el alimento, actualizamos también la categoría
+                            if (col == 0) {
+                                int idCat = al.getIdCategoriaFk();
+                                for (int i = 0; i < comboCategoriasTabla.getItemCount(); i++) {
+                                    ComboItem item = comboCategoriasTabla.getItemAt(i);
+                                    if (item.getId() == idCat) {
+                                        modeloTabla.setValueAt(item, fila, 1);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Obtenemos los gramos actuales (por defecto 100 si es nuevo o inválido)
+                            double gramos = doubleVal(modeloTabla.getValueAt(fila, 2));
+                            if (gramos <= 0 && col == 0) {
+                                gramos = 100.0;
+                                modeloTabla.setValueAt(gramos, fila, 2);
+                            }
+
+                            // Recalculamos macros proporcionalmente
+                            double[] ms = com.nutrilern.controlador.ControladorComidas.calcularMacrosProporcionales(al,
+                                    gramos);
+                            for (int i = 0; i < ms.length; i++) {
+                                modeloTabla.setValueAt(ms[i], fila, i + 3);
+                            }
+                        }
                     }
                 }
             }
@@ -169,13 +197,13 @@ public class PanelMisComidas extends JPanel {
         panelGestorFilas.setOpaque(false);
 
         JButton btnAñadirFila = crearBotonSecundario("+ Añadir Fila");
-        btnAñadirFila.setForeground(TemaNutrix.ACCENTO); 
+        btnAñadirFila.setForeground(TemaNutrix.ACCENTO);
         btnAñadirFila.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(TemaNutrix.ACCENTO, 1, true),
                 BorderFactory.createEmptyBorder(8, 15, 8, 15)));
         btnAñadirFila.addActionListener(e -> {
-            ComboItem categoriaVacia = comboCategoriasTabla.getItemAt(0); 
-            modeloTabla.addRow(new Object[]{alimentoPlaceholder, categoriaVacia, 0, 0, 0, 0, 0, 0, 0, 0, false});
+            ComboItem categoriaVacia = comboCategoriasTabla.getItemAt(0);
+            modeloTabla.addRow(new Object[] { alimentoPlaceholder, categoriaVacia, 0, 0, 0, 0, 0, 0, 0, 0, false });
         });
 
         JButton btnBorrarFila = crearBotonSecundario("- Borrar Fila");
@@ -185,7 +213,8 @@ public class PanelMisComidas extends JPanel {
             if (filaSeleccionada != -1) {
                 modeloTabla.removeRow(filaSeleccionada);
             } else {
-                JOptionPane.showMessageDialog(this, "Selecciona una fila primero para borrarla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Selecciona una fila primero para borrarla.", "Aviso",
+                        JOptionPane.WARNING_MESSAGE);
             }
         });
 
@@ -194,26 +223,31 @@ public class PanelMisComidas extends JPanel {
 
         JButton btnGuardar = TemaNutrix.crearBotonEstandar("💾 Guardar Registro Diario");
         btnGuardar.setPreferredSize(new Dimension(250, 45));
-        
+
         btnGuardar.addActionListener(e -> {
             new Thread(() -> {
                 int user = ventanaPadre.getUsuarioLogueado().getId();
                 for (int i = 0; i < modeloTabla.getRowCount(); i++) {
-                    if ((boolean) modeloTabla.getValueAt(i, 10)) continue;
+                    if ((boolean) modeloTabla.getValueAt(i, 10))
+                        continue;
                     Alimento al = (Alimento) modeloTabla.getValueAt(i, 0);
-                    if (al == null || al.getIdAlimento() == 0) continue;
-                    
+                    if (al == null || al.getIdAlimento() == 0)
+                        continue;
+
                     double grams = doubleVal(modeloTabla.getValueAt(i, 2));
                     double[] macros = new double[7];
-                    for(int j=0; j<7; j++) macros[j] = doubleVal(modeloTabla.getValueAt(i, j+3));
-                    
-                    if (com.nutrilern.controlador.ControladorComidas.registrarComida(user, al.getIdAlimento(), grams, macros)) {
+                    for (int j = 0; j < 7; j++)
+                        macros[j] = doubleVal(modeloTabla.getValueAt(i, j + 3));
+
+                    if (com.nutrilern.controlador.ControladorComidas.registrarComida(user, al.getIdAlimento(), grams,
+                            macros)) {
                         final int f = i;
                         SwingUtilities.invokeLater(() -> modeloTabla.setValueAt(true, f, 10));
                     }
                 }
                 SwingUtilities.invokeLater(() -> {
-                    JOptionPane.showMessageDialog(this, "¡Registro guardado con éxito!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "¡Registro guardado con éxito!", "Éxito",
+                            JOptionPane.INFORMATION_MESSAGE);
                 });
             }).start();
         });
@@ -239,15 +273,15 @@ public class PanelMisComidas extends JPanel {
     private void recargarDesplegableAlimentos() {
         List<Alimento> listaBD = AlimentoDAO.obtenerTodosLosAlimentos();
         JComboBox<Alimento> comboActualizado = new JComboBox<>();
-        
+
         if (listaBD.isEmpty()) {
             alimentoPlaceholder.setNombre("BBDD Vacía - ¡Crea uno nuevo!");
         } else {
             alimentoPlaceholder.setNombre("Selecciona un alimento...");
         }
-        
+
         comboActualizado.addItem(alimentoPlaceholder);
-        for(Alimento a : listaBD) {
+        for (Alimento a : listaBD) {
             comboActualizado.addItem(a);
         }
 
@@ -255,8 +289,10 @@ public class PanelMisComidas extends JPanel {
     }
 
     private double doubleVal(Object v) {
-        if (v == null) return 0.0;
-        if (v instanceof Number) return ((Number) v).doubleValue();
+        if (v == null)
+            return 0.0;
+        if (v instanceof Number)
+            return ((Number) v).doubleValue();
         try {
             return Double.parseDouble(v.toString());
         } catch (Exception e) {
@@ -265,24 +301,26 @@ public class PanelMisComidas extends JPanel {
     }
 
     public void cargarDatosHoy() {
-        if (ventanaPadre.getUsuarioLogueado() == null) return;
-        
+        if (ventanaPadre.getUsuarioLogueado() == null)
+            return;
+
         modeloTabla.setRowCount(0); // Limpiamos tabla antes de cargar
         int idUser = ventanaPadre.getUsuarioLogueado().getId();
         List<Object[]> filasHoy = AlimentoDAO.obtenerRegistroDiarioHoy(idUser);
-        
+
         for (Object[] fila : filasHoy) {
-            // Buscamos el objeto ComboItem correcto de la categoría a partir del ID temporal
+            // Buscamos el objeto ComboItem correcto de la categoría a partir del ID
+            // temporal
             int idCat = (int) fila[1];
             ComboItem itemCatCorrecto = comboCategoriasTabla.getItemAt(0);
-            for(int i = 0; i < comboCategoriasTabla.getItemCount(); i++) {
-                if(comboCategoriasTabla.getItemAt(i).getId() == idCat) {
+            for (int i = 0; i < comboCategoriasTabla.getItemCount(); i++) {
+                if (comboCategoriasTabla.getItemAt(i).getId() == idCat) {
                     itemCatCorrecto = comboCategoriasTabla.getItemAt(i);
                     break;
                 }
             }
-            fila[1] = itemCatCorrecto; 
-            
+            fila[1] = itemCatCorrecto;
+
             modeloTabla.addRow(fila);
         }
     }

@@ -65,7 +65,7 @@ public class PanelAjustes extends JPanel {
         btnNavDatos = crearBotonNav("Datos Físicos");
         btnNavNutricion = crearBotonNav("Mi Nutrición");
         btnNavSeguridad = crearBotonNav("Seguridad");
-        btnNavPeligro = crearBotonNav("Zona de Peligro");
+        btnNavPeligro = crearBotonNav("Mi cuenta");
 
         btnNavDatos.addActionListener(e -> cambiarPestana(btnNavDatos, "DATOS"));
         btnNavNutricion.addActionListener(e -> cambiarPestana(btnNavNutricion, "NUTRICION"));

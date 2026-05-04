@@ -65,6 +65,8 @@ public class PanelAdminUsuarios extends JPanel {
         tablaUsuarios.setRowHeight(40);
         tablaUsuarios.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 14));
         tablaUsuarios.getTableHeader().setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
+        tablaUsuarios.setSelectionBackground(new Color(255, 235, 210));
+        tablaUsuarios.setSelectionForeground(TemaNutrix.TEXTO);
 
         JScrollPane scroll = new JScrollPane(tablaUsuarios);
         cuerpo.add(scroll, BorderLayout.CENTER);

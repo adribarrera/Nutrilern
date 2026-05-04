@@ -8,19 +8,19 @@ public class VentanaPrincipal extends JFrame {
 
     private CardLayout cardLayout;
     private JPanel panelContenedor;
-    private com.nutrilern.modelo.Usuario usuarioLogueado; 
-    
+    private com.nutrilern.modelo.Usuario usuarioLogueado;
+
     // Paneles que necesitan refrescarse desde otros sitios
     private PanelAjustes panelAjustes;
-    private PanelEvolucion panelEvo; 
-    private PanelMisComidas panelComidas; 
+    private PanelEvolucion panelEvo;
+    private PanelMisComidas panelComidas;
     private PanelAdminUsuarios panelAdmin;
 
     public VentanaPrincipal() {
         setTitle("NUTRIX");
         setSize(1080, 720);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        setResizable(false); 
+        setResizable(false);
         setLocationRelativeTo(null);
 
         // Icono de la aplicación
@@ -37,11 +37,11 @@ public class VentanaPrincipal extends JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
-                JOptionPane.showMessageDialog(null, 
-                    "¡Gracias por usar Nutrix!\nEsperamos verte pronto para seguir cumpliendo tus objetivos.", 
-                    "Finalizando Nutrix", 
-                    JOptionPane.PLAIN_MESSAGE, 
-                    TemaNutrix.obtenerIconoDialogo());
+                JOptionPane.showMessageDialog(null,
+                        "¡Gracias por usar Nutrix!\nEsperamos verte pronto para seguir cumpliendo tus objetivos.",
+                        "Finalizando Nutrix",
+                        JOptionPane.PLAIN_MESSAGE,
+                        TemaNutrix.obtenerIconoDialogo());
                 System.exit(0);
             }
         });
@@ -51,7 +51,7 @@ public class VentanaPrincipal extends JFrame {
 
         PanelLogin panelLogin = new PanelLogin(this);
         this.panelAjustes = new PanelAjustes(this);
-        this.panelComidas = new PanelMisComidas(this); 
+        this.panelComidas = new PanelMisComidas(this);
         this.panelEvo = new PanelEvolucion(this);
         this.panelAdmin = new PanelAdminUsuarios(this);
         PanelBaseAlimentos panelBase = new PanelBaseAlimentos(this);
@@ -77,12 +77,12 @@ public class VentanaPrincipal extends JFrame {
     }
 
     public void cambiarPantalla(String nombrePantalla) {
-        
+
         if (nombrePantalla.equals("MENU")) {
-            Usuario usuarioActual = this.getUsuarioLogueado(); 
+            Usuario usuarioActual = this.getUsuarioLogueado();
             PanelMenuPrincipal panelMenu = new PanelMenuPrincipal(this, usuarioActual);
             panelContenedor.add(panelMenu, "MENU");
-            
+
         } else if (nombrePantalla.equals("AJUSTES")) {
             panelAjustes.refrescarDatos();
         } else if (nombrePantalla.equals("EVOLUCION")) {
@@ -93,7 +93,7 @@ public class VentanaPrincipal extends JFrame {
         } else if (nombrePantalla.equals("ADMIN_USUARIOS")) {
             panelAdmin.refrescarTabla();
         }
-        
+
         cardLayout.show(panelContenedor, nombrePantalla);
     }
 }
