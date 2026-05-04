@@ -51,7 +51,23 @@ public class PanelLogin extends JPanel {
                     g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
                     g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
                     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    g2d.drawImage(imagen, 0, 0, getWidth(), getHeight(), this);
+                    // Implementamos un escalado que mantenga el aspecto (Center Crop)
+                    double imgAspect = (double) imagen.getWidth(null) / imagen.getHeight(null);
+                    double panelAspect = (double) getWidth() / getHeight();
+                    
+                    int drawW, drawH, x, y;
+                    if (panelAspect > imgAspect) {
+                        drawW = getWidth();
+                        drawH = (int) (drawW / imgAspect);
+                        x = 0;
+                        y = (getHeight() - drawH) / 2;
+                    } else {
+                        drawH = getHeight();
+                        drawW = (int) (drawH * imgAspect);
+                        x = (getWidth() - drawW) / 2;
+                        y = 0;
+                    }
+                    g2d.drawImage(imagen, x, y, drawW, drawH, this);
                 }
             }
         };

@@ -242,7 +242,24 @@ public class PanelMenuPrincipal extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (imagenFondo != null) {
-            g.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
+            Graphics2D g2d = (Graphics2D) g.create();
+            double imgAspect = (double) imagenFondo.getWidth(null) / imagenFondo.getHeight(null);
+            double panelAspect = (double) getWidth() / getHeight();
+            
+            int drawW, drawH, x, y;
+            if (panelAspect > imgAspect) {
+                drawW = getWidth();
+                drawH = (int) (drawW / imgAspect);
+                x = 0;
+                y = (getHeight() - drawH) / 2;
+            } else {
+                drawH = getHeight();
+                drawW = (int) (drawH * imgAspect);
+                x = (getWidth() - drawW) / 2;
+                y = 0;
+            }
+            g2d.drawImage(imagenFondo, x, y, drawW, drawH, this);
+            g2d.dispose();
         }
     }
 
@@ -270,7 +287,7 @@ public class PanelMenuPrincipal extends JPanel {
             java.net.URL url = getClass().getResource(imagePath);
             if (url != null) {
                 Image imgOriginal = javax.imageio.ImageIO.read(url);
-                Image imgEscalada = imgOriginal.getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                Image imgEscalada = imgOriginal.getScaledInstance(96, 96, Image.SCALE_SMOOTH);
                 lblIcono.setIcon(new ImageIcon(imgEscalada));
             }
         } catch (Exception ex) { }
