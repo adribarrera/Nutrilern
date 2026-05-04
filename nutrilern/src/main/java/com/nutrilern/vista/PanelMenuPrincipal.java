@@ -60,6 +60,22 @@ public class PanelMenuPrincipal extends JPanel {
         lblUser.setForeground(TemaNutrix.TEXTO);
         userActions.add(lblUser);
 
+        // Botón de Admin (Solo si el rol es ADMIN)
+        if (usuario != null && "ADMIN".equalsIgnoreCase(usuario.getRol())) {
+            JButton btnAdmin = new JButton("Gestionar Usuarios");
+            btnAdmin.setFont(new Font("Arial", Font.BOLD, 12));
+            btnAdmin.setForeground(TemaNutrix.VERDE_NUTRIX);
+            btnAdmin.setBackground(Color.WHITE);
+            btnAdmin.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(TemaNutrix.VERDE_NUTRIX, 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+            ));
+            btnAdmin.setFocusPainted(false);
+            btnAdmin.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            btnAdmin.addActionListener(e -> ventanaPadre.cambiarPantalla("ADMIN_USUARIOS"));
+            userActions.add(btnAdmin);
+        }
+
         header.add(userActions, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
 

@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UsuarioDAO {
 
@@ -14,10 +16,9 @@ public class UsuarioDAO {
      * Registra un nuevo usuario hasheando su contraseña antes de guardarla.
      */
     public static boolean registrarUsuario(Usuario nuevoUsuario) {
-        // 1. Hasheamos la contraseña plana antes de enviarla a la BBDD
         String hashSeguro = GestorSeguridad.hashearPassword(nuevoUsuario.getPassword());
 
-        String sql = "INSERT INTO usuario (email, passwd, nombre, apellidos, edad, altura, peso_inicial, rol, id_objetivo_fk) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO usuario (email, passwd, nombre, apellidos, edad, altura, peso_inicial, rol, id_objetivo_fk, sexo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
                 PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
@@ -30,13 +31,19 @@ public class UsuarioDAO {
             pstmt.setDouble(6, nuevoUsuario.getAltura());
             pstmt.setDouble(7, nuevoUsuario.getPesoInicial());
             pstmt.setString(8, nuevoUsuario.getRol() != null ? nuevoUsuario.getRol() : "USUARIO");
-            pstmt.setInt(9, nuevoUsuario.getIdObjetivo());
+
+            if (nuevoUsuario.getIdObjetivo() > 0) {
+                pstmt.setInt(9, nuevoUsuario.getIdObjetivo());
+            } else {
+                pstmt.setNull(9, java.sql.Types.INTEGER);
+            }
+
+            pstmt.setString(10, nuevoUsuario.getSexo());
 
             int filas = pstmt.executeUpdate();
 
             if (filas > 0) {
-                // Recuperamos el ID generado por la BBDD
-                try (java.sql.ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         nuevoUsuario.setId(generatedKeys.getInt(1));
                     }
@@ -65,13 +72,9 @@ public class UsuarioDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    // 1. Obtenemos el hash de la contraseña guardado en la columna 'passwd'
                     String hashGuardado = rs.getString("passwd");
 
-                    // 2. Verificamos si la contraseña que escribió el usuario coincide con el hash
                     if (GestorSeguridad.verificarPassword(passwordPlana, hashGuardado)) {
-
-                        // ¡Éxito! Creamos el objeto Usuario con los datos de la fila
                         Usuario usu = new Usuario();
                         usu.setId(rs.getInt("id_usuario"));
                         usu.setEmail(rs.getString("email"));
@@ -82,7 +85,7 @@ public class UsuarioDAO {
                         usu.setPeso(rs.getDouble("peso_inicial"));
                         usu.setRol(rs.getString("rol"));
                         usu.setIdObjetivo(rs.getInt("id_objetivo_fk"));
-
+                        usu.setSexo(rs.getString("sexo"));
                         return usu;
                     }
                 }
@@ -90,7 +93,7 @@ public class UsuarioDAO {
         } catch (SQLException e) {
             System.err.println("NUTRILERN > Error en login: " + e.getMessage());
         }
-        return null; // Credenciales inválidas o error
+        return null;
     }
 
     /**
@@ -152,14 +155,93 @@ public class UsuarioDAO {
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, idUsuario);
-
-            int filasAfectadas = pstmt.executeUpdate();
-
-            // Si ha borrado 1 fila, es que todo ha ido bien
-            return filasAfectadas > 0;
+            return pstmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
             System.err.println("Error al eliminar cuenta de usuario: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // --- MÉTODOS DE ADMINISTRACIÓN ---
+
+    /**
+     * Obtiene una lista de todos los usuarios registrados.
+     */
+    public static List<Usuario> obtenerTodosLosUsuarios() {
+        List<Usuario> lista = new ArrayList<>();
+        String sql = "SELECT * FROM usuario ORDER BY nombre ASC";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                Usuario u = new Usuario();
+                u.setId(rs.getInt("id_usuario"));
+                u.setEmail(rs.getString("email"));
+                u.setNombre(rs.getString("nombre"));
+                u.setApellidos(rs.getString("apellidos"));
+                u.setEdad(rs.getInt("edad"));
+                u.setAltura(rs.getDouble("altura"));
+                u.setPeso(rs.getDouble("peso_inicial"));
+                u.setRol(rs.getString("rol"));
+                u.setIdObjetivo(rs.getInt("id_objetivo_fk"));
+                u.setSexo(rs.getString("sexo"));
+                lista.add(u);
+            }
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al listar usuarios: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    /**
+     * Permite a un admin actualizar todos los campos de un usuario.
+     */
+    public static boolean actualizarUsuarioCompleto(Usuario u) {
+        String sql = "UPDATE usuario SET email=?, nombre=?, apellidos=?, edad=?, altura=?, peso_inicial=?, rol=?, id_objetivo_fk=?, sexo=? WHERE id_usuario=?";
+
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, u.getEmail());
+            pstmt.setString(2, u.getNombre());
+            pstmt.setString(3, u.getApellidos());
+            pstmt.setInt(4, u.getEdad());
+            pstmt.setDouble(5, u.getAltura());
+            pstmt.setDouble(6, u.getPesoInicial());
+            pstmt.setString(7, u.getRol());
+
+            if (u.getIdObjetivo() > 0) {
+                pstmt.setInt(8, u.getIdObjetivo());
+            } else {
+                pstmt.setNull(8, java.sql.Types.INTEGER);
+            }
+
+            pstmt.setString(9, u.getSexo());
+            pstmt.setInt(10, u.getId());
+
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al actualizar usuario: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Actualiza la contraseña de un usuario con un hash ya calculado.
+     * Usado por el panel de administración para cambios de contraseña.
+     */
+    public static boolean actualizarPassword(int idUsuario, String hashNuevo) {
+        String sql = "UPDATE usuario SET passwd = ? WHERE id_usuario = ?";
+        try (Connection conn = BaseDeDatos.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, hashNuevo);
+            pstmt.setInt(2, idUsuario);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("NUTRILERN > Error al actualizar contraseña: " + e.getMessage());
             return false;
         }
     }

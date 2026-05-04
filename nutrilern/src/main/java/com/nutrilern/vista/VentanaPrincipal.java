@@ -13,7 +13,8 @@ public class VentanaPrincipal extends JFrame {
     // Paneles que necesitan refrescarse desde otros sitios
     private PanelAjustes panelAjustes;
     private PanelEvolucion panelEvo; 
-    private PanelMisComidas panelComidas; // NUEVO
+    private PanelMisComidas panelComidas; 
+    private PanelAdminUsuarios panelAdmin;
 
     public VentanaPrincipal() {
         setTitle("NUTRIX");
@@ -27,8 +28,9 @@ public class VentanaPrincipal extends JFrame {
 
         PanelLogin panelLogin = new PanelLogin(this);
         this.panelAjustes = new PanelAjustes(this);
-        this.panelComidas = new PanelMisComidas(this); // Inicializamos el global
+        this.panelComidas = new PanelMisComidas(this); 
         this.panelEvo = new PanelEvolucion(this);
+        this.panelAdmin = new PanelAdminUsuarios(this);
         PanelBaseAlimentos panelBase = new PanelBaseAlimentos(this);
 
         panelContenedor.add(panelLogin, "LOGIN");
@@ -36,6 +38,7 @@ public class VentanaPrincipal extends JFrame {
         panelContenedor.add(this.panelComidas, "COMIDAS"); // Añadimos el global
         panelContenedor.add(this.panelEvo, "EVOLUCION");
         panelContenedor.add(panelBase, "BASE_ALIMENTOS");
+        panelContenedor.add(this.panelAdmin, "ADMIN_USUARIOS");
 
         add(panelContenedor);
 
@@ -64,6 +67,8 @@ public class VentanaPrincipal extends JFrame {
         } else if (nombrePantalla.equals("COMIDAS")) {
             // Cuando entramos en la tabla, cargamos los datos de hoy
             panelComidas.cargarDatosHoy();
+        } else if (nombrePantalla.equals("ADMIN_USUARIOS")) {
+            panelAdmin.refrescarTabla();
         }
         
         cardLayout.show(panelContenedor, nombrePantalla);

@@ -77,14 +77,40 @@ public class ControladorVistas {
      * Útil para gráficas circulares.
      */
     private static int[] calcularPorcentajesMacros(double[] macros) {
-        int[] porcentajes = new int[]{33, 33, 34}; // Reparto por defecto si falla algo
-        double total = macros[1] + macros[2] + macros[3]; // Suma de HC + Prot + Grasas
-        
+        int[] porcentajes = new int[]{33, 33, 34}; // Default
+        double total = macros[1] + macros[2] + macros[3];
         if (total > 0) {
-            porcentajes[0] = (int) ((macros[1] / total) * 100); // % Carbohidratos
-            porcentajes[1] = (int) ((macros[2] / total) * 100); // % Proteínas
-            porcentajes[2] = 100 - porcentajes[0] - porcentajes[1]; // % Grasas (el resto para que sume 100)
+            porcentajes[0] = (int) ((macros[1] / total) * 100); // HC
+            porcentajes[1] = (int) ((macros[2] / total) * 100); // Prot
+            porcentajes[2] = 100 - porcentajes[0] - porcentajes[1]; // Fat
         }
         return porcentajes;
+    }
+
+    // --- LÓGICA DE ADMINISTRACIÓN ---
+
+    public static List<Usuario> listarUsuariosAdmin() {
+        return com.nutrilern.modelo.UsuarioDAO.obtenerTodosLosUsuarios();
+    }
+
+    public static boolean eliminarUsuarioAdmin(int id) {
+        return com.nutrilern.modelo.UsuarioDAO.eliminarUsuario(id);
+    }
+
+    public static boolean guardarUsuarioAdmin(Usuario u, String password, boolean esNuevo) {
+        if (esNuevo) {
+            u.setPassword(password); // registrarUsuario ya hashea internamente
+            return com.nutrilern.modelo.UsuarioDAO.registrarUsuario(u);
+        } else {
+            // Primero actualizamos todos los datos del usuario
+            boolean ok = com.nutrilern.modelo.UsuarioDAO.actualizarUsuarioCompleto(u);
+            
+            // Si el admin escribió una contraseña nueva, la hasheamos y guardamos
+            if (ok && password != null && !password.isEmpty()) {
+                String hashNuevo = GestorSeguridad.hashearPassword(password);
+                ok = com.nutrilern.modelo.UsuarioDAO.actualizarPassword(u.getId(), hashNuevo);
+            }
+            return ok;
+        }
     }
 }
