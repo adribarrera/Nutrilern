@@ -8,15 +8,19 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.Locale;
-import com.nutrilern.modelo.AlimentoDAO;
 import com.nutrilern.modelo.Usuario;
-import com.nutrilern.modelo.PesoDAO;
-import java.util.List;
 
 /**
- * Este panel muestra la evolución nutricional del usuario.
- * Incluye un calendario interactivo y gráficos de barras y circulares
- * dibujados manualmente con Java 2D, conectados a datos reales de TiDB.
+ * PANEL DE EVOLUCIÓN
+ * -------------------
+ * Esta pantalla es el centro analítico del usuario. Permite:
+ * 1. Consultar un calendario interactivo para ver detalles de días pasados.
+ * 2. Visualizar gráficas de barras (Calorías semanales).
+ * 3. Analizar la distribución de macros de un día específico (Gráfica circular).
+ * 4. Observar la tendencia de peso a largo plazo (Gráfica lineal).
+ * 
+ * TODO el sistema de gráficas se dibuja MIEMBRO A MIEMBRO con Java 2D (paintComponent),
+ * lo que permite total control estético sin depender de librerías externas.
  */
 public class PanelEvolucion extends JPanel {
 
@@ -82,6 +86,7 @@ public class PanelEvolucion extends JPanel {
             
             int[] calSemana = (int[]) datos.get("caloriasSemana");
             int[] macrosHoy = (int[]) datos.get("macrosHoyPorcentaje");
+            @SuppressWarnings("unchecked")
             java.util.List<Object[]> historial = (java.util.List<Object[]>) datos.get("historialPeso");
 
             // Convertimos el historial a arrays para los gráficos
@@ -303,10 +308,10 @@ public class PanelEvolucion extends JPanel {
             int x0 = 30;
             int y0 = 60;
 
-            if (etiquetas != null) { // LÍNEA (Evolución de Peso) - Prioridad si hay etiquetas
-                int pointW = w / (datos.length > 1 ? datos.length - 1 : 1);
+            if (etiquetas != null) { // --- MODO: GRÁFICA LINEAL (Evolución de Peso) ---
+                int pointW = w / (datos.length > 1 ? datos.length - 1 : 1); // Distancia entre puntos
                 
-                // Buscar min y max reales para la escala elástica
+                // Buscamos min y max reales para ajustar la escala vertical dinámicamente
                 double min = datos[0], max = datos[0];
                 for(double d : datos) {
                     if(d < min) min = d;
@@ -314,8 +319,8 @@ public class PanelEvolucion extends JPanel {
                 }
                 
                 double range = max - min;
-                if(range < 5) range = 5; // Escala mínima de 5kg
-                double padding = range * 0.2;
+                if(range < 5) range = 5; // Aseguramos un rango mínimo para que no se vea plana
+                double padding = range * 0.2; // Añadimos margen superior e inferior
                 double scaleMin = min - padding;
                 double scaleMax = max + padding;
                 double scaleRange = scaleMax - scaleMin;
@@ -324,19 +329,20 @@ public class PanelEvolucion extends JPanel {
                 int[] yPoints = new int[datos.length];
 
                 for (int i = 0; i < datos.length; i++) {
+                    // Calculamos coordenadas X e Y proporcionales
                     xPoints[i] = x0 + i * pointW;
                     yPoints[i] = y0 + h - (int) (((datos[i] - scaleMin) / scaleRange) * h);
                     
-                    // Dibujar punto
+                    // 1. Dibujamos el punto (Ovalo verde)
                     g2d.setColor(TemaNutrix.VERDE_NUTRIX);
                     g2d.fillOval(xPoints[i] - 5, yPoints[i] - 5, 10, 10);
                     
-                    // Valor del peso
+                    // 2. Escribimos el valor del peso encima del punto
                     g2d.setColor(TemaNutrix.TEXTO);
                     g2d.setFont(new Font("Arial", Font.BOLD, 11));
                     g2d.drawString(String.format("%.1f", datos[i]), xPoints[i] - 12, yPoints[i] - 12);
                     
-                    // Fecha (Más visible y un poco más arriba)
+                    // 3. Escribimos la fecha debajo del eje X
                     if (i < etiquetas.length) {
                         g2d.setColor(TemaNutrix.TEXTO);
                         g2d.setFont(new Font("Arial", Font.PLAIN, 10));
@@ -344,13 +350,14 @@ public class PanelEvolucion extends JPanel {
                     }
                 }
                 
+                // 4. Conectamos todos los puntos con una línea gruesa semitransparente
                 g2d.setStroke(new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                 g2d.setColor(new Color(34, 139, 34, 150));
                 g2d.drawPolyline(xPoints, yPoints, datos.length);
 
-            } else if (datos.length == 3) { // CIRCULAR (Macros)
+            } else if (datos.length == 3) { // --- MODO: GRÁFICA CIRCULAR (Macros) ---
                 int size = Math.min(w, h) - 20;
-                int startAngle = 90;
+                int startAngle = 90; // Empezamos a las 12 en punto
                 Color[] colores = {TemaNutrix.CARBOHIDRATOS, TemaNutrix.PROTEINAS, TemaNutrix.GRASAS};
                 String[] nombres = {"HC", "Prot", "Grasas"};
                 
@@ -358,11 +365,12 @@ public class PanelEvolucion extends JPanel {
                 int centerY = y0 + h / 2;
 
                 for (int i = 0; i < datos.length; i++) {
+                    // Convertimos el porcentaje (0-100) a grados (0-360)
                     int arcAngle = (int) (datos[i] * 3.6); 
                     g2d.setColor(colores[i]);
                     g2d.fillArc(centerX - size/2, centerY - size/2, size, size, startAngle, arcAngle);
                     
-                    // Dibujar porcentaje sobre la porción si es significativo
+                    // Si el trozo es suficientemente grande, dibujamos el % dentro
                     if (datos[i] > 5) {
                         double midAngle = Math.toRadians(startAngle + arcAngle / 2.0);
                         int labelR = size / 3;
@@ -374,9 +382,9 @@ public class PanelEvolucion extends JPanel {
                         g2d.drawString((int)datos[i] + "%", labelX, labelY);
                     }
                     
-                    startAngle += arcAngle;
+                    startAngle += arcAngle; // Avanzamos el ángulo para el siguiente trozo
                 }
-                // Leyenda inferior mejorada
+                // Dibujamos la leyenda (cuadraditos de colores con nombres)
                 g2d.setFont(new Font("Arial", Font.PLAIN, 11));
                 for(int i=0; i<3; i++) {
                     g2d.setColor(colores[i]);
@@ -384,16 +392,18 @@ public class PanelEvolucion extends JPanel {
                     g2d.setColor(TemaNutrix.TEXTO);
                     g2d.drawString(nombres[i], x0 + i*60 + 15, y0 + h + 25);
                 }
-            } else { // BARRAS (Calorías)
-                int barW = w / datos.length - 10;
+            } else { // --- MODO: GRÁFICA DE BARRAS (Calorías) ---
+                int barW = w / datos.length - 10; // Ancho dinámico de barra
                 double max = 0;
                 for(double d : datos) if(d > max) max = d;
-                if(max < 2000) max = 2000; 
+                if(max < 2000) max = 2000; // Escala mínima fija para referencia visual
                 
                 for (int i = 0; i < datos.length; i++) {
-                    int barH = (int) ((datos[i] / max) * h);
+                    int barH = (int) ((datos[i] / max) * h); // Altura proporcional
                     g2d.setColor(TemaNutrix.VERDE_NUTRIX);
                     g2d.fillRect(x0 + i * (barW + 10), y0 + (h - barH), barW, barH);
+                    
+                    // Escribimos el número de calorías justo encima de la barra
                     g2d.setColor(TemaNutrix.GRIS_TEXTO);
                     g2d.setFont(new Font("Arial", Font.PLAIN, 10));
                     g2d.drawString(String.valueOf((int)datos[i]), x0 + i * (barW + 10), y0 + (h - barH) - 5);

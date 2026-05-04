@@ -2,7 +2,6 @@ package com.nutrilern.controlador;
 
 import com.nutrilern.modelo.Alimento;
 import com.nutrilern.modelo.AlimentoDAO;
-import com.nutrilern.modelo.Usuario;
 import java.util.List;
 import java.sql.Date;
 

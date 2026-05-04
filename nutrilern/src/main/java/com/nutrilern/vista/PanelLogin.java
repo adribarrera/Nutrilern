@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.HashMap;
 
 import com.nutrilern.modelo.Usuario;
-import com.nutrilern.modelo.UsuarioDAO;
 
 public class PanelLogin extends JPanel {
     private VentanaPrincipal ventanaPadre;
@@ -158,8 +157,6 @@ public class PanelLogin extends JPanel {
     }
 
     private void abrirDialogoRegistro() {
-        int[] intentosVerificacion = {0};
-
         JDialog dialogo = new JDialog(ventanaPadre, "Registro de usuario", true);
         dialogo.setSize(450, 550);
         dialogo.setLocationRelativeTo(ventanaPadre);

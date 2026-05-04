@@ -4,9 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import com.nutrilern.modelo.UsuarioDAO;
 import com.nutrilern.modelo.Usuario;
-import com.nutrilern.modelo.PesoDAO;
 
 public class PanelAjustes extends JPanel {
 

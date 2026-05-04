@@ -1,8 +1,6 @@
 package com.nutrilern.vista;
 
 import com.nutrilern.modelo.Alimento;
-import com.nutrilern.modelo.AlimentoDAO;
-import com.nutrilern.modelo.CategoriaDAO;
 import com.nutrilern.modelo.ComboItem;
 import java.util.Map;
 
