@@ -75,22 +75,14 @@ public class PanelEvolucion extends JPanel {
         if (user == null) return;
 
         new Thread(() -> {
-            // 1. Obtenemos calorías de los últimos 7 días
-            int[] calSemana = AlimentoDAO.obtenerCaloriasUltimos7Dias(user.getId());
+            // Obtenemos todos los datos procesados desde el controlador
+            java.util.Map<String, Object> datos = com.nutrilern.controlador.ControladorVistas.obtenerDatosEvolucion(user);
             
-            // 2. Obtenemos macros de hoy [kcal, hc, prot, fat]
-            double[] macrosHoyRaw = AlimentoDAO.obtenerMacrosHoy(user.getId());
-            // Convertimos a porcentajes para el gráfico circular (si hay datos)
-            int[] macrosHoy = new int[]{33, 33, 34}; // Por defecto si está vacío
-            double total = macrosHoyRaw[1] + macrosHoyRaw[2] + macrosHoyRaw[3];
-            if (total > 0) {
-                macrosHoy[0] = (int) ((macrosHoyRaw[1] / total) * 100); // HC
-                macrosHoy[1] = (int) ((macrosHoyRaw[2] / total) * 100); // Prot
-                macrosHoy[2] = 100 - macrosHoy[0] - macrosHoy[1];      // Fat
-            }
+            int[] calSemana = (int[]) datos.get("caloriasSemana");
+            int[] macrosHoy = (int[]) datos.get("macrosHoyPorcentaje");
+            java.util.List<Object[]> historial = (java.util.List<Object[]>) datos.get("historialPeso");
 
-            // 3. Obtenemos historial de peso con fechas
-            List<Object[]> historial = PesoDAO.obtenerHistorialPesos(user.getId(), 10);
+            // Convertimos el historial a arrays para los gráficos
             double[] pesosArr = new double[historial.size()];
             String[] fechasArr = new String[historial.size()];
             for (int i = 0; i < historial.size(); i++) {
@@ -98,7 +90,7 @@ public class PanelEvolucion extends JPanel {
                 fechasArr[i] = (String) historial.get(i)[1];
             }
 
-            // 4. Actualizamos la interfaz en el hilo de Swing
+            // Actualizamos la interfaz en el hilo de Swing
             SwingUtilities.invokeLater(() -> {
                 graficoCalorias.actualizarDatos(calSemana);
                 graficoMacros.actualizarDatos(macrosHoy);

@@ -2,12 +2,13 @@ package com.nutrilern.vista;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import com.nutrilern.modelo.Usuario;
-import com.nutrilern.modelo.AlimentoDAO;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Map;
+import java.awt.font.TextAttribute;
 
 public class PanelMenuPrincipal extends JPanel {
     private VentanaPrincipal ventanaPadre;
@@ -113,39 +114,41 @@ public class PanelMenuPrincipal extends JPanel {
         if (usuario == null) return;
         
         new Thread(() -> {
-            double[] macrosHoy = AlimentoDAO.obtenerMacrosHoy(usuario.getId());
-            // [0]=kcal, [1]=hc, [2]=prot, [3]=fat
+            // Llamamos al controlador para obtener los datos procesados
+            java.util.Map<String, Object> datos = com.nutrilern.controlador.ControladorVistas.obtenerDatosMenuPrincipal(usuario);
+            
+            double[] macrosHoy = (double[]) datos.get("macrosHoy");
+            double[] macrosObjetivo = (double[]) datos.get("macrosObjetivo");
+            double imc = (double) datos.get("imc");
+            String clasificacion = (String) datos.get("imcClasificacion");
 
-            // Calculamos los macros reales del usuario
-            double[] macrosObjetivo = com.nutrilern.controlador.CalculadoraNutricional.calcularMacros(usuario);
             int maxKcal = (int) macrosObjetivo[0];
             int maxHC = (int) macrosObjetivo[1];
             int maxProt = (int) macrosObjetivo[2];
             int maxFat = (int) macrosObjetivo[3];
             
             SwingUtilities.invokeLater(() -> {
-                lblCalVal.setText((int)macrosHoy[0] + " kcal / " + maxKcal);
-                barCal.setValue((int)((macrosHoy[0]/maxKcal)*100));
-                
-                lblHCVal.setText((int)macrosHoy[1] + " g / " + maxHC);
-                barHC.setValue((int)((macrosHoy[1]/maxHC)*100));
-
-                lblProtVal.setText((int)macrosHoy[2] + " g / " + maxProt);
-                barProt.setValue((int)((macrosHoy[2]/maxProt)*100));
-
-                lblFatVal.setText((int)macrosHoy[3] + " g / " + maxFat);
-                barFat.setValue((int)((macrosHoy[3]/maxFat)*100));
-
-                // 5. Calculamos IMC
-                double imc = com.nutrilern.controlador.CalculadoraNutricional.calcularIMC(usuario.getPesoInicial(), usuario.getAltura());
-                String clasificacion = com.nutrilern.controlador.CalculadoraNutricional.getClasificacionIMC(imc);
-                lblIMCVal.setText(String.format("%.1f (%s)", imc, clasificacion));
-                
-                // Normalizar barra IMC (de 15 a 40)
-                int progresoIMC = (int) (((imc - 15) / (40 - 15)) * 100);
-                barIMC.setValue(Math.min(100, Math.max(0, progresoIMC)));
+                actualizarInterfaz(macrosHoy, maxKcal, maxHC, maxProt, maxFat, imc, clasificacion);
             });
         }).start();
+    }
+
+    private void actualizarInterfaz(double[] hoy, int mK, int mH, int mP, int mF, double imc, String clas) {
+        lblCalVal.setText((int)hoy[0] + " kcal / " + mK);
+        barCal.setValue((int)((hoy[0]/mK)*100));
+        
+        lblHCVal.setText((int)hoy[1] + " g / " + mH);
+        barHC.setValue((int)((hoy[1]/mH)*100));
+
+        lblProtVal.setText((int)hoy[2] + " g / " + mP);
+        barProt.setValue((int)((hoy[2]/mP)*100));
+
+        lblFatVal.setText((int)hoy[3] + " g / " + mF);
+        barFat.setValue((int)((hoy[3]/mF)*100));
+
+        lblIMCVal.setText(String.format("%.1f (%s)", imc, clas));
+        int progresoIMC = (int) (((imc - 15) / (40 - 15)) * 100);
+        barIMC.setValue(Math.min(100, Math.max(0, progresoIMC)));
     }
 
     private JPanel crearSeccionResumenHoy() {
@@ -194,12 +197,21 @@ public class PanelMenuPrincipal extends JPanel {
     }
 
     private JPanel crearStatMiniCard(String label, Color colorBarra) {
-        JPanel card = new JPanel();
+        JPanel card = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                g2.setColor(TemaNutrix.GRIS_CLARO);
+                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20);
+                g2.dispose();
+            }
+        };
+        card.setOpaque(false);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
-                new EmptyBorder(15, 15, 15, 15)));
+        card.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel lbl = new JLabel(label);
         lbl.setFont(new Font("Arial", Font.BOLD, 13));
@@ -238,13 +250,23 @@ public class PanelMenuPrincipal extends JPanel {
     }
 
     private JPanel crearTarjetaMenu(String titulo, String imagePath, String descripcion, Runnable accion) {
-        JPanel tarjeta = new JPanel();
+        JPanel tarjeta = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 25, 25);
+                g2.setColor(TemaNutrix.GRIS_CLARO);
+                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 25, 25);
+                g2.dispose();
+            }
+        };
+        tarjeta.setOpaque(false);
         tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
         tarjeta.setBackground(Color.WHITE);
         tarjeta.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        tarjeta.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
-                new EmptyBorder(25, 20, 25, 20)));
+        tarjeta.setBorder(new EmptyBorder(25, 20, 25, 20));
 
         JLabel lblIcono = new JLabel();
         try {
@@ -277,17 +299,13 @@ public class PanelMenuPrincipal extends JPanel {
         tarjeta.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                tarjeta.setBackground(new Color(250, 255, 250));
-                tarjeta.setBorder(BorderFactory.createCompoundBorder(
-                        new LineBorder(TemaNutrix.VERDE_NUTRIX, 2, true),
-                        new EmptyBorder(24, 19, 24, 19)));
+                tarjeta.setBackground(new Color(245, 255, 245));
+                tarjeta.repaint();
             }
             @Override
             public void mouseExited(MouseEvent e) {
                 tarjeta.setBackground(Color.WHITE);
-                tarjeta.setBorder(BorderFactory.createCompoundBorder(
-                        new LineBorder(TemaNutrix.GRIS_CLARO, 1, true),
-                        new EmptyBorder(25, 20, 25, 20)));
+                tarjeta.repaint();
             }
             @Override
             public void mouseClicked(MouseEvent e) {

@@ -57,7 +57,7 @@ public class PanelBaseAlimentos extends JPanel {
 
         comboCategorias = new JComboBox<>();
         comboCategorias.addItem(new ComboItem(0, "Todas las Categorías"));
-        Map<Integer, String> categorias = CategoriaDAO.obtenerTodasLasCategorias();
+        Map<Integer, String> categorias = com.nutrilern.controlador.ControladorAlimentos.obtenerCategorias();
         for (Map.Entry<Integer, String> entry : categorias.entrySet()) {
             comboCategorias.addItem(new ComboItem(entry.getKey(), entry.getValue()));
         }
@@ -69,21 +69,21 @@ public class PanelBaseAlimentos extends JPanel {
         btnTodos.addActionListener(e -> {
             txtBuscar.setText("");
             comboCategorias.setSelectedIndex(0);
-            actualizarTabla(AlimentoDAO.obtenerTodosLosAlimentos());
+            actualizarTabla(com.nutrilern.controlador.ControladorAlimentos.obtenerTodos());
         });
 
         JButton btnTopProt = crearBoton("Top Proteínas", TemaNutrix.CARBOHIDRATOS, TemaNutrix.BLANCO);
         btnTopProt.addActionListener(e -> {
             txtBuscar.setText("");
             comboCategorias.setSelectedIndex(0);
-            actualizarTabla(AlimentoDAO.obtenerTopProteinas());
+            actualizarTabla(com.nutrilern.controlador.ControladorAlimentos.obtenerTopProteinas());
         });
 
         JButton btnBajosKcal = crearBoton("Bajos en Kcal", TemaNutrix.CALORIAS, TemaNutrix.BLANCO);
         btnBajosKcal.addActionListener(e -> {
             txtBuscar.setText("");
             comboCategorias.setSelectedIndex(0);
-            actualizarTabla(AlimentoDAO.obtenerBajosEnCalorias());
+            actualizarTabla(com.nutrilern.controlador.ControladorAlimentos.obtenerBajosEnCalorias());
         });
 
         panelControles.add(new JLabel("🔍 Buscar:"));
@@ -155,7 +155,7 @@ public class PanelBaseAlimentos extends JPanel {
         });
 
         // Cargamos todos los alimentos por defecto al entrar al panel
-        actualizarTabla(AlimentoDAO.obtenerTodosLosAlimentos());
+        actualizarTabla(com.nutrilern.controlador.ControladorAlimentos.obtenerTodos());
     }
 
     // --- MÉTODOS AUXILIARES ---
@@ -177,24 +177,21 @@ public class PanelBaseAlimentos extends JPanel {
         lblDetalle.setText(listaAlimentos.size() + " alimentos encontrados.");
     }
 
+    private JButton crearBoton(String texto, Color fondo, Color textoColor) {
+        JButton btn = TemaNutrix.crearBotonEstandar(texto);
+        // Personalizamos un poco el botón premium para que acepte colores si es necesario, 
+        // o simplemente usamos el estándar de la app.
+        return btn;
+    }
+
     private void filtrarAlimentos() {
         String query = txtBuscar.getText().trim();
         ComboItem selectedCat = (ComboItem) comboCategorias.getSelectedItem();
         int idCat = (selectedCat != null) ? selectedCat.getId() : 0;
 
         new Thread(() -> {
-            List<Alimento> filtrados = AlimentoDAO.obtenerAlimentosPorFiltro(query, idCat);
+            List<Alimento> filtrados = com.nutrilern.controlador.ControladorAlimentos.buscarAlimentos(query, idCat);
             SwingUtilities.invokeLater(() -> actualizarTabla(filtrados));
         }).start();
-    }
-
-    // Método para diseñar los botones rápidamente
-    private JButton crearBoton(String texto, Color fondo, Color textoColor) {
-        JButton btn = new JButton(texto);
-        btn.setBackground(fondo);
-        btn.setForeground(textoColor);
-        btn.setFont(new Font("Arial", Font.BOLD, 12));
-        btn.setFocusPainted(false);
-        return btn;
     }
 }

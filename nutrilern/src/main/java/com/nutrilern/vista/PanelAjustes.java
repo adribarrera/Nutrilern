@@ -194,17 +194,14 @@ public class PanelAjustes extends JPanel {
                             return;
                         }
                         
-                        if (UsuarioDAO.actualizarDatosFisicos(user.getId(), edad, peso, altura)) {
-                            // Registramos en el historial para la gráfica
-                            PesoDAO.registrarPeso(user.getId(), peso);
-                            
+                        if (com.nutrilern.controlador.ControladorUsuario.actualizarDatosFisicos(user.getId(), edad, peso, altura)) {
                             user.setEdad(edad);
                             user.setPeso(peso);
                             user.setAltura(altura);
                             refrescarDatos();
-                            JOptionPane.showMessageDialog(this, "Datos actualizados correctamente.");
+                            JOptionPane.showMessageDialog(this, "Datos actualizados.");
                         } else {
-                            JOptionPane.showMessageDialog(this, "Error de base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(this, "Error al actualizar.", "Error", JOptionPane.ERROR_MESSAGE);
                         }
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(this, "Introduce solo números válidos.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -236,7 +233,7 @@ public class PanelAjustes extends JPanel {
                 int result = JOptionPane.showConfirmDialog(this, combo, "Selecciona tu nuevo objetivo", JOptionPane.OK_CANCEL_OPTION);
                 if (result == JOptionPane.OK_OPTION) {
                     int idObjNuevo = combo.getSelectedIndex() + 1;
-                    if (UsuarioDAO.actualizarObjetivo(user.getId(), idObjNuevo)) {
+                    if (com.nutrilern.controlador.ControladorUsuario.actualizarObjetivo(user.getId(), idObjNuevo)) {
                         user.setIdObjetivo(idObjNuevo);
                         refrescarDatos();
                         JOptionPane.showMessageDialog(this, "Objetivo actualizado.");
@@ -265,12 +262,12 @@ public class PanelAjustes extends JPanel {
                         return;
                     }
 
-                    if (UsuarioDAO.actualizarEmail(user.getId(), nuevoEmail.trim())) {
+                    if (com.nutrilern.controlador.ControladorUsuario.actualizarEmail(user.getId(), nuevoEmail.trim())) {
                         user.setEmail(nuevoEmail.trim());
                         refrescarDatos();
-                        JOptionPane.showMessageDialog(this, "Email actualizado correctamente.");
+                        JOptionPane.showMessageDialog(this, "Email actualizado.");
                     } else {
-                        JOptionPane.showMessageDialog(this, "No se pudo actualizar. Puede que el correo ya esté en uso o haya un error de conexión.", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "No se pudo actualizar el email.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -313,22 +310,12 @@ public class PanelAjustes extends JPanel {
                 
                 if (user != null) {
                     // 3. Llamamos a la base de datos para borrarlo
-                    boolean exito = UsuarioDAO.eliminarUsuario(user.getId());
-                    
-                    if (exito) {
-                        JOptionPane.showMessageDialog(this, 
-                            "Tu cuenta y todos tus datos han sido eliminados correctamente.\n¡Esperamos volver a verte pronto!", 
-                            "Cuenta Eliminada", 
-                            JOptionPane.INFORMATION_MESSAGE);
-                            
-                        // 4. Limpiamos la sesión y volvemos al Login
+                    if (com.nutrilern.controlador.ControladorUsuario.eliminarCuenta(user.getId())) {
+                        JOptionPane.showMessageDialog(this, "Cuenta eliminada correctamente.");
                         ventanaPadre.setUsuarioLogueado(null); 
                         ventanaPadre.cambiarPantalla("LOGIN");
                     } else {
-                        JOptionPane.showMessageDialog(this, 
-                            "Hubo un error al intentar eliminar la cuenta. Si tienes comidas registradas, puede que la BD impida el borrado.", 
-                            "Error de Borrado", 
-                            JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "Error al eliminar la cuenta.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }

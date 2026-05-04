@@ -148,28 +148,13 @@ public class PanelMisComidas extends JPanel {
         modeloTabla.addTableModelListener(e -> {
             if (e.getType() == TableModelEvent.UPDATE && e.getColumn() == 0) {
                 int fila = e.getFirstRow();
-                Object valorElegido = modeloTabla.getValueAt(fila, 0);
-                
-                if (valorElegido instanceof Alimento) {
-                    Alimento al = (Alimento) valorElegido;
-                    
+                Object obj = modeloTabla.getValueAt(fila, 0);
+                if (obj instanceof Alimento) {
+                    Alimento al = (Alimento) obj;
                     if (al.getIdAlimento() != 0) {
-                        for(int i = 0; i < comboCategoriasTabla.getItemCount(); i++) {
-                            ComboItem itemCat = comboCategoriasTabla.getItemAt(i);
-                            if(itemCat.getId() == al.getIdCategoriaFk()) {
-                                modeloTabla.setValueAt(itemCat, fila, 1);
-                                break;
-                            }
-                        }
-                        
-                        modeloTabla.setValueAt(100.0, fila, 2); 
-                        modeloTabla.setValueAt(al.getKcal(), fila, 3);
-                        modeloTabla.setValueAt(al.getProteinas(), fila, 4);
-                        modeloTabla.setValueAt(al.getHidratosCarbono(), fila, 5);
-                        modeloTabla.setValueAt(al.getGrasas(), fila, 6);
-                        modeloTabla.setValueAt(al.getGrasasSaturadas(), fila, 7);
-                        modeloTabla.setValueAt(al.getAzucares(), fila, 8);
-                        modeloTabla.setValueAt(al.getSal(), fila, 9);
+                        // Usar controlador para cálculos
+                        double[] ms = com.nutrilern.controlador.ControladorComidas.calcularMacrosProporcionales(al, 100.0);
+                        for(int i = 0; i < ms.length; i++) modeloTabla.setValueAt(ms[i], fila, i + 3);
                     }
                 }
             }
@@ -197,7 +182,6 @@ public class PanelMisComidas extends JPanel {
         JButton btnAñadirFila = crearBotonSecundario("+ Añadir Fila");
         btnAñadirFila.addActionListener(e -> {
             ComboItem categoriaVacia = comboCategoriasTabla.getItemAt(0); 
-            // Añadimos 'false' al final porque es una fila nueva y sin guardar
             modeloTabla.addRow(new Object[]{alimentoPlaceholder, categoriaVacia, 0, 0, 0, 0, 0, 0, 0, 0, false});
         });
 
@@ -215,97 +199,31 @@ public class PanelMisComidas extends JPanel {
         panelGestorFilas.add(btnAñadirFila);
         panelGestorFilas.add(btnBorrarFila);
 
-        JButton btnGuardar = new JButton("💾 Guardar Registro Diario");
-        btnGuardar.setFont(new Font("Arial", Font.BOLD, 15));
-        btnGuardar.setBackground(TemaNutrix.VERDE_NUTRIX);
-        btnGuardar.setForeground(Color.WHITE);
-        btnGuardar.setFocusPainted(false);
+        JButton btnGuardar = TemaNutrix.crearBotonEstandar("💾 Guardar Registro Diario");
         btnGuardar.setPreferredSize(new Dimension(250, 45));
-        btnGuardar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btnGuardar.addActionListener(e -> {
-            int numFilas = modeloTabla.getRowCount();
-            if (numFilas == 0) {
-                JOptionPane.showMessageDialog(this, "La tabla está vacía. Añade alimentos antes de guardar.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            int idUsuario = ventanaPadre.getUsuarioLogueado().getId();
-            java.sql.Date fechaHoy = new java.sql.Date(System.currentTimeMillis());
-            
-            btnGuardar.setText("Guardando...");
-            btnGuardar.setEnabled(false);
-
             new Thread(() -> {
-                int guardadasCorrectamente = 0;
-                int ignoradas = 0; 
-                int errores = 0;
-
-                for (int i = 0; i < numFilas; i++) {
-                    try {
-                        // VERIFICAMOS LA COLUMNA OCULTA (Índice 10)
-                        boolean yaGuardado = (boolean) modeloTabla.getValueAt(i, 10);
-                        if (yaGuardado) {
-                            ignoradas++;
-                            continue; 
-                        }
-
-                        Object objAl = modeloTabla.getValueAt(i, 0);
-                        if (!(objAl instanceof Alimento) || ((Alimento) objAl).getIdAlimento() == 0) continue;
-                        Alimento al = (Alimento) objAl;
-
-                        double gramos = doubleVal(modeloTabla.getValueAt(i, 2));
-                        double kcal = doubleVal(modeloTabla.getValueAt(i, 3));
-                        double prot = doubleVal(modeloTabla.getValueAt(i, 4));
-                        double hc = doubleVal(modeloTabla.getValueAt(i, 5));
-                        double gra = doubleVal(modeloTabla.getValueAt(i, 6));
-                        double sat = doubleVal(modeloTabla.getValueAt(i, 7));
-                        double azu = doubleVal(modeloTabla.getValueAt(i, 8));
-                        double sal = doubleVal(modeloTabla.getValueAt(i, 9));
-
-                        boolean exito = AlimentoDAO.registrarFilaDiario(
-                            idUsuario, al.getIdAlimento(), gramos, "General", fechaHoy,
-                            kcal, prot, hc, gra, sat, azu, sal
-                        );
-
-                        if (exito) {
-                            guardadasCorrectamente++;
-                            // Actualizamos el modelo visualmente en el hilo principal
-                            final int filaActual = i;
-                            SwingUtilities.invokeLater(() -> modeloTabla.setValueAt(true, filaActual, 10));
-                        } else {
-                            errores++;
-                        }
-                    } catch (Exception ex) {
-                        errores++;
+                int user = ventanaPadre.getUsuarioLogueado().getId();
+                for (int i = 0; i < modeloTabla.getRowCount(); i++) {
+                    if ((boolean) modeloTabla.getValueAt(i, 10)) continue;
+                    Alimento al = (Alimento) modeloTabla.getValueAt(i, 0);
+                    if (al == null || al.getIdAlimento() == 0) continue;
+                    
+                    double grams = doubleVal(modeloTabla.getValueAt(i, 2));
+                    double[] macros = new double[7];
+                    for(int j=0; j<7; j++) macros[j] = doubleVal(modeloTabla.getValueAt(i, j+3));
+                    
+                    if (com.nutrilern.controlador.ControladorComidas.registrarComida(user, al.getIdAlimento(), grams, macros)) {
+                        final int f = i;
+                        SwingUtilities.invokeLater(() -> modeloTabla.setValueAt(true, f, 10));
                     }
                 }
-
-                // Pasamos a variables finales para usarlas en el invokeLater
-                final int finalGuardadas = guardadasCorrectamente;
-                final int finalIgnoradas = ignoradas;
-                final int finalErrores = errores;
-
-                SwingUtilities.invokeLater(() -> {
-                    btnGuardar.setText("💾 Guardar Registro Diario");
-                    btnGuardar.setEnabled(true);
-                    
-                    if (finalGuardadas > 0) {
-                        JOptionPane.showMessageDialog(this, "¡Éxito! Se han añadido " + finalGuardadas + " nuevos registros a tu diario de hoy.", "Guardado", JOptionPane.INFORMATION_MESSAGE);
-                    } else if (finalIgnoradas > 0 && finalErrores == 0) {
-                        JOptionPane.showMessageDialog(this, "No hay alimentos nuevos que guardar. Todo está actualizado.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                    
-                    if (finalErrores > 0) {
-                        JOptionPane.showMessageDialog(this, "Hubo errores al guardar " + finalErrores + " filas. Por favor, revisa tu conexión.", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                });
             }).start();
         });
 
         panelInferior.add(panelGestorFilas, BorderLayout.WEST);
         panelInferior.add(btnGuardar, BorderLayout.EAST);
-
         return panelInferior;
     }
 
@@ -350,7 +268,6 @@ public class PanelMisComidas extends JPanel {
         }
     }
 
-    // MÉTODO PARA CARGAR LOS DATOS DE HOY AL ENTRAR AL PANEL
     public void cargarDatosHoy() {
         if (ventanaPadre.getUsuarioLogueado() == null) return;
         

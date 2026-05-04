@@ -81,11 +81,7 @@ public class PanelLogin extends JPanel {
         JLabel lblPass = new JLabel("Contraseña");
         JPasswordField txtPass = new JPasswordField(20);
 
-        JButton btnLogin = new JButton("Entrar");
-        btnLogin.setBackground(TemaNutrix.VERDE_NUTRIX);
-        btnLogin.setForeground(Color.WHITE);
-        btnLogin.setFocusPainted(false);
-        btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
+        JButton btnLogin = TemaNutrix.crearBotonEstandar("Entrar");
 
         // Para que puedas pulsar el enter
         txtEmail.addActionListener(e -> btnLogin.doClick());
@@ -132,21 +128,13 @@ public class PanelLogin extends JPanel {
             String email = txtEmail.getText().trim();
             String password = new String(txtPass.getPassword());
 
-            if (email.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, introduce tu email y contraseña.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+            Usuario user = com.nutrilern.controlador.ControladorUsuario.autenticar(email, password);
 
-            // Realizamos el login contra la base de datos
-            Usuario usuarioEncontrado = UsuarioDAO.iniciarSesion(email, password);
-
-            if (usuarioEncontrado != null) {
-                // Login con éxito: guardamos el usuario en la sesión de la ventana padre
-                ventanaPadre.setUsuarioLogueado(usuarioEncontrado);
+            if (user != null) {
+                ventanaPadre.setUsuarioLogueado(user);
                 ventanaPadre.cambiarPantalla("MENU");
             } else {
-                // Login fallido
-                JOptionPane.showMessageDialog(this, "Email o contraseña incorrectos.", "Error de acceso", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Email o contraseña incorrectos.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -169,9 +157,8 @@ public class PanelLogin extends JPanel {
         add(panelFormularioContenedor, gbc);
     }
 
-    // DIÁLOGO DE REGISTRO
     private void abrirDialogoRegistro() {
-        int[] intentosVerificacion = {0}; // Estado local para contar intentos de verificación
+        int[] intentosVerificacion = {0};
 
         JDialog dialogo = new JDialog(ventanaPadre, "Registro de usuario", true);
         dialogo.setSize(450, 550);
@@ -200,13 +187,8 @@ public class PanelLogin extends JPanel {
         JPasswordField txtNewPass = new JPasswordField(20);
         txtNewPass.setMaximumSize(new Dimension(300, 35));
 
-        JButton btnCrear = new JButton("Enviar Código");
-        btnCrear.setBackground(TemaNutrix.VERDE_NUTRIX);
-        btnCrear.setForeground(Color.WHITE);
-        btnCrear.setFocusPainted(false);
-        btnCrear.setFont(new Font("Arial", Font.BOLD, 14));
+        JButton btnCrear = TemaNutrix.crearBotonEstandar("Enviar Código");
         btnCrear.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnCrear.setMaximumSize(new Dimension(200, 40));
 
         panelFormulario.add(Box.createVerticalGlue());
         panelFormulario.add(lblTitulo);
@@ -238,13 +220,8 @@ public class PanelLogin extends JPanel {
         txtCodigo.setHorizontalAlignment(JTextField.CENTER);
         txtCodigo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JButton btnVerificar = new JButton("Verificar Código");
-        btnVerificar.setBackground(TemaNutrix.VERDE_NUTRIX);
-        btnVerificar.setForeground(Color.WHITE);
-        btnVerificar.setFocusPainted(false);
-        btnVerificar.setFont(new Font("Arial", Font.BOLD, 14));
+        JButton btnVerificar = TemaNutrix.crearBotonEstandar("Verificar Código");
         btnVerificar.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnVerificar.setMaximumSize(new Dimension(200, 40));
 
         panelVerificacion.add(Box.createVerticalGlue());
         panelVerificacion.add(lblTituloVerif);
@@ -264,7 +241,6 @@ public class PanelLogin extends JPanel {
         lblTituloPerfil.setFont(new Font("Arial", Font.BOLD, 22));
         lblTituloPerfil.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // --- NUEVOS CAMPOS: NOMBRE Y APELLIDOS ---
         JLabel lblNombre = new JLabel("Nombre");
         lblNombre.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtNombre = new JTextField();
@@ -274,7 +250,6 @@ public class PanelLogin extends JPanel {
         lblApellidos.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtApellidos = new JTextField();
         txtApellidos.setMaximumSize(new Dimension(300, 30));
-        // -----------------------------------------
 
         JLabel lblObjetivo = new JLabel("¿Cuál es tu objetivo?");
         lblObjetivo.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -303,15 +278,9 @@ public class PanelLogin extends JPanel {
         JTextField txtAltura = new JTextField();
         txtAltura.setMaximumSize(new Dimension(300, 30));
 
-        JButton btnFinalizar = new JButton("Comenzar mi cambio");
-        btnFinalizar.setBackground(TemaNutrix.VERDE_NUTRIX);
-        btnFinalizar.setForeground(Color.WHITE);
-        btnFinalizar.setFocusPainted(false);
-        btnFinalizar.setFont(new Font("Arial", Font.BOLD, 14));
+        JButton btnFinalizar = TemaNutrix.crearBotonEstandar("Comenzar mi cambio");
         btnFinalizar.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnFinalizar.setMaximumSize(new Dimension(200, 40));
 
-        // Añadimos todo al panel en orden
         panelPerfil.add(lblTituloPerfil);
         panelPerfil.add(Box.createRigidArea(new Dimension(0, 10)));
         panelPerfil.add(lblNombre);
@@ -341,167 +310,62 @@ public class PanelLogin extends JPanel {
         JPanel panelCarga = new JPanel(new BorderLayout());
         panelCarga.setBackground(Color.WHITE);
         PanelCargando spinner = new PanelCargando();
-
-        JLabel lblCargando = new JLabel("Configurando tu plan nutricional...", SwingConstants.CENTER);
-        lblCargando.setFont(new Font("Arial", Font.BOLD, 14));
-        lblCargando.setForeground(TemaNutrix.VERDE_NUTRIX);
-        lblCargando.setBorder(BorderFactory.createEmptyBorder(0, 0, 80, 0));
-
+        JLabel lblCargando = new JLabel("Configurando tu plan...", SwingConstants.CENTER);
         panelCarga.add(spinner, BorderLayout.CENTER);
         panelCarga.add(lblCargando, BorderLayout.SOUTH);
 
-        // METEMOS LAS 4 CARDS
-        panelContenedorCartas.add(panelFormulario, "PANTALLA_FORMULARIO");
-        panelContenedorCartas.add(panelVerificacion, "PANTALLA_VERIFICACION");
-        panelContenedorCartas.add(panelPerfil, "PANTALLA_PERFIL");
-        panelContenedorCartas.add(panelCarga, "PANTALLA_CARGA");
+        panelContenedorCartas.add(panelFormulario, "1");
+        panelContenedorCartas.add(panelVerificacion, "2");
+        panelContenedorCartas.add(panelPerfil, "3");
+        panelContenedorCartas.add(panelCarga, "4");
 
-        // LÓGICA DE BOTONES (Transiciones)
         btnCrear.addActionListener(e -> {
             emailTemporal = txtNewEmail.getText().trim();
             passTemporal = new String(txtNewPass.getPassword());
-
-            if (emailTemporal.isEmpty() || passTemporal.isEmpty()) {
-                JOptionPane.showMessageDialog(dialogo, "Rellena todos los campos.", "Aviso",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            if (!emailTemporal.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-                JOptionPane.showMessageDialog(dialogo, "El formato del correo no es válido.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            if (passTemporal.length() < 6) {
-                JOptionPane.showMessageDialog(dialogo, "La contraseña debe tener al menos 6 caracteres.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            btnCrear.setText("Enviando...");
-            btnCrear.setEnabled(false);
-            codigoSecretoGenerado = generarCodigoSeguridad();
-            intentosVerificacion[0] = 0; // Reiniciamos contador de intentos
-
+            if (emailTemporal.isEmpty() || passTemporal.isEmpty()) return;
+            
+            codigoSecretoGenerado = com.nutrilern.controlador.ControladorUsuario.generarCodigoVerificacion();
             new Thread(() -> {
-                boolean enviado = com.nutrilern.controlador.ServicioCorreo.enviarCodigoVerificacion(emailTemporal,
-                        codigoSecretoGenerado);
-                SwingUtilities.invokeLater(() -> {
-                    if (!dialogo.isDisplayable()) return; // Abortamos si el usuario cerró la ventana
-
-                    if (enviado) {
-                        cardLayout.show(panelContenedorCartas, "PANTALLA_VERIFICACION");
-                        System.out.println("CHIVATO: " + codigoSecretoGenerado);
-                    } else {
-                        JOptionPane.showMessageDialog(dialogo, "Error al enviar el correo.", "Error",
-                                 JOptionPane.ERROR_MESSAGE);
-                        btnCrear.setText("Enviar Código");
-                        btnCrear.setEnabled(true);
-                    }
-                });
+                if (com.nutrilern.controlador.ControladorUsuario.enviarCodigo(emailTemporal, codigoSecretoGenerado)) {
+                    SwingUtilities.invokeLater(() -> cardLayout.show(panelContenedorCartas, "2"));
+                }
             }).start();
         });
 
         btnVerificar.addActionListener(e -> {
-            String codigoIntroducido = txtCodigo.getText().trim();
-            if (codigoIntroducido.equals(codigoSecretoGenerado)) {
-                // ACERTÓ -> Pasamos a la carta del perfil (NO HACEMOS DISPOSE AÚN)
-                cardLayout.show(panelContenedorCartas, "PANTALLA_PERFIL");
-            } else {
-                intentosVerificacion[0]++;
-                if (intentosVerificacion[0] >= 3) {
-                    JOptionPane.showMessageDialog(dialogo, "Has fallado 3 veces. Vuelve a solicitar un código.", "Error", JOptionPane.ERROR_MESSAGE);
-                    cardLayout.show(panelContenedorCartas, "PANTALLA_FORMULARIO");
-                    btnCrear.setText("Enviar Código");
-                    btnCrear.setEnabled(true);
-                    txtCodigo.setText("");
-                } else {
-                    JOptionPane.showMessageDialog(dialogo, "El código no es correcto. Te quedan " + (3 - intentosVerificacion[0]) + " intentos.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
+            if (txtCodigo.getText().equals(codigoSecretoGenerado)) cardLayout.show(panelContenedorCartas, "3");
         });
 
         btnFinalizar.addActionListener(e -> {
             try {
-                // 1. Recogemos los nuevos campos de texto
-                String nombre = txtNombre.getText().trim();
-                String apellidos = txtApellidos.getText().trim();
-                String rol = "USUARIO"; // Todos nacen como usuario base
-                
+                String nom = txtNombre.getText().trim();
+                String ape = txtApellidos.getText().trim();
+                int edad = Integer.parseInt(txtEdad.getText());
+                double peso = Double.parseDouble(txtPeso.getText());
+                double alt = Double.parseDouble(txtAltura.getText());
+                int obj = comboObjetivo.getSelectedIndex() + 1;
+                String sex = comboSexo.getSelectedIndex() == 0 ? "M" : "F";
 
-                // 2. Comprobamos que no dejen el nombre en blanco
-                if (nombre.isEmpty() || apellidos.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialogo, "Por favor, introduce tu nombre y apellidos.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                    return; // Cortamos la ejecución aquí si faltan datos
-                }
-
-                // 3. Comprobamos que metan números en estos tres
-                int edad = Integer.parseInt(txtEdad.getText().trim());
-                double peso = Double.parseDouble(txtPeso.getText().trim().replace(",", "."));
-                double altura = Double.parseDouble(txtAltura.getText().trim().replace(",", "."));
-
-                // Validación lógica de datos físicos
-                if (edad <= 0 || edad > 120 || peso < 20 || peso > 500 || altura < 50 || altura > 300) {
-                    JOptionPane.showMessageDialog(dialogo, "Por favor, introduce valores físicos reales.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                // Cambiamos a la animación
-                cardLayout.show(panelContenedorCartas, "PANTALLA_CARGA");
+                cardLayout.show(panelContenedorCartas, "4");
                 spinner.iniciar();
 
-                // Guardado en BBDD
                 new Thread(() -> {
-                    // 1. Traducimos el texto del desplegable al número de la Base de Datos
-                    String objetivoTexto = (String) comboObjetivo.getSelectedItem();
-                    int idObjetivo = 1; // Por defecto: Perder Peso
-                    if (objetivoTexto.equals("Mantener Peso")) {
-                        idObjetivo = 2;
-                    } else if (objetivoTexto.equals("Ganar Músculo")) {
-                        idObjetivo = 3;
+                    Usuario nU = new Usuario(emailTemporal, passTemporal, nom, ape, edad, alt, peso, "USUARIO", obj, sex);
+                    if (com.nutrilern.controlador.ControladorUsuario.registrarNuevoUsuario(nU)) {
+                        SwingUtilities.invokeLater(() -> {
+                            ventanaPadre.setUsuarioLogueado(nU);
+                            dialogo.dispose();
+                            ventanaPadre.cambiarPantalla("MENU");
+                        });
                     }
-
-                    String sexoElegido = (String) comboSexo.getSelectedItem();
-                    String sexoChar = sexoElegido.equals("Mujer") ? "F" : "M";
-
-                    // 2. Creamos el usuario PASÁNDOLE EL idObjetivo y sexo AL FINAL
-                    Usuario nuevoUsuario = new Usuario(emailTemporal, passTemporal, nombre, apellidos, edad, altura, peso, rol, idObjetivo, sexoChar);
-
-                    // 3. Mandamos el usuario a TiDB
-                    boolean exito = UsuarioDAO.registrarUsuario(nuevoUsuario);
-
-                    // Volvemos a la interfaz gráfica
-                    SwingUtilities.invokeLater(() -> {
-                        if (!dialogo.isDisplayable()) return; // Abortamos si cerró la ventana
-
-                        spinner.detener(); // Para la animación
-                        
-                        if (exito) {
-                            // !!! IMPORTANTE: Establecer el usuario en la sesión al registrarse
-                            ventanaPadre.setUsuarioLogueado(nuevoUsuario); 
-                            
-                            dialogo.dispose(); // Cerramos el registro
-                            ventanaPadre.cambiarPantalla("MENU"); // Entro a la app
-                        } else {
-                            cardLayout.show(panelContenedorCartas, "PANTALLA_PERFIL"); 
-                            JOptionPane.showMessageDialog(dialogo, "Error al registrar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);  
-                        }                        
-                    });
                 }).start();
-
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialogo, "Usa números válidos en Edad, Peso y Altura.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            } catch (Exception ex) {}
         });
 
         dialogo.add(panelContenedorCartas);
         dialogo.setVisible(true);
     }
 
-    private String generarCodigoSeguridad() {
-        java.security.SecureRandom random = new java.security.SecureRandom();
-        int numero = random.nextInt(90000000) + 10000000;
-        return String.valueOf(numero);
-    }
 
     // SPINNER DE CARGA
     class PanelCargando extends JPanel {
