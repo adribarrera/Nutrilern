@@ -36,7 +36,7 @@ public class PanelBaseAlimentos extends JPanel {
         header.add(btnVolver, BorderLayout.WEST);
 
         JLabel lblTitulo = new JLabel("Base de Alimentos", SwingConstants.CENTER);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTitulo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblTitulo.setForeground(TemaNutrix.TEXTO);
         header.add(lblTitulo, BorderLayout.CENTER);
         header.add(Box.createRigidArea(new Dimension(130, 0)), BorderLayout.EAST);
@@ -57,7 +57,7 @@ public class PanelBaseAlimentos extends JPanel {
         panelControles.setOpaque(false);
 
         txtBuscar = new JTextField(20);
-        txtBuscar.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtBuscar.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 14));
 
         comboCategorias = new JComboBox<>();
         comboCategorias.addItem(new ComboItem(0, "Todas las Categorías"));
@@ -66,10 +66,10 @@ public class PanelBaseAlimentos extends JPanel {
             comboCategorias.addItem(new ComboItem(entry.getKey(), entry.getValue()));
         }
 
-        JButton btnBuscar = crearBoton("Buscar", TemaNutrix.VERDE_NUTRIX, TemaNutrix.BLANCO);
+        JButton btnBuscar = crearBoton("Buscar", TemaNutrix.PRIMARIO, TemaNutrix.BLANCO);
         btnBuscar.addActionListener(e -> filtrarAlimentos());
 
-        JButton btnTodos = crearBoton("Ver Todos", TemaNutrix.BLANCO, TemaNutrix.VERDE_NUTRIX);
+        JButton btnTodos = crearBoton("Ver Todos", TemaNutrix.BLANCO, TemaNutrix.PRIMARIO);
         btnTodos.addActionListener(e -> {
             txtBuscar.setText("");
             comboCategorias.setSelectedIndex(0);
@@ -115,7 +115,7 @@ public class PanelBaseAlimentos extends JPanel {
 
         tablaAlimentos = new JTable(modeloTabla);
         tablaAlimentos.setRowHeight(25);
-        tablaAlimentos.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        tablaAlimentos.getTableHeader().setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
         tablaAlimentos.getTableHeader().setBackground(TemaNutrix.GRIS_CLARO);
         tablaAlimentos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -129,22 +129,22 @@ public class PanelBaseAlimentos extends JPanel {
         panelSur.setBackground(Color.WHITE);
         panelSur.setBorder(new EmptyBorder(10, 0, 0, 0));
         lblDetalle = new JLabel("Selecciona un alimento para ver detalles");
-        lblDetalle.setFont(new Font("Arial", Font.ITALIC, 14));
+        lblDetalle.setFont(new Font(TemaNutrix.FONT_NAME, Font.ITALIC, 14));
         panelSur.add(lblDetalle);
         panelContenido.add(panelSur, BorderLayout.SOUTH);
 
         // AÑADIR TODO AL PANEL PRINCIPAL
         add(panelContenido, BorderLayout.CENTER);
         panelSur.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(TemaNutrix.VERDE_NUTRIX),
+                BorderFactory.createLineBorder(TemaNutrix.PRIMARIO),
                 "Información Nutricional",
                 TitledBorder.LEFT,
                 TitledBorder.TOP,
-                new Font("Arial", Font.BOLD, 12),
-                TemaNutrix.VERDE_NUTRIX));
+                new Font(TemaNutrix.FONT_NAME, Font.BOLD, 12),
+                TemaNutrix.PRIMARIO));
 
         lblDetalle = new JLabel("Selecciona un alimento en la tabla para ver más detalles.");
-        lblDetalle.setFont(new Font("Arial", Font.ITALIC, 14));
+        lblDetalle.setFont(new Font(TemaNutrix.FONT_NAME, Font.ITALIC, 14));
         panelSur.add(lblDetalle);
         add(panelSur, BorderLayout.SOUTH);
 

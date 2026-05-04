@@ -45,8 +45,8 @@ public class PanelMenuPrincipal extends JPanel {
                 BorderFactory.createEmptyBorder(0, 30, 0, 30)));
 
         JLabel lblLogo = new JLabel("NUTRIX");
-        lblLogo.setFont(new Font("Arial", Font.BOLD, 26));
-        lblLogo.setForeground(TemaNutrix.VERDE_NUTRIX);
+        lblLogo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 26));
+        lblLogo.setForeground(TemaNutrix.PRIMARIO);
         header.add(lblLogo, BorderLayout.WEST);
 
         JPanel userActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
@@ -56,18 +56,18 @@ public class PanelMenuPrincipal extends JPanel {
         String apellidos = (usuario != null && usuario.getApellidos() != null) ? usuario.getApellidos() : "";
 
         JLabel lblUser = new JLabel("Bienvenido, " + nombre + " " + apellidos);
-        lblUser.setFont(new Font("Arial", Font.ITALIC, 14));
+        lblUser.setFont(new Font(TemaNutrix.FONT_NAME, Font.ITALIC, 14));
         lblUser.setForeground(TemaNutrix.TEXTO);
         userActions.add(lblUser);
 
         // Botón de Admin (Solo si el rol es ADMIN)
         if (usuario != null && "ADMIN".equalsIgnoreCase(usuario.getRol())) {
             JButton btnAdmin = new JButton("Gestionar Usuarios");
-            btnAdmin.setFont(new Font("Arial", Font.BOLD, 12));
-            btnAdmin.setForeground(TemaNutrix.VERDE_NUTRIX);
+            btnAdmin.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 12));
+            btnAdmin.setForeground(TemaNutrix.PRIMARIO);
             btnAdmin.setBackground(Color.WHITE);
             btnAdmin.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(TemaNutrix.VERDE_NUTRIX, 1),
+                BorderFactory.createLineBorder(TemaNutrix.PRIMARIO, 1),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
             ));
             btnAdmin.setFocusPainted(false);
@@ -91,7 +91,7 @@ public class PanelMenuPrincipal extends JPanel {
 
         // Section: Acceso directo (Grid)
         JLabel lblOps = new JLabel("Acciones Principales");
-        lblOps.setFont(new Font("Arial", Font.BOLD, 22));
+        lblOps.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblOps.setForeground(TemaNutrix.TEXTO);
         lblOps.setAlignmentX(Component.LEFT_ALIGNMENT);
         wrapper.add(lblOps);
@@ -170,7 +170,7 @@ public class PanelMenuPrincipal extends JPanel {
         seccion.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel titulo = new JLabel("Resumen de Hoy");
-        titulo.setFont(new Font("Arial", Font.BOLD, 22));
+        titulo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         titulo.setForeground(TemaNutrix.TEXTO);
         seccion.add(titulo, BorderLayout.NORTH);
 
@@ -227,11 +227,11 @@ public class PanelMenuPrincipal extends JPanel {
         card.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel lbl = new JLabel(label);
-        lbl.setFont(new Font("Arial", Font.BOLD, 13));
+        lbl.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 13));
         lbl.setForeground(new Color(100, 100, 100));
 
         JLabel val = new JLabel("0 / --"); // Texto inicial
-        val.setFont(new Font("Arial", Font.BOLD, 16));
+        val.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 16));
         val.setForeground(TemaNutrix.TEXTO);
 
         JProgressBar bar = new JProgressBar(0, 100);
@@ -310,12 +310,12 @@ public class PanelMenuPrincipal extends JPanel {
         lblIcono.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblTit = new JLabel(titulo);
-        lblTit.setFont(new Font("Arial", Font.BOLD, 20));
+        lblTit.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 20));
         lblTit.setForeground(TemaNutrix.TEXTO);
         lblTit.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblDesc = new JLabel("<html><center>" + descripcion + "</center></html>");
-        lblDesc.setFont(new Font("Arial", Font.PLAIN, 13));
+        lblDesc.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 13));
         lblDesc.setForeground(TemaNutrix.GRIS_TEXTO);
         lblDesc.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblDesc.setMaximumSize(new Dimension(220, 50));
@@ -329,7 +329,7 @@ public class PanelMenuPrincipal extends JPanel {
         tarjeta.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                tarjeta.setBackground(new Color(245, 255, 245));
+                tarjeta.setBackground(TemaNutrix.ACCENTO_CLARO);
                 tarjeta.repaint();
             }
             @Override

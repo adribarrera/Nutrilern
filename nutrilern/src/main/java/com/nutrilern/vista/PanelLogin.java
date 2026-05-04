@@ -33,13 +33,13 @@ public class PanelLogin extends JPanel {
                     if (url != null) {
                         imagen = javax.imageio.ImageIO.read(url);
                     } else {
-                        setBackground(TemaNutrix.VERDE_NUTRIX);
+                        setBackground(TemaNutrix.PRIMARIO);
                         // Establecer el color de fondo por defecto
-                        setBackground(TemaNutrix.VERDE_NUTRIX);
+                        setBackground(TemaNutrix.PRIMARIO);
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    setBackground(TemaNutrix.VERDE_NUTRIX);
+                    setBackground(TemaNutrix.PRIMARIO);
                 }
             }
 
@@ -74,8 +74,8 @@ public class PanelLogin extends JPanel {
 
         panelImagen.setLayout(new GridBagLayout());
         JLabel lblSlogan = new JLabel("NUTRIX: Nutrición basada en datos. No en mitos");
-        lblSlogan.setFont(new Font("Arial", Font.BOLD, 28));
-        lblSlogan.setForeground(TemaNutrix.VERDE_NUTRIX);
+        lblSlogan.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 28));
+        lblSlogan.setForeground(TemaNutrix.PRIMARIO);
         panelImagen.add(lblSlogan);
 
         gbc.gridx = 0;
@@ -102,7 +102,7 @@ public class PanelLogin extends JPanel {
         txtEmail.addActionListener(e -> btnLogin.doClick());
         txtPass.addActionListener(e -> btnLogin.doClick());
 
-        Font fuenteNormal = new Font("Arial", Font.PLAIN, 12);
+        Font fuenteNormal = new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 12);
         Map<TextAttribute, Object> atributos = new HashMap<>(fuenteNormal.getAttributes());
         atributos.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
         Font fuenteSubrayada = fuenteNormal.deriveFont(atributos);
@@ -116,7 +116,7 @@ public class PanelLogin extends JPanel {
         lblRegistrar.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                lblRegistrar.setForeground(TemaNutrix.VERDE_NUTRIX);
+                lblRegistrar.setForeground(TemaNutrix.PRIMARIO);
                 lblRegistrar.setFont(fuenteSubrayada);
             }
 
@@ -187,7 +187,7 @@ public class PanelLogin extends JPanel {
         panelFormulario.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
         JLabel lblTitulo = new JLabel("Crear Nueva Cuenta");
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTitulo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblNewEmail = new JLabel("Nuevo Correo electrónico");
@@ -224,12 +224,12 @@ public class PanelLogin extends JPanel {
         panelVerificacion.setBorder(BorderFactory.createEmptyBorder(40, 40, 20, 40));
 
         JLabel lblTituloVerif = new JLabel("Verifica tu correo");
-        lblTituloVerif.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTituloVerif.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblTituloVerif.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JTextField txtCodigo = new JTextField(8);
         txtCodigo.setMaximumSize(new Dimension(200, 40));
-        txtCodigo.setFont(new Font("Arial", Font.BOLD, 24));
+        txtCodigo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 24));
         txtCodigo.setHorizontalAlignment(JTextField.CENTER);
         txtCodigo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -251,7 +251,7 @@ public class PanelLogin extends JPanel {
         panelPerfil.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
         JLabel lblTituloPerfil = new JLabel("Cuéntanos sobre ti");
-        lblTituloPerfil.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTituloPerfil.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblTituloPerfil.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblNombre = new JLabel("Nombre");
@@ -415,7 +415,7 @@ public class PanelLogin extends JPanel {
             g2d.setColor(TemaNutrix.GRIS_CLARO);
             g2d.drawOval((ancho - diametro) / 2, (alto - diametro) / 2, diametro, diametro);
 
-            g2d.setColor(TemaNutrix.VERDE_NUTRIX);
+            g2d.setColor(TemaNutrix.PRIMARIO);
             g2d.drawArc((ancho - diametro) / 2, (alto - diametro) / 2, diametro, diametro, -angulo, 120);
         }
     }

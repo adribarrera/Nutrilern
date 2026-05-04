@@ -66,7 +66,7 @@ public class PanelAjustes extends JPanel {
         header.add(btnVolver, BorderLayout.WEST);
 
         JLabel lblTituloHeader = new JLabel("Ajustes de mi Cuenta", SwingConstants.CENTER);
-        lblTituloHeader.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTituloHeader.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblTituloHeader.setForeground(TemaNutrix.TEXTO);
         header.add(lblTituloHeader, BorderLayout.CENTER);
 
@@ -100,7 +100,7 @@ public class PanelAjustes extends JPanel {
 
     private JButton crearBotonNav(String texto) {
         JButton btn = new JButton(texto);
-        btn.setFont(new Font("Arial", Font.PLAIN, 15));
+        btn.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 15));
         btn.setForeground(TemaNutrix.GRIS_TEXTO);
         btn.setContentAreaFilled(false);
         btn.setFocusPainted(false);
@@ -114,14 +114,14 @@ public class PanelAjustes extends JPanel {
         JButton[] todos = {btnNavDatos, btnNavNutricion, btnNavSeguridad, btnNavPeligro};
         for (JButton btn : todos) {
             if (btn == botonActivo) {
-                btn.setFont(new Font("Arial", Font.BOLD, 15));
-                btn.setForeground(TemaNutrix.VERDE_NUTRIX);
+                btn.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 15));
+                btn.setForeground(TemaNutrix.PRIMARIO);
                 btn.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 3, 0, TemaNutrix.VERDE_NUTRIX), // Subrayado grueso verde
+                    BorderFactory.createMatteBorder(0, 0, 3, 0, TemaNutrix.PRIMARIO), // Subrayado grueso verde
                     new EmptyBorder(10, 5, 7, 5)
                 ));
             } else {
-                btn.setFont(new Font("Arial", Font.PLAIN, 15));
+                btn.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 15));
                 btn.setForeground(TemaNutrix.GRIS_TEXTO);
                 btn.setBorder(new EmptyBorder(10, 5, 10, 5));
             }
@@ -338,8 +338,8 @@ public class PanelAjustes extends JPanel {
                 new EmptyBorder(30, 40, 30, 40)));
         
         JLabel lblTit = new JLabel(titulo);
-        lblTit.setFont(new Font("Arial", Font.BOLD, 22));
-        lblTit.setForeground(TemaNutrix.VERDE_NUTRIX);
+        lblTit.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
+        lblTit.setForeground(TemaNutrix.PRIMARIO);
         lblTit.setAlignmentX(Component.CENTER_ALIGNMENT); // Centramos el título
         
         tarjeta.add(lblTit);
@@ -359,10 +359,10 @@ public class PanelAjustes extends JPanel {
         fila.setMaximumSize(new Dimension(350, 30)); // Limitamos el ancho para que quede centrado
         
         JLabel lblEt = new JLabel(etiqueta);
-        lblEt.setFont(new Font("Arial", Font.BOLD, 14));
+        lblEt.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
         lblEt.setForeground(new Color(140, 140, 140));
         
-        lblValor.setFont(new Font("Arial", Font.PLAIN, 15));
+        lblValor.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 15));
         lblValor.setForeground(TemaNutrix.TEXTO);
         lblValor.setHorizontalAlignment(SwingConstants.RIGHT); // Alineamos el dato a la derecha
         
@@ -382,10 +382,10 @@ public class PanelAjustes extends JPanel {
 
     private JButton crearBotonCentrado(String texto) {
         JButton btn = new JButton(texto);
-        btn.setBackground(TemaNutrix.VERDE_NUTRIX);
+        btn.setBackground(TemaNutrix.PRIMARIO);
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
-        btn.setFont(new Font("Arial", Font.BOLD, 14));
+        btn.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
         btn.setAlignmentX(Component.CENTER_ALIGNMENT); // Botón 100% centrado
         btn.setMinimumSize(new Dimension(250, 45));
         btn.setMaximumSize(new Dimension(250, 45)); // Tamaño fijo para todos los botones

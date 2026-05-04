@@ -23,8 +23,8 @@ public class DialogoCrearCategoria extends JDialog {
         panelPrincipal.setBorder(new EmptyBorder(20, 30, 20, 30));
 
         JLabel lblTitulo = new JLabel("Registrar Categoría");
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
-        lblTitulo.setForeground(TemaNutrix.VERDE_NUTRIX);
+        lblTitulo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 18));
+        lblTitulo.setForeground(TemaNutrix.PRIMARIO);
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         txtNombre = new JTextField();
@@ -37,9 +37,9 @@ public class DialogoCrearCategoria extends JDialog {
         btnCancelar.addActionListener(e -> dispose());
 
         JButton btnGuardar = new JButton("💾 Guardar");
-        btnGuardar.setBackground(TemaNutrix.VERDE_NUTRIX);
+        btnGuardar.setBackground(TemaNutrix.PRIMARIO);
         btnGuardar.setForeground(Color.WHITE);
-        btnGuardar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnGuardar.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
         
         btnGuardar.addActionListener(e -> {
             String nombre = txtNombre.getText().trim();

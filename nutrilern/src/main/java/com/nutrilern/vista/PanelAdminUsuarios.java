@@ -41,14 +41,14 @@ public class PanelAdminUsuarios extends JPanel {
         header.add(btnVolver, BorderLayout.WEST);
 
         JLabel lblTit = new JLabel("Gestión de Usuarios", JLabel.CENTER);
-        lblTit.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTit.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblTit.setForeground(TemaNutrix.TEXTO);
         header.add(lblTit, BorderLayout.CENTER);
 
         JButton btnNuevo = new JButton("+ Nuevo Usuario");
-        btnNuevo.setBackground(TemaNutrix.VERDE_NUTRIX);
+        btnNuevo.setBackground(TemaNutrix.PRIMARIO);
         btnNuevo.setForeground(Color.WHITE);
-        btnNuevo.setFont(new Font("Arial", Font.BOLD, 14));
+        btnNuevo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
         btnNuevo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnNuevo.addActionListener(e -> mostrarDialogoEdicion(null));
         header.add(btnNuevo, BorderLayout.EAST);
@@ -69,8 +69,8 @@ public class PanelAdminUsuarios extends JPanel {
 
         tablaUsuarios = new JTable(modeloTabla);
         tablaUsuarios.setRowHeight(40);
-        tablaUsuarios.setFont(new Font("Arial", Font.PLAIN, 14));
-        tablaUsuarios.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        tablaUsuarios.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 14));
+        tablaUsuarios.getTableHeader().setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
         
         JScrollPane scroll = new JScrollPane(tablaUsuarios);
         cuerpo.add(scroll, BorderLayout.CENTER);

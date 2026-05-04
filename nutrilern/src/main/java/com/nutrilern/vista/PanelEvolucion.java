@@ -118,7 +118,7 @@ public class PanelEvolucion extends JPanel {
         header.add(btnVolver, BorderLayout.WEST);
 
         JLabel lblTit = new JLabel("Mi Evolución Nutricional", SwingConstants.CENTER);
-        lblTit.setFont(new Font("Arial", Font.BOLD, 24));
+        lblTit.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 24));
         lblTit.setForeground(TemaNutrix.TEXTO);
         header.add(lblTit, BorderLayout.CENTER);
 
@@ -144,7 +144,7 @@ public class PanelEvolucion extends JPanel {
         btnNext.addActionListener(e -> { mesActual = mesActual.plusMonths(1); actualizarCalendario(); });
 
         lblMesAno = new JLabel("", SwingConstants.CENTER);
-        lblMesAno.setFont(new Font("Arial", Font.BOLD, 18));
+        lblMesAno.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 18));
         
         controles.add(btnPrev, BorderLayout.WEST);
         controles.add(lblMesAno, BorderLayout.CENTER);
@@ -156,7 +156,7 @@ public class PanelEvolucion extends JPanel {
         String[] nombresDias = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
         for (String d : nombresDias) {
             JLabel l = new JLabel(d, SwingConstants.CENTER);
-            l.setFont(new Font("Arial", Font.BOLD, 12));
+            l.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 12));
             l.setForeground(new Color(150, 150, 150));
             panelDiasSemana.add(l);
         }
@@ -187,7 +187,7 @@ public class PanelEvolucion extends JPanel {
 
         for (int dia = 1; dia <= diasEnMes; dia++) {
             JButton btnDia = new JButton(String.valueOf(dia));
-            btnDia.setFont(new Font("Arial", Font.PLAIN, 14));
+            btnDia.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 14));
             btnDia.setBackground(Color.WHITE);
             btnDia.setFocusPainted(false);
             btnDia.setBorder(new LineBorder(new Color(240, 240, 240)));
@@ -196,13 +196,13 @@ public class PanelEvolucion extends JPanel {
             LocalDate fechaBoton = mesActual.atDay(dia);
             
             if (fechaBoton.equals(LocalDate.now())) {
-                btnDia.setBorder(new LineBorder(TemaNutrix.VERDE_NUTRIX, 2));
-                btnDia.setFont(new Font("Arial", Font.BOLD, 14));
+                btnDia.setBorder(new LineBorder(TemaNutrix.PRIMARIO, 2));
+                btnDia.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
             }
             
             if (fechaBoton.equals(diaSeleccionado)) {
                 btnDia.setBackground(new Color(230, 245, 230));
-                btnDia.setForeground(TemaNutrix.VERDE_NUTRIX);
+                btnDia.setForeground(TemaNutrix.PRIMARIO);
             }
 
             int diaClick = dia;
@@ -259,7 +259,7 @@ public class PanelEvolucion extends JPanel {
             setLayout(new BorderLayout());
             
             lblTitulo = new JLabel(titulo);
-            lblTitulo.setFont(new Font("Arial", Font.BOLD, 15));
+            lblTitulo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 15));
             lblTitulo.setForeground(TemaNutrix.TEXTO);
             add(lblTitulo, BorderLayout.NORTH);
         }
@@ -293,7 +293,7 @@ public class PanelEvolucion extends JPanel {
 
             if (datos == null || datos.length == 0) {
                 g2d.setColor(TemaNutrix.GRIS_TEXTO);
-                g2d.setFont(new Font("Arial", Font.ITALIC, 14));
+                g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.ITALIC, 14));
                 g2d.drawString("No hay registros para este día", getWidth()/2 - 90, getHeight()/2 + 10);
                 return;
             }
@@ -329,18 +329,18 @@ public class PanelEvolucion extends JPanel {
                     yPoints[i] = y0 + h - (int) (((datos[i] - scaleMin) / scaleRange) * h);
                     
                     // 1. Dibujamos el punto (Ovalo verde)
-                    g2d.setColor(TemaNutrix.VERDE_NUTRIX);
+                    g2d.setColor(TemaNutrix.PRIMARIO);
                     g2d.fillOval(xPoints[i] - 5, yPoints[i] - 5, 10, 10);
                     
                     // 2. Escribimos el valor del peso encima del punto
                     g2d.setColor(TemaNutrix.TEXTO);
-                    g2d.setFont(new Font("Arial", Font.BOLD, 11));
+                    g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 11));
                     g2d.drawString(String.format("%.1f", datos[i]), xPoints[i] - 12, yPoints[i] - 12);
                     
                     // 3. Escribimos la fecha debajo del eje X
                     if (i < etiquetas.length) {
                         g2d.setColor(TemaNutrix.TEXTO);
-                        g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+                        g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 10));
                         g2d.drawString(etiquetas[i], xPoints[i] - 12, y0 + h + 20);
                     }
                 }
@@ -373,14 +373,14 @@ public class PanelEvolucion extends JPanel {
                         int labelY = (int) (centerY - labelR * Math.sin(midAngle)) + 5;
                         
                         g2d.setColor(Color.WHITE);
-                        g2d.setFont(new Font("Arial", Font.BOLD, 12));
+                        g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 12));
                         g2d.drawString((int)datos[i] + "%", labelX, labelY);
                     }
                     
                     startAngle += arcAngle; // Avanzamos el ángulo para el siguiente trozo
                 }
                 // Dibujamos la leyenda (cuadraditos de colores con nombres)
-                g2d.setFont(new Font("Arial", Font.PLAIN, 11));
+                g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 11));
                 for(int i=0; i<3; i++) {
                     g2d.setColor(colores[i]);
                     g2d.fillRect(x0 + i*60, y0 + h + 15, 10, 10);
@@ -395,12 +395,12 @@ public class PanelEvolucion extends JPanel {
                 
                 for (int i = 0; i < datos.length; i++) {
                     int barH = (int) ((datos[i] / max) * h); // Altura proporcional
-                    g2d.setColor(TemaNutrix.VERDE_NUTRIX);
+                    g2d.setColor(TemaNutrix.PRIMARIO);
                     g2d.fillRect(x0 + i * (barW + 10), y0 + (h - barH), barW, barH);
                     
                     // Escribimos el número de calorías justo encima de la barra
                     g2d.setColor(TemaNutrix.GRIS_TEXTO);
-                    g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+                    g2d.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 10));
                     g2d.drawString(String.valueOf((int)datos[i]), x0 + i * (barW + 10), y0 + (h - barH) - 5);
                 }
             }

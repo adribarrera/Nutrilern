@@ -47,7 +47,7 @@ public class PanelMisComidas extends JPanel {
         header.add(btnVolver, BorderLayout.WEST);
 
         JLabel lblTitulo = new JLabel("Mi Registro Diario", SwingConstants.CENTER);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTitulo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblTitulo.setForeground(TemaNutrix.TEXTO);
         header.add(lblTitulo, BorderLayout.CENTER);
 
@@ -94,13 +94,13 @@ public class PanelMisComidas extends JPanel {
 
         tablaComidas = new JTable(modeloTabla);
         tablaComidas.setRowHeight(35); 
-        tablaComidas.setFont(new Font("Arial", Font.PLAIN, 14));
+        tablaComidas.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 14));
         tablaComidas.setSelectionBackground(new Color(230, 245, 230)); 
         tablaComidas.setSelectionForeground(TemaNutrix.TEXTO);
         
         JTableHeader th = tablaComidas.getTableHeader();
-        th.setFont(new Font("Arial", Font.BOLD, 13));
-        th.setBackground(TemaNutrix.VERDE_NUTRIX);
+        th.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 13));
+        th.setBackground(TemaNutrix.PRIMARIO);
         th.setForeground(Color.WHITE);
         th.setPreferredSize(new Dimension(100, 40));
         
@@ -221,8 +221,8 @@ public class PanelMisComidas extends JPanel {
 
     private JButton crearBotonSecundario(String texto) {
         JButton btn = new JButton(texto);
-        btn.setFont(new Font("Arial", Font.BOLD, 13));
-        btn.setForeground(TemaNutrix.VERDE_NUTRIX);
+        btn.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 13));
+        btn.setForeground(TemaNutrix.PRIMARIO);
         btn.setBackground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
