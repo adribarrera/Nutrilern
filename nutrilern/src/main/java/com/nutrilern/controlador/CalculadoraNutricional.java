@@ -75,4 +75,27 @@ public class CalculadoraNutricional {
         // Devolvemos los macros para que encaje con la interfaz
         return new double[] { caloriasObjetivo, gramosHC, gramosProt, gramosGrasa };
     }
+
+    /**
+     * Calcula el Índice de Masa Corporal (IMC).
+     * IMC = Peso / Altura^2 (en metros)
+     */
+    public static double calcularIMC(double peso, double alturaCm) {
+        if (alturaCm <= 0) return 0;
+        double alturaM = alturaCm / 100.0;
+        return peso / (alturaM * alturaM);
+    }
+
+    /**
+     * Devuelve la clasificación de la OMS para un valor de IMC.
+     */
+    public static String getClasificacionIMC(double imc) {
+        if (imc <= 0) return "Desconocido";
+        if (imc < 18.5) return "Bajo peso";
+        if (imc < 25.0) return "Normal";
+        if (imc < 30.0) return "Sobrepeso";
+        if (imc < 35.0) return "Obesidad I";
+        if (imc < 40.0) return "Obesidad II";
+        return "Obesidad III";
+    }
 }

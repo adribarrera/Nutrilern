@@ -17,8 +17,8 @@ public class PanelMenuPrincipal extends JPanel {
     private Image imagenFondo;
 
     // Componentes para actualizar datos reales
-    private JLabel lblCalVal, lblProtVal, lblHCVal, lblFatVal;
-    private JProgressBar barCal, barProt, barHC, barFat;
+    private JLabel lblCalVal, lblProtVal, lblHCVal, lblFatVal, lblIMCVal;
+    private JProgressBar barCal, barProt, barHC, barFat, barIMC;
 
     public PanelMenuPrincipal(VentanaPrincipal ventana, Usuario usuarioLogueado) {
         this.ventanaPadre = ventana;
@@ -135,6 +135,15 @@ public class PanelMenuPrincipal extends JPanel {
 
                 lblFatVal.setText((int)macrosHoy[3] + " g / " + maxFat);
                 barFat.setValue((int)((macrosHoy[3]/maxFat)*100));
+
+                // 5. Calculamos IMC
+                double imc = com.nutrilern.controlador.CalculadoraNutricional.calcularIMC(usuario.getPesoInicial(), usuario.getAltura());
+                String clasificacion = com.nutrilern.controlador.CalculadoraNutricional.getClasificacionIMC(imc);
+                lblIMCVal.setText(String.format("%.1f (%s)", imc, clasificacion));
+                
+                // Normalizar barra IMC (de 15 a 40)
+                int progresoIMC = (int) (((imc - 15) / (40 - 15)) * 100);
+                barIMC.setValue(Math.min(100, Math.max(0, progresoIMC)));
             });
         }).start();
     }
@@ -149,7 +158,7 @@ public class PanelMenuPrincipal extends JPanel {
         titulo.setForeground(TemaNutrix.TEXTO);
         seccion.add(titulo, BorderLayout.NORTH);
 
-        JPanel cardsContainer = new JPanel(new GridLayout(1, 4, 15, 0)); // 4 tarjetas ahora
+        JPanel cardsContainer = new JPanel(new GridLayout(1, 5, 10, 0)); // 5 tarjetas ahora
         cardsContainer.setOpaque(false);
         cardsContainer.setBorder(new EmptyBorder(15, 0, 0, 0));
 
@@ -158,11 +167,11 @@ public class PanelMenuPrincipal extends JPanel {
         lblCalVal = (JLabel) pCal.getClientProperty("valLabel");
         barCal = (JProgressBar) pCal.getClientProperty("progressBar");
 
-        JPanel pHC = crearStatMiniCard("Carbohidratos", TemaNutrix.CARBOHIDRATOS);
+        JPanel pHC = crearStatMiniCard("Carbo", TemaNutrix.CARBOHIDRATOS);
         lblHCVal = (JLabel) pHC.getClientProperty("valLabel");
         barHC = (JProgressBar) pHC.getClientProperty("progressBar");
 
-        JPanel pProt = crearStatMiniCard("Proteínas", TemaNutrix.PROTEINAS);
+        JPanel pProt = crearStatMiniCard("Protes", TemaNutrix.PROTEINAS);
         lblProtVal = (JLabel) pProt.getClientProperty("valLabel");
         barProt = (JProgressBar) pProt.getClientProperty("progressBar");
 
@@ -170,10 +179,15 @@ public class PanelMenuPrincipal extends JPanel {
         lblFatVal = (JLabel) pFat.getClientProperty("valLabel");
         barFat = (JProgressBar) pFat.getClientProperty("progressBar");
 
+        JPanel pIMC = crearStatMiniCard("Mi IMC", new Color(147, 112, 219)); // Color violeta
+        lblIMCVal = (JLabel) pIMC.getClientProperty("valLabel");
+        barIMC = (JProgressBar) pIMC.getClientProperty("progressBar");
+
         cardsContainer.add(pCal);
         cardsContainer.add(pHC);
         cardsContainer.add(pProt);
         cardsContainer.add(pFat);
+        cardsContainer.add(pIMC);
 
         seccion.add(cardsContainer, BorderLayout.CENTER);
         return seccion;
