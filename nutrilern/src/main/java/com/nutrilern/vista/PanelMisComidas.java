@@ -39,29 +39,19 @@ public class PanelMisComidas extends JPanel {
     private JPanel crearCabecera() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
-        header.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO),
-                new EmptyBorder(15, 30, 15, 30)));
+        header.setPreferredSize(new Dimension(0, 80));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO));
 
-        JPanel panelIzquierdo = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
-        panelIzquierdo.setBackground(Color.WHITE);
-
-        JButton btnVolver = new JButton("← Menú");
-        btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
-        btnVolver.setForeground(TemaNutrix.VERDE_NUTRIX);
-        btnVolver.setContentAreaFilled(false);
-        btnVolver.setBorderPainted(false);
-        btnVolver.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnVolver = TemaNutrix.crearBotonVolver("← Volver");
         btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
+        header.add(btnVolver, BorderLayout.WEST);
 
-        JLabel lblTitulo = new JLabel("Mi Registro Diario");
+        JLabel lblTitulo = new JLabel("Mi Registro Diario", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
         lblTitulo.setForeground(TemaNutrix.TEXTO);
+        header.add(lblTitulo, BorderLayout.CENTER);
 
-        panelIzquierdo.add(btnVolver);
-        panelIzquierdo.add(lblTitulo);
-
-        JPanel panelDerecho = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel panelDerecho = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 20));
         panelDerecho.setBackground(Color.WHITE);
 
         JButton btnCrearAlimento = crearBotonSecundario("+ Nuevo Alimento");
@@ -82,7 +72,6 @@ public class PanelMisComidas extends JPanel {
         panelDerecho.add(btnCrearAlimento);
         panelDerecho.add(btnCrearCategoria);
 
-        header.add(panelIzquierdo, BorderLayout.WEST);
         header.add(panelDerecho, BorderLayout.EAST);
 
         return header;

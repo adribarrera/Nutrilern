@@ -22,29 +22,35 @@ public class PanelBaseAlimentos extends JPanel {
 
     public PanelBaseAlimentos(VentanaPrincipal ventana) {
         this.ventanaPadre = ventana;
-        setLayout(new BorderLayout(15, 15));
+        setLayout(new BorderLayout());
         setBackground(TemaNutrix.FONDO);
-        setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        // --- HEADER ---
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(Color.WHITE);
+        header.setPreferredSize(new Dimension(0, 80));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO));
+
+        JButton btnVolver = TemaNutrix.crearBotonVolver("← Volver");
+        btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
+        header.add(btnVolver, BorderLayout.WEST);
+
+        JLabel lblTitulo = new JLabel("Base de Alimentos", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTitulo.setForeground(TemaNutrix.TEXTO);
+        header.add(lblTitulo, BorderLayout.CENTER);
+        header.add(Box.createRigidArea(new Dimension(130, 0)), BorderLayout.EAST);
+
+        add(header, BorderLayout.NORTH);
+
+        // --- CONTENIDO ---
+        JPanel panelContenido = new JPanel(new BorderLayout(15, 15));
+        panelContenido.setOpaque(false);
+        panelContenido.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         // --- 1. ZONA SUPERIOR: BUSCADOR Y FILTROS ---
         JPanel panelNorte = new JPanel(new BorderLayout(10, 10));
         panelNorte.setOpaque(false);
-
-        // Cabecera con Título y Botón de Volver
-        JPanel panelCabecera = new JPanel(new BorderLayout());
-        panelCabecera.setOpaque(false);
-
-        JLabel lblTitulo = new JLabel("Base de Alimentos Nutrix");
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
-        lblTitulo.setForeground(TemaNutrix.TEXTO);
-
-        JButton btnVolver = crearBoton("⬅ Volver al Menú", Color.DARK_GRAY, Color.WHITE);
-        btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
-
-        panelCabecera.add(lblTitulo, BorderLayout.WEST);
-        panelCabecera.add(btnVolver, BorderLayout.EAST);
-
-        panelNorte.add(panelCabecera, BorderLayout.NORTH);
 
         // Barra de búsqueda y botones
         JPanel panelControles = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
@@ -95,12 +101,11 @@ public class PanelBaseAlimentos extends JPanel {
         panelControles.add(btnBajosKcal);
 
         panelNorte.add(panelControles, BorderLayout.CENTER);
-        add(panelNorte, BorderLayout.NORTH);
+        panelContenido.add(panelNorte, BorderLayout.NORTH);
 
         // --- 2. ZONA CENTRAL: LA TABLA ---
         String[] columnas = { "Nombre", "Marca", "Kcal", "Proteínas (g)", "Carbos (g)", "Grasas (g)" };
 
-        // Evitamos que el usuario edite las celdas directamente haciendo doble clic
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -117,11 +122,19 @@ public class PanelBaseAlimentos extends JPanel {
         JScrollPane scrollPane = new JScrollPane(tablaAlimentos);
         scrollPane.getViewport().setBackground(Color.WHITE);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
-        add(scrollPane, BorderLayout.CENTER);
+        panelContenido.add(scrollPane, BorderLayout.CENTER);
 
         // --- 3. ZONA INFERIOR: DETALLE SELECCIONADO ---
         JPanel panelSur = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelSur.setBackground(Color.WHITE);
+        panelSur.setBorder(new EmptyBorder(10, 0, 0, 0));
+        lblDetalle = new JLabel("Selecciona un alimento para ver detalles");
+        lblDetalle.setFont(new Font("Arial", Font.ITALIC, 14));
+        panelSur.add(lblDetalle);
+        panelContenido.add(panelSur, BorderLayout.SOUTH);
+
+        // AÑADIR TODO AL PANEL PRINCIPAL
+        add(panelContenido, BorderLayout.CENTER);
         panelSur.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(TemaNutrix.VERDE_NUTRIX),
                 "Información Nutricional",

@@ -58,14 +58,10 @@ public class PanelAjustes extends JPanel {
         // --- Parte 1: Título y Volver ---
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
-        header.setBorder(new EmptyBorder(15, 30, 15, 30));
+        header.setPreferredSize(new Dimension(0, 80));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO));
 
-        JButton btnVolver = new JButton("← Volver al Menú");
-        btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
-        btnVolver.setForeground(TemaNutrix.VERDE_NUTRIX);
-        btnVolver.setContentAreaFilled(false);
-        btnVolver.setBorderPainted(false);
-        btnVolver.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnVolver = TemaNutrix.crearBotonVolver("← Volver");
         btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
         header.add(btnVolver, BorderLayout.WEST);
 
@@ -74,7 +70,7 @@ public class PanelAjustes extends JPanel {
         lblTituloHeader.setForeground(TemaNutrix.TEXTO);
         header.add(lblTituloHeader, BorderLayout.CENTER);
 
-        header.add(Box.createRigidArea(new Dimension(150, 0)), BorderLayout.EAST); // Balance
+        header.add(Box.createRigidArea(new Dimension(130, 0)), BorderLayout.EAST);
 
         // --- Parte 2: Botones de Pestañas ---
         JPanel navBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0));

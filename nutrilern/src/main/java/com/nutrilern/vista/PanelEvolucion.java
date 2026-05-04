@@ -113,12 +113,7 @@ public class PanelEvolucion extends JPanel {
         header.setPreferredSize(new Dimension(0, 80));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO));
 
-        JButton btnVolver = new JButton("← Volver");
-        btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
-        btnVolver.setForeground(TemaNutrix.VERDE_NUTRIX);
-        btnVolver.setContentAreaFilled(false);
-        btnVolver.setBorderPainted(false);
-        btnVolver.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnVolver = TemaNutrix.crearBotonVolver("← Volver");
         btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
         header.add(btnVolver, BorderLayout.WEST);
 

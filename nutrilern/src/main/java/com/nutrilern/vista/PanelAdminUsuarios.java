@@ -36,9 +36,7 @@ public class PanelAdminUsuarios extends JPanel {
             BorderFactory.createEmptyBorder(0, 30, 0, 30)
         ));
 
-        JButton btnVolver = new JButton("← Volver");
-        btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
-        btnVolver.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton btnVolver = TemaNutrix.crearBotonVolver("← Volver");
         btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
         header.add(btnVolver, BorderLayout.WEST);
 

@@ -45,4 +45,32 @@ public class TemaNutrix {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return btn;
     }
+
+    /**
+     * Crea el botón "Volver" estándar: verde, texto blanco en negrita,
+     * ocupa toda la altura del header de forma cuadrada.
+     */
+    public static JButton crearBotonVolver(String texto) {
+        JButton btn = new JButton(texto) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                if (getModel().isPressed()) g2.setColor(VERDE_NUTRIX.darker());
+                else if (getModel().isRollover()) g2.setColor(new Color(60, 140, 60));
+                else g2.setColor(VERDE_NUTRIX);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btn.setFocusPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new java.awt.Dimension(130, 80));
+        return btn;
+    }
 }
