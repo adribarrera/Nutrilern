@@ -7,17 +7,17 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 /**
- * Clase para gestionar la conexión a la base de datos remota usando un archivo
- * de propiedades.
+ * Gestión de la conexión a la base de datos MySQL.
  */
 public class BaseDeDatos {
 
     private static Properties props = new Properties();
 
     static {
+        // Cargar configuración desde db.properties
         try (InputStream input = BaseDeDatos.class.getClassLoader().getResourceAsStream("db.properties")) {
             if (input == null) {
-                System.err.println("NUTRILERN > Error: No se encontró el archivo db.properties");
+                System.err.println("NUTRILERN > Archivo db.properties no encontrado.");
             } else {
                 props.load(input);
             }
@@ -26,6 +26,9 @@ public class BaseDeDatos {
         }
     }
 
+    /**
+     * Obtiene una conexión activa con el servidor.
+     */
     public static Connection obtenerConexion() {
         Connection conn = null;
         try {
@@ -37,10 +40,9 @@ public class BaseDeDatos {
 
             conn = DriverManager.getConnection(url, props.getProperty("db.user"),
                     props.getProperty("db.password"));
-            // Eliminamos el sysout de éxito porque spammearía la consola cada vez que se
-            // hace una query
+
         } catch (Exception e) {
-            System.err.println("NUTRILERN > Error al conectar: " + e.getMessage());
+            System.err.println("NUTRILERN > Error de conexión: " + e.getMessage());
         }
         return conn;
     }

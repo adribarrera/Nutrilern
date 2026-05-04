@@ -8,15 +8,16 @@ public class Usuario {
     private String nombre;
     private String apellidos;
     private int edad;
-     private double altura;
+    private double altura;
     private double pesoInicial;
     private String rol;
     private int idObjetivo;
     private String sexo;
 
     // Constructor completo (sin el ID que se genera en la BBDD con el
-    // AUTO_INCREMENT
-    public Usuario(String email, String password, String nombre, String apellidos, int edad, double altura, double pesoInicial, String rol, int idObjetivo, String sexo) {
+    // AUTO_INCREMENT)
+    public Usuario(String email, String password, String nombre, String apellidos, int edad, double altura,
+            double pesoInicial, String rol, int idObjetivo, String sexo) {
         this.email = email;
         this.password = password;
         this.nombre = nombre;
@@ -33,6 +34,7 @@ public class Usuario {
     public Usuario() {
 
     }
+
     // Getters y Setters
     public int getId() {
         return id;
@@ -97,7 +99,7 @@ public class Usuario {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    
+
     public String getApellidos() {
         return apellidos;
     }
@@ -105,7 +107,7 @@ public class Usuario {
     public void setApellidos(String apellidos) {
         this.apellidos = apellidos;
     }
-    
+
     public int getIdObjetivo() {
         return idObjetivo;
     }
@@ -113,7 +115,7 @@ public class Usuario {
     public void setIdObjetivo(int idObjetivo) {
         this.idObjetivo = idObjetivo;
     }
-    
+
     public String getSexo() {
         return sexo;
     }

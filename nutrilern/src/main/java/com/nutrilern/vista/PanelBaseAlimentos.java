@@ -148,8 +148,6 @@ public class PanelBaseAlimentos extends JPanel {
         panelSur.add(lblDetalle);
         add(panelSur, BorderLayout.SOUTH);
 
-
-
         // Evento al hacer clic en una fila de la tabla
         tablaAlimentos.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tablaAlimentos.getSelectedRow() != -1) {
@@ -169,9 +167,6 @@ public class PanelBaseAlimentos extends JPanel {
         actualizarTabla(com.nutrilern.controlador.ControladorAlimentos.obtenerTodos());
     }
 
-    // --- MÉTODOS AUXILIARES ---
-
-    // Método para refrescar la tabla con una nueva lista
     private void actualizarTabla(List<Alimento> listaAlimentos) {
         modeloTabla.setRowCount(0); // Vaciamos la tabla actual
         for (Alimento a : listaAlimentos) {
@@ -190,8 +185,6 @@ public class PanelBaseAlimentos extends JPanel {
 
     private JButton crearBoton(String texto, Color fondo, Color textoColor) {
         JButton btn = TemaNutrix.crearBotonEstandar(texto);
-        // Personalizamos un poco el botón premium para que acepte colores si es necesario, 
-        // o simplemente usamos el estándar de la app.
         return btn;
     }
 

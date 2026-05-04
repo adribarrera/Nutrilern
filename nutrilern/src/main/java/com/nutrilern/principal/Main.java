@@ -3,19 +3,17 @@ package com.nutrilern.principal;
 import javax.swing.SwingUtilities;
 import com.nutrilern.vista.VentanaPrincipal;
 
+/**
+ * Punto de entrada de la aplicación.
+ */
 public class Main {
 
     public static void main(String[] args) {
-
-        // Es una buena práctica en Java arrancar las interfaces gráficas
-        // dentro de este "hilo" especial para evitar cuelgues
+        // Arrancar la interfaz en el hilo de despacho de eventos de Swing
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                // 1. Creamos la ventana principal (el marco de nuestra app)
                 VentanaPrincipal ventana = new VentanaPrincipal();
-
-                // 2. La hacemos visible en la pantalla
                 ventana.setVisible(true);
             }
         });

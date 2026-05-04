@@ -10,6 +10,9 @@ import java.util.HashMap;
 
 import com.nutrilern.modelo.Usuario;
 
+/**
+ * Pantalla de inicio de sesión y registro.
+ */
 public class PanelLogin extends JPanel {
     private VentanaPrincipal ventanaPadre;
     private String codigoSecretoGenerado;
@@ -24,7 +27,7 @@ public class PanelLogin extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1.0;
 
-        // PANEL IZQUIERDO - Visual
+        // Panel lateral con imagen de fondo
         JPanel panelImagen = new JPanel() {
             private Image imagen;
             {
@@ -33,8 +36,6 @@ public class PanelLogin extends JPanel {
                     if (url != null) {
                         imagen = javax.imageio.ImageIO.read(url);
                     } else {
-                        setBackground(TemaNutrix.PRIMARIO);
-                        // Establecer el color de fondo por defecto
                         setBackground(TemaNutrix.PRIMARIO);
                     }
                 } catch (Exception ex) {
@@ -51,7 +52,7 @@ public class PanelLogin extends JPanel {
                     g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
                     g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
                     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    // Implementamos un escalado que mantenga el aspecto (Center Crop)
+                    
                     double imgAspect = (double) imagen.getWidth(null) / imagen.getHeight(null);
                     double panelAspect = (double) getWidth() / getHeight();
                     
@@ -82,7 +83,7 @@ public class PanelLogin extends JPanel {
         gbc.weightx = 0.66;
         add(panelImagen, gbc);
 
-        // PANEL DERECHO - Formulario Login
+        // Formulario de login
         JPanel panelFormularioContenedor = new JPanel(new GridBagLayout());
         panelFormularioContenedor.setBackground(Color.WHITE);
 
@@ -92,20 +93,18 @@ public class PanelLogin extends JPanel {
 
         JLabel lblEmail = new JLabel("Correo electrónico");
         JTextField txtEmail = new JTextField(20);
-
         JLabel lblPass = new JLabel("Contraseña");
         JPasswordField txtPass = new JPasswordField(20);
 
         JButton btnLogin = TemaNutrix.crearBotonEstandar("Entrar");
 
-        // Para que puedas pulsar el enter
         txtEmail.addActionListener(e -> btnLogin.doClick());
         txtPass.addActionListener(e -> btnLogin.doClick());
 
-        Font fuenteNormal = new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 12);
-        Map<TextAttribute, Object> atributos = new HashMap<>(fuenteNormal.getAttributes());
-        atributos.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-        Font fuenteSubrayada = fuenteNormal.deriveFont(atributos);
+        Font fuenteNormal = new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 14);
+        Map<TextAttribute, Object> attributes = new HashMap<>(fuenteNormal.getAttributes());
+        attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+        Font fuenteSubrayada = new Font(attributes);
 
         JLabel lblRegistrar = new JLabel("¿No tienes cuenta? ¡Regístrate!");
         lblRegistrar.setForeground(Color.BLACK);
@@ -119,19 +118,18 @@ public class PanelLogin extends JPanel {
                 lblRegistrar.setForeground(TemaNutrix.PRIMARIO);
                 lblRegistrar.setFont(fuenteSubrayada);
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
                 lblRegistrar.setForeground(Color.BLACK);
                 lblRegistrar.setFont(fuenteNormal);
             }
-
             @Override
             public void mouseClicked(MouseEvent e) {
                 abrirDialogoRegistro();
             }
         });
 
+        // Configuración de tamaños y alineación
         lblEmail.setAlignmentX(Component.CENTER_ALIGNMENT);
         txtEmail.setMaximumSize(new Dimension(300, 30));
         lblPass.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -142,9 +140,7 @@ public class PanelLogin extends JPanel {
         btnLogin.addActionListener(e -> {
             String email = txtEmail.getText().trim();
             String password = new String(txtPass.getPassword());
-
             Usuario user = com.nutrilern.controlador.ControladorUsuario.autenticar(email, password);
-
             if (user != null) {
                 ventanaPadre.setUsuarioLogueado(user);
                 ventanaPadre.cambiarPantalla("MENU");
@@ -166,7 +162,6 @@ public class PanelLogin extends JPanel {
         formPanel.add(lblRegistrar);
 
         panelFormularioContenedor.add(formPanel);
-
         gbc.gridx = 1;
         gbc.weightx = 0.34;
         add(panelFormularioContenedor, gbc);
@@ -190,13 +185,8 @@ public class PanelLogin extends JPanel {
         lblTitulo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblNewEmail = new JLabel("Nuevo Correo electrónico");
-        lblNewEmail.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtNewEmail = new JTextField(20);
         txtNewEmail.setMaximumSize(new Dimension(300, 35));
-
-        JLabel lblNewPass = new JLabel("Nueva Contraseña");
-        lblNewPass.setAlignmentX(Component.CENTER_ALIGNMENT);
         JPasswordField txtNewPass = new JPasswordField(20);
         txtNewPass.setMaximumSize(new Dimension(300, 35));
 
@@ -206,12 +196,10 @@ public class PanelLogin extends JPanel {
         panelFormulario.add(Box.createVerticalGlue());
         panelFormulario.add(lblTitulo);
         panelFormulario.add(Box.createRigidArea(new Dimension(0, 30)));
-        panelFormulario.add(lblNewEmail);
-        panelFormulario.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelFormulario.add(new JLabel("Email:"));
         panelFormulario.add(txtNewEmail);
         panelFormulario.add(Box.createRigidArea(new Dimension(0, 20)));
-        panelFormulario.add(lblNewPass);
-        panelFormulario.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelFormulario.add(new JLabel("Contraseña:"));
         panelFormulario.add(txtNewPass);
         panelFormulario.add(Box.createRigidArea(new Dimension(0, 40)));
         panelFormulario.add(btnCrear);
@@ -244,77 +232,54 @@ public class PanelLogin extends JPanel {
         panelVerificacion.add(btnVerificar);
         panelVerificacion.add(Box.createVerticalGlue());
 
-       // --- CARTA 3: PERFIL ---
+        // --- CARTA 3: PERFIL ---
         JPanel panelPerfil = new JPanel();
         panelPerfil.setLayout(new BoxLayout(panelPerfil, BoxLayout.Y_AXIS));
         panelPerfil.setBackground(Color.WHITE);
         panelPerfil.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
-        JLabel lblTituloPerfil = new JLabel("Cuéntanos sobre ti");
+        JLabel lblTituloPerfil = new JLabel("Datos Personales");
         lblTituloPerfil.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 22));
         lblTituloPerfil.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblNombre = new JLabel("Nombre");
-        lblNombre.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtNombre = new JTextField();
         txtNombre.setMaximumSize(new Dimension(300, 30));
-
-        JLabel lblApellidos = new JLabel("Apellidos");
-        lblApellidos.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtApellidos = new JTextField();
         txtApellidos.setMaximumSize(new Dimension(300, 30));
-
-        JLabel lblObjetivo = new JLabel("¿Cuál es tu objetivo?");
-        lblObjetivo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
         String[] opciones = { "Perder Peso", "Mantener Peso", "Ganar Músculo" };
         JComboBox<String> comboObjetivo = new JComboBox<>(opciones);
         comboObjetivo.setMaximumSize(new Dimension(300, 30));
-
-        JLabel lblSexo = new JLabel("Sexo Biológico");
-        lblSexo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
         String[] sexos = { "Hombre", "Mujer" };
         JComboBox<String> comboSexo = new JComboBox<>(sexos);
         comboSexo.setMaximumSize(new Dimension(300, 30));
 
-        JLabel lblEdad = new JLabel("Edad");
-        lblEdad.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtEdad = new JTextField();
         txtEdad.setMaximumSize(new Dimension(300, 30));
-
-        JLabel lblPeso = new JLabel("Peso actual (kg)");
-        lblPeso.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtPeso = new JTextField();
         txtPeso.setMaximumSize(new Dimension(300, 30));
-
-        JLabel lblAltura = new JLabel("Altura (cm)");
-        lblAltura.setAlignmentX(Component.CENTER_ALIGNMENT);
         JTextField txtAltura = new JTextField();
         txtAltura.setMaximumSize(new Dimension(300, 30));
 
-        JButton btnFinalizar = TemaNutrix.crearBotonEstandar("Comenzar mi cambio");
+        JButton btnFinalizar = TemaNutrix.crearBotonEstandar("Comenzar");
         btnFinalizar.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         panelPerfil.add(lblTituloPerfil);
         panelPerfil.add(Box.createRigidArea(new Dimension(0, 10)));
-        panelPerfil.add(lblNombre);
+        panelPerfil.add(new JLabel("Nombre:"));
         panelPerfil.add(txtNombre);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
-        panelPerfil.add(lblApellidos);
+        panelPerfil.add(new JLabel("Apellidos:"));
         panelPerfil.add(txtApellidos);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
-        panelPerfil.add(lblObjetivo);
+        panelPerfil.add(new JLabel("Objetivo:"));
         panelPerfil.add(comboObjetivo);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
-        panelPerfil.add(lblSexo);
+        panelPerfil.add(new JLabel("Sexo:"));
         panelPerfil.add(comboSexo);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
-        panelPerfil.add(lblEdad);
+        panelPerfil.add(new JLabel("Edad:"));
         panelPerfil.add(txtEdad);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
-        panelPerfil.add(lblPeso);
+        panelPerfil.add(new JLabel("Peso (kg):"));
         panelPerfil.add(txtPeso);
-        panelPerfil.add(Box.createRigidArea(new Dimension(0, 5)));
-        panelPerfil.add(lblAltura);
+        panelPerfil.add(new JLabel("Altura (cm):"));
         panelPerfil.add(txtAltura);
         panelPerfil.add(Box.createRigidArea(new Dimension(0, 20)));
         panelPerfil.add(btnFinalizar);
@@ -323,9 +288,8 @@ public class PanelLogin extends JPanel {
         JPanel panelCarga = new JPanel(new BorderLayout());
         panelCarga.setBackground(Color.WHITE);
         PanelCargando spinner = new PanelCargando();
-        JLabel lblCargando = new JLabel("Configurando tu plan...", SwingConstants.CENTER);
         panelCarga.add(spinner, BorderLayout.CENTER);
-        panelCarga.add(lblCargando, BorderLayout.SOUTH);
+        panelCarga.add(new JLabel("Configurando tu plan...", SwingConstants.CENTER), BorderLayout.SOUTH);
 
         panelContenedorCartas.add(panelFormulario, "1");
         panelContenedorCartas.add(panelVerificacion, "2");
@@ -379,8 +343,7 @@ public class PanelLogin extends JPanel {
         dialogo.setVisible(true);
     }
 
-
-    // SPINNER DE CARGA
+    // Spinner visual para estados de carga
     class PanelCargando extends JPanel {
         private int angulo = 0;
         private Timer timer;
@@ -392,29 +355,20 @@ public class PanelLogin extends JPanel {
                 repaint();
             });
         }
-
-        public void iniciar() {
-            timer.start();
-        }
-
-        public void detener() {
-            timer.stop();
-        }
+        public void iniciar() { timer.start(); }
+        public void detener() { timer.stop(); }
 
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
             int ancho = getWidth();
             int alto = getHeight();
             int diametro = 60;
-
             g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2d.setColor(TemaNutrix.GRIS_CLARO);
             g2d.drawOval((ancho - diametro) / 2, (alto - diametro) / 2, diametro, diametro);
-
             g2d.setColor(TemaNutrix.PRIMARIO);
             g2d.drawArc((ancho - diametro) / 2, (alto - diametro) / 2, diametro, diametro, -angulo, 120);
         }

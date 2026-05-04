@@ -11,25 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Esta clase es la responsable de hablar con la base de datos para todo lo
- * relacionado con los usuarios.
- * Aquí es donde guardamos nuevos registros, comprobamos logins y actualizamos 
- * perfiles.
+ * Operaciones de acceso a datos para la entidad Usuario.
  */
 public class UsuarioDAO {
 
     /**
-     * Crea un nuevo usuario en el sistema. 
-     * Antes de guardarlo, nos aseguramos de que su contraseña está bien protegida 
-     * (hasheada) para que nadie pueda verla.
-     * 
-     * @param nuevoUsuario El objeto con todos los datos de la persona.
-     * @return true si se guardó bien; false si hubo algún problema con la base de datos.
+     * Registra un nuevo usuario hasheando su contraseña.
      */
     public static boolean registrarUsuario(Usuario nuevoUsuario) {
         String hashSeguro = GestorSeguridad.hashearPassword(nuevoUsuario.getPassword());
 
         String sql = "INSERT INTO usuario (email, passwd, nombre, apellidos, edad, altura, peso_inicial, rol, id_objetivo_fk, sexo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // ... (resto del código igual)
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
                 PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
@@ -68,13 +61,8 @@ public class UsuarioDAO {
             return false;
         }
     }
-
     /**
-     * Comprueba si el email y la contraseña son correctos para dejar entrar al usuario.
-     * 
-     * @param email El correo que ha escrito el usuario.
-     * @param passwordPlana La contraseña tal cual la ha escrito.
-     * @return El objeto Usuario completo si los datos son correctos; null si no lo son.
+     * Valida credenciales e inicia sesión.
      */
     public static Usuario iniciarSesion(String email, String passwordPlana) {
         String sql = "SELECT * FROM usuario WHERE email = ?";
@@ -87,8 +75,6 @@ public class UsuarioDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     String hashGuardado = rs.getString("passwd");
-
-                    // Comparamos la contraseña escrita contra el código secreto guardado
                     if (GestorSeguridad.verificarPassword(passwordPlana, hashGuardado)) {
                         Usuario usu = new Usuario();
                         usu.setId(rs.getInt("id_usuario"));
@@ -112,7 +98,7 @@ public class UsuarioDAO {
     }
 
     /**
-     * Cambia el correo electrónico de un usuario por uno nuevo.
+     * Actualiza el email de un usuario.
      */
     public static boolean actualizarEmail(int idUsuario, String nuevoEmail) {
         String sql = "UPDATE usuario SET email = ? WHERE id_usuario = ?";
@@ -132,12 +118,12 @@ public class UsuarioDAO {
     }
 
     /**
-     * Actualiza la edad, peso y altura de un usuario.
+     * Actualiza edad, peso y altura.
      */
     public static boolean actualizarDatosFisicos(int idUsuario, int edad, double peso, double altura) {
         String sql = "UPDATE usuario SET edad = ?, peso_inicial = ?, altura = ? WHERE id_usuario = ?";
         try (Connection conn = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, edad);
             pstmt.setDouble(2, peso);
@@ -152,12 +138,12 @@ public class UsuarioDAO {
     }
 
     /**
-     * Cambia el objetivo (perder peso, ganar músculo, etc.) de un usuario.
+     * Actualiza el ID del objetivo personal.
      */
     public static boolean actualizarObjetivo(int idUsuario, int idObjetivo) {
         String sql = "UPDATE usuario SET id_objetivo_fk = ? WHERE id_usuario = ?";
         try (Connection conn = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, idObjetivo);
             pstmt.setInt(2, idUsuario);
@@ -170,7 +156,7 @@ public class UsuarioDAO {
     }
 
     /**
-     * Borra permanentemente a un usuario del sistema por su ID.
+     * Elimina un usuario por ID.
      */
     public static boolean eliminarUsuario(int idUsuario) {
         String sql = "DELETE FROM usuario WHERE id_usuario = ?";
@@ -182,22 +168,21 @@ public class UsuarioDAO {
             return pstmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            System.err.println("Error al eliminar cuenta de usuario: " + e.getMessage());
+            System.err.println("Error al eliminar cuenta: " + e.getMessage());
             return false;
         }
     }
 
     /**
-     * Saca una lista de todos los usuarios de la base de datos.
-     * Útil para el panel de administración.
+     * Obtiene todos los usuarios ordenador por nombre.
      */
     public static List<Usuario> obtenerTodosLosUsuarios() {
         List<Usuario> lista = new ArrayList<>();
         String sql = "SELECT * FROM usuario ORDER BY nombre ASC";
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
                 Usuario u = new Usuario();
@@ -214,20 +199,19 @@ public class UsuarioDAO {
                 lista.add(u);
             }
         } catch (SQLException e) {
-            System.err.println("NUTRILERN > Error al listar usuarios: " + e.getMessage());
+            System.err.println("NUTRILERN > Error al listar: " + e.getMessage());
         }
         return lista;
     }
 
     /**
-     * Permite editar cualquier dato de un usuario de golpe.
-     * Pensado para que un administrador pueda corregir perfiles.
+     * Actualiza todos los datos de un usuario (Admin).
      */
     public static boolean actualizarUsuarioCompleto(Usuario u) {
         String sql = "UPDATE usuario SET email=?, nombre=?, apellidos=?, edad=?, altura=?, peso_inicial=?, rol=?, id_objetivo_fk=?, sexo=? WHERE id_usuario=?";
 
         try (Connection conn = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, u.getEmail());
             pstmt.setString(2, u.getNombre());
@@ -248,23 +232,23 @@ public class UsuarioDAO {
 
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("NUTRILERN > Error al actualizar usuario: " + e.getMessage());
+            System.err.println("NUTRILERN > Error al actualizar: " + e.getMessage());
             return false;
         }
     }
 
     /**
-     * Sobrescribe la contraseña de un usuario con un nuevo código secreto.
+     * Actualiza la contraseña hasheada.
      */
     public static boolean actualizarPassword(int idUsuario, String hashNuevo) {
         String sql = "UPDATE usuario SET passwd = ? WHERE id_usuario = ?";
         try (Connection conn = BaseDeDatos.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, hashNuevo);
             pstmt.setInt(2, idUsuario);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("NUTRILERN > Error al actualizar contraseña: " + e.getMessage());
+            System.err.println("NUTRILERN > Error de password: " + e.getMessage());
             return false;
         }
     }

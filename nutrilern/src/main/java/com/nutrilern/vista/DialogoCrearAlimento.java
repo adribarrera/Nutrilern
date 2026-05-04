@@ -12,25 +12,24 @@ import java.util.Map;
 
 public class DialogoCrearAlimento extends JDialog {
 
-
-
     // Campos del formulario
     private JTextField txtNombre, txtMarca, txtKcal;
     private JTextField txtProteinas, txtHidratos, txtGrasas, txtSaturadas, txtAzucar, txtSal;
-    
+
     // El desplegable de categorías
-    private JComboBox<ComboItem> comboCategorias; 
-    
-    // Un booleano para saber si el usuario guardó algo y debemos actualizar la tabla
-    private boolean alimentoCreado = false; 
+    private JComboBox<ComboItem> comboCategorias;
+
+    // Un booleano para saber si el usuario guardó algo y debemos actualizar la
+    // tabla
+    private boolean alimentoCreado = false;
 
     public DialogoCrearAlimento(Frame parent) {
         super(parent, "Registrar Nuevo Alimento", true); // true = bloquea la ventana de atrás hasta que cierres esto
-        
+
         setSize(450, 580);
         setLocationRelativeTo(parent);
         setResizable(false);
-        
+
         JPanel panelPrincipal = new JPanel();
         panelPrincipal.setLayout(new BoxLayout(panelPrincipal, BoxLayout.Y_AXIS));
         panelPrincipal.setBackground(Color.WHITE);
@@ -41,7 +40,7 @@ public class DialogoCrearAlimento extends JDialog {
         lblTitulo.setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 20));
         lblTitulo.setForeground(TemaNutrix.PRIMARIO);
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         panelPrincipal.add(lblTitulo);
         panelPrincipal.add(Box.createRigidArea(new Dimension(0, 5)));
         panelPrincipal.add(new JLabel("Añade los datos base por cada 100g de producto"));
@@ -61,26 +60,35 @@ public class DialogoCrearAlimento extends JDialog {
         txtAzucar = new JTextField();
         txtSal = new JTextField();
 
-        panelForm.add(crearEtiqueta("Nombre (*):")); panelForm.add(txtNombre);
-        
+        panelForm.add(crearEtiqueta("Nombre (*):"));
+        panelForm.add(txtNombre);
+
         comboCategorias = new JComboBox<>();
         // Llamamos al DAO para que nos traiga la lista de la BBDD
         Map<Integer, String> categoriasBD = CategoriaDAO.obtenerTodasLasCategorias();
         for (Map.Entry<Integer, String> entry : categoriasBD.entrySet()) {
-            // Metemos cada categoría en la caja ComboItem
             comboCategorias.addItem(new ComboItem(entry.getKey(), entry.getValue()));
         }
-        panelForm.add(crearEtiqueta("Categoría (*):")); panelForm.add(comboCategorias);
+        panelForm.add(crearEtiqueta("Categoría (*):"));
+        panelForm.add(comboCategorias);
         // ------------------------------------------
 
-        panelForm.add(crearEtiqueta("Marca:")); panelForm.add(txtMarca);
-        panelForm.add(crearEtiqueta("Calorías (Kcal) (*):")); panelForm.add(txtKcal);
-        panelForm.add(crearEtiqueta("Proteínas (g):")); panelForm.add(txtProteinas);
-        panelForm.add(crearEtiqueta("Hidratos (g):")); panelForm.add(txtHidratos);
-        panelForm.add(crearEtiqueta("  - Azúcares (g):")); panelForm.add(txtAzucar);
-        panelForm.add(crearEtiqueta("Grasas (g):")); panelForm.add(txtGrasas);
-        panelForm.add(crearEtiqueta("  - Saturadas (g):")); panelForm.add(txtSaturadas);
-        panelForm.add(crearEtiqueta("Sal (g):")); panelForm.add(txtSal);
+        panelForm.add(crearEtiqueta("Marca:"));
+        panelForm.add(txtMarca);
+        panelForm.add(crearEtiqueta("Calorías (Kcal) (*):"));
+        panelForm.add(txtKcal);
+        panelForm.add(crearEtiqueta("Proteínas (g):"));
+        panelForm.add(txtProteinas);
+        panelForm.add(crearEtiqueta("Hidratos (g):"));
+        panelForm.add(txtHidratos);
+        panelForm.add(crearEtiqueta("  - Azúcares (g):"));
+        panelForm.add(txtAzucar);
+        panelForm.add(crearEtiqueta("Grasas (g):"));
+        panelForm.add(txtGrasas);
+        panelForm.add(crearEtiqueta("  - Saturadas (g):"));
+        panelForm.add(txtSaturadas);
+        panelForm.add(crearEtiqueta("Sal (g):"));
+        panelForm.add(txtSal);
 
         panelPrincipal.add(panelForm);
         panelPrincipal.add(Box.createRigidArea(new Dimension(0, 25)));
@@ -116,7 +124,8 @@ public class DialogoCrearAlimento extends JDialog {
     private void guardarAlimentoBD() {
         // 1. Validaciones básicas
         if (txtNombre.getText().trim().isEmpty() || txtKcal.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El Nombre y las Calorías son obligatorios.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "El Nombre y las Calorías son obligatorios.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -125,7 +134,7 @@ public class DialogoCrearAlimento extends JDialog {
             Alimento nuevo = new Alimento();
             nuevo.setNombre(txtNombre.getText().trim());
             nuevo.setMarca(txtMarca.getText().trim());
-            
+
             // Convertimos los textos a números. Si está vacío, le ponemos un 0.0
             nuevo.setKcal(parsearDouble(txtKcal.getText()));
             nuevo.setProteinas(parsearDouble(txtProteinas.getText()));
@@ -134,10 +143,10 @@ public class DialogoCrearAlimento extends JDialog {
             nuevo.setGrasas(parsearDouble(txtGrasas.getText()));
             nuevo.setGrasasSaturadas(parsearDouble(txtSaturadas.getText()));
             nuevo.setSal(parsearDouble(txtSal.getText()));
-            
+
             // Leemos el objeto ComboItem que el usuario ha dejado seleccionado
             ComboItem itemSeleccionado = (ComboItem) comboCategorias.getSelectedItem();
-            
+
             if (itemSeleccionado != null) {
                 // Le sacamos su ID oculto y se lo pasamos al Alimento
                 nuevo.setIdCategoriaFk(itemSeleccionado.getId());
@@ -153,11 +162,14 @@ public class DialogoCrearAlimento extends JDialog {
                 alimentoCreado = true; // Avisamos de que hubo éxito
                 dispose(); // Cerramos esta ventanita emergente
             } else {
-                JOptionPane.showMessageDialog(this, "Error de SQL al intentar guardar el alimento.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error de SQL al intentar guardar el alimento.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor, introduce solo números válidos para los valores nutricionales (ej: 12.5).", "Error de Formato", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Por favor, introduce solo números válidos para los valores nutricionales (ej: 12.5).",
+                    "Error de Formato", JOptionPane.ERROR_MESSAGE);
         }
     }
 

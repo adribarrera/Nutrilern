@@ -8,11 +8,6 @@ import com.nutrilern.controlador.ControladorVistas;
 import java.awt.*;
 import java.util.List;
 
-/**
- * Panel de administración para la gestión de usuarios.
- * Sigue el patrón MVC: La vista solo gestiona la interfaz,
- * la lógica está en ControladorVistas.
- */
 public class PanelAdminUsuarios extends JPanel {
     private VentanaPrincipal ventanaPadre;
     private JTable tablaUsuarios;
@@ -32,9 +27,8 @@ public class PanelAdminUsuarios extends JPanel {
         header.setBackground(Color.WHITE);
         header.setPreferredSize(new Dimension(0, 80));
         header.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO),
-            BorderFactory.createEmptyBorder(0, 30, 0, 30)
-        ));
+                BorderFactory.createMatteBorder(0, 0, 1, 0, TemaNutrix.GRIS_CLARO),
+                BorderFactory.createEmptyBorder(0, 30, 0, 30)));
 
         JButton btnVolver = TemaNutrix.crearBotonVolver("← Volver");
         btnVolver.addActionListener(e -> ventanaPadre.cambiarPantalla("MENU"));
@@ -61,17 +55,19 @@ public class PanelAdminUsuarios extends JPanel {
         cuerpo.setOpaque(false);
         cuerpo.setBorder(new EmptyBorder(30, 40, 30, 40));
 
-        String[] columnas = {"ID", "Email", "Nombre", "Apellidos", "Rol"};
+        String[] columnas = { "ID", "Email", "Nombre", "Apellidos", "Rol" };
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
 
         tablaUsuarios = new JTable(modeloTabla);
         tablaUsuarios.setRowHeight(40);
         tablaUsuarios.setFont(new Font(TemaNutrix.FONT_NAME, Font.PLAIN, 14));
         tablaUsuarios.getTableHeader().setFont(new Font(TemaNutrix.FONT_NAME, Font.BOLD, 14));
-        
+
         JScrollPane scroll = new JScrollPane(tablaUsuarios);
         cuerpo.add(scroll, BorderLayout.CENTER);
 
@@ -97,7 +93,8 @@ public class PanelAdminUsuarios extends JPanel {
             int fila = tablaUsuarios.getSelectedRow();
             if (fila != -1) {
                 int id = (int) modeloTabla.getValueAt(fila, 0);
-                if (JOptionPane.showConfirmDialog(this, "¿Seguro que quieres borrar al usuario con ID " + id + "?") == JOptionPane.YES_OPTION) {
+                if (JOptionPane.showConfirmDialog(this,
+                        "¿Seguro que quieres borrar al usuario con ID " + id + "?") == JOptionPane.YES_OPTION) {
                     if (ControladorVistas.eliminarUsuarioAdmin(id)) {
                         refrescarTabla();
                     }
@@ -116,8 +113,8 @@ public class PanelAdminUsuarios extends JPanel {
         modeloTabla.setRowCount(0);
         List<Usuario> lista = ControladorVistas.listarUsuariosAdmin();
         for (Usuario u : lista) {
-            modeloTabla.addRow(new Object[]{
-                u.getId(), u.getEmail(), u.getNombre(), u.getApellidos(), u.getRol()
+            modeloTabla.addRow(new Object[] {
+                    u.getId(), u.getEmail(), u.getNombre(), u.getApellidos(), u.getRol()
             });
         }
     }
@@ -138,15 +135,16 @@ public class PanelAdminUsuarios extends JPanel {
         JTextField txtPass = new JPasswordField();
         JTextField txtEdad = new JTextField(String.valueOf(tempUser.getEdad()));
         JTextField txtAltura = new JTextField(String.valueOf(tempUser.getAltura()));
-        JComboBox<String> comboRol = new JComboBox<>(new String[]{"USUARIO", "ADMIN"});
+        JComboBox<String> comboRol = new JComboBox<>(new String[] { "USUARIO", "ADMIN" });
         comboRol.setSelectedItem(tempUser.getRol() != null ? tempUser.getRol() : "USUARIO");
 
         // La BD guarda CHAR(1): 'H' o 'M'
-        JComboBox<String> comboSexo = new JComboBox<>(new String[]{"H", "M"});
+        JComboBox<String> comboSexo = new JComboBox<>(new String[] { "H", "M" });
         comboSexo.setSelectedItem(tempUser.getSexo() != null ? tempUser.getSexo() : "H");
         comboSexo.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public java.awt.Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public java.awt.Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setText("H".equals(value) ? "Hombre" : "Mujer");
                 return this;
@@ -154,19 +152,19 @@ public class PanelAdminUsuarios extends JPanel {
         });
 
         Object[] message = {
-            "Nombre:", txtNombre,
-            "Apellidos:", txtApellidos,
-            "Email:", txtEmail,
-            "Contraseña " + (esNuevo ? ":" : "(vacío para no cambiar):"), txtPass,
-            "Edad:", txtEdad,
-            "Altura (cm):", txtAltura,
-            "Sexo:", comboSexo,
-            "Rol:", comboRol
+                "Nombre:", txtNombre,
+                "Apellidos:", txtApellidos,
+                "Email:", txtEmail,
+                "Contraseña " + (esNuevo ? ":" : "(vacío para no cambiar):"), txtPass,
+                "Edad:", txtEdad,
+                "Altura (cm):", txtAltura,
+                "Sexo:", comboSexo,
+                "Rol:", comboRol
         };
 
-        int option = JOptionPane.showConfirmDialog(this, message, 
+        int option = JOptionPane.showConfirmDialog(this, message,
                 esNuevo ? "Crear Nuevo Usuario" : "Editar Perfil", JOptionPane.OK_CANCEL_OPTION);
-        
+
         if (option == JOptionPane.OK_OPTION) {
             try {
                 tempUser.setNombre(txtNombre.getText());
